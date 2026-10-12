@@ -42,10 +42,11 @@ const ALL_TOOLS = [
 
 class PadlesShelfApp {
   constructor() {
-    this.storageKey = 'padles_shelf_board_state';
+    this.storageKey = 'padles_board_exact_v1';
     this.sectionsTrack = document.getElementById('sectionsTrack');
     this.postModal = document.getElementById('composerCardWrapper');
     this.composerCardWrapper = this.postModal;
+    this.editPostModalOverlay = document.getElementById('editPostModalOverlay');
     this.composerCard = document.getElementById('composerCard');
     this.titleInput = document.getElementById('composerTitleInput');
     this.bodyInput = document.getElementById('composerBodyInput');
@@ -55,7 +56,7 @@ class PadlesShelfApp {
     this.currentColorDot = document.getElementById('currentColorDot');
     this.currentColorLabel = document.getElementById('currentColorLabel');
     this.currentSectionLabel = document.getElementById('currentSectionLabel');
-    this.colorPaletteDropdown = document.getElementById('composerColorPalette');
+    this.colorPaletteDropdown = document.getElementById('colorSelectPopover');
     this.activeAttachmentPreview = document.getElementById('activeAttachmentPreview');
     this.previewTypeBadge = document.getElementById('previewTypeBadge');
     this.previewTitleText = document.getElementById('previewTitleText');
@@ -97,6 +98,28 @@ class PadlesShelfApp {
     this.searchOverlay = document.getElementById('searchOverlay');
     this.boardSearchInput = document.getElementById('boardSearchInput');
     this.toastEl = document.getElementById('toast');
+
+    // Supabase Cloud Backend & Presence Elements
+    this.backend = window.padlesBackend || null;
+    this.cloudSyncBtn = document.getElementById('cloudSyncBtn');
+    this.cloudStatusDot = document.getElementById('cloudStatusDot');
+    this.cloudStatusText = document.getElementById('cloudStatusText');
+    this.collaboratorsStrip = document.getElementById('collaboratorsStrip');
+    this.cloudSettingsModal = document.getElementById('cloudSettingsModal');
+    this.closeCloudSettingsBtn = document.getElementById('closeCloudSettingsBtn');
+    this.cloudConfigForm = document.getElementById('cloudConfigForm');
+    this.supabaseUrlInput = document.getElementById('supabaseUrlInput');
+    this.supabaseKeyInput = document.getElementById('supabaseKeyInput');
+    this.supabaseBoardIdInput = document.getElementById('supabaseBoardIdInput');
+    this.toggleKeyVisibilityBtn = document.getElementById('toggleKeyVisibilityBtn');
+    this.testConnectionBtn = document.getElementById('testConnectionBtn');
+    this.modalStatusDot = document.getElementById('modalStatusDot');
+    this.modalStatusLabel = document.getElementById('modalStatusLabel');
+    this.disconnectCloudBtn = document.getElementById('disconnectCloudBtn');
+    this.pushLocalToCloudBtn = document.getElementById('pushLocalToCloudBtn');
+    this.guideAccordionToggle = document.getElementById('guideAccordionToggle');
+    this.guideAccordionContent = document.getElementById('guideAccordionContent');
+    this.copySchemaPathBtn = document.getElementById('copySchemaPathBtn');
 
     // Section Context Menu (Blueprint Section 2.2)
     this.sectionContextMenu = document.getElementById('sectionContextMenu');
@@ -186,7 +209,16 @@ class PadlesShelfApp {
     this.initScheduleModal();
     this.initAllToolsModal();
     this.initCustomFieldBuilder();
+    this.initCloudBackendUI();
+    this.initSlideshow();
+    this.initShareDrawer();
+    this.initSettingsDrawer();
+    this.initMoreDrawer();
     this.attachEventListeners();
+
+    if (this.backend && this.backend.isConnected) {
+      this.syncFromCloud();
+    }
   }
 
   loadState() {
@@ -202,131 +234,175 @@ class PadlesShelfApp {
 
     if (!state) {
       state = {
-        author: 'Salman Madani • 6d',
+        author: 'Salman Madani',
         title: 'Physics Audio Reflections: I see, I think, I wonder',
         sections: [
-          {
-            id: 'sec-instructions',
-            title: 'Instructions',
-            cards: [
-              {
-                id: 'card-instructions-1',
-                title: 'Student Instructions',
-                pinned: true,
-                type: 'text',
-                color: 'cyan',
-                content: {
-                  intro: 'Watch the video or look at the image.',
-                  body: 'Record yourself or you and your partner talking about what you See, Think, and Wonder:',
-                  bullets: [
-                    '<strong>I see:</strong> Describe what you see',
-                    '<strong>I think:</strong> Explain what you think is happening. If possible, connect to concepts that we have learned about in class.',
-                    '<strong>I wonder:</strong> What questions do you have about what you see?'
-                  ]
-                },
-                reactions: 3,
-                hasReacted: false
-              }
-            ]
-          },
-          {
-            id: 'sec-balloon-cars',
-            title: 'Balloon Cars',
-            cards: [
-              {
-                id: 'card-balloon-1',
-                title: 'balloon car making',
-                pinned: true,
-                type: 'video',
-                color: 'cyan',
-                attachment: {
-                  provider: 'YouTube',
-                  thumbnailUrl: 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?w=600&auto=format&fit=crop&q=80',
-                  caption: 'balloon car making',
-                  videoUrl: 'https://youtube.com'
-                },
-                reactions: 4,
-                hasReacted: false
-              },
-              {
-                id: 'card-balloon-2',
-                title: "Balloon car: Newton's third law",
-                pinned: true,
-                type: 'video',
-                color: 'cyan',
-                attachment: {
-                  provider: 'YouTube',
-                  thumbnailUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80',
-                  caption: "Balloon car: Newton's third law",
-                  videoUrl: 'https://youtube.com'
-                },
-                reactions: 2,
-                hasReacted: false
-              }
-            ]
-          },
-          {
-            id: 'sec-newton-1',
-            title: "Newton's First Law",
-            cards: [
-              {
-                id: 'card-newton-egg',
-                title: "Newtons First Law Of Motion : Egg Drop",
-                pinned: true,
-                type: 'video',
-                color: 'cyan',
-                attachment: {
-                  provider: 'YouTube',
-                  thumbnailUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80',
-                  caption: "Newtons First Law Of Motion : Egg Drop",
-                  videoUrl: 'https://youtube.com'
-                },
-                reactions: 5,
-                hasReacted: false
-              }
-            ]
-          },
-          {
-            id: 'sec-bipoc',
-            title: 'BIPOC Scientists',
-            cards: [
-              {
-                id: 'card-bipoc-1',
-                title: 'Classroom Resources - I Am A Scientist',
-                pinned: true,
-                type: 'link',
-                color: 'cyan',
-                attachment: {
-                  domain: 'iamascientist.info',
-                  title: 'Classroom Resources - I Am A Scientist',
-                  thumbnailUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&auto=format&fit=crop&q=80',
-                  url: 'https://iamascientist.info'
-                },
-                reactions: 6,
-                hasReacted: false
-              }
-            ]
-          },
-          {
-            id: 'sec-5',
-            title: 'Section 5',
-            cards: []
-          }
-        ],
-        drafts: [
-          { id: 'draft-1', draftNumber: 1, title: '', body: '', color: 'white', sectionId: 'sec-instructions', attachment: null, isMinimized: true },
-          { id: 'draft-2', draftNumber: 2, title: '', body: '', color: 'white', sectionId: 'sec-balloon-cars', attachment: null, isMinimized: true },
-          { id: 'draft-3', draftNumber: 3, title: '', body: '', color: 'white', sectionId: 'sec-newton-1', attachment: null, isMinimized: true }
-        ]
+        {
+                "id": "section-395446119",
+                "title": "Instructions",
+                "cards": [
+                        {
+                                "id": "surface-post-subject-c4085710932",
+                                "pinned": false,
+                                "subject": "Student Instructions",
+                                "title": "Student Instructions",
+                                "body": "<p>Watch the video or look at the image.</p><p><br></p><p>Record yourself or you and your partner talking about what you See, Think, and Wonder: </p><ul><li><p><strong>I see: </strong>Describe what you see</p></li><li><p><strong>I think: </strong>Explain what you think is happening. If possible, connect to concepts that we have learned about in class.</p></li><li><p><strong>I wonder: </strong>What questions do you have about what you see?</p></li><li><p>Watch the video or look at the image.</p><p><br></p><p>Record yourself or you and your partner talking about what you See, Think, and Wonder: </p><ul><li><p><strong>I see: </strong>Describe what you see</p></li><li><p><strong>I think: </strong>Explain what you think is happening. If possible, connect to concepts that we have learned about in class.</p></li><li><p><strong>I wonder: </strong>What questions do you have about what you see?Watch the video or look at the image.</p><p><br></p><p>Record yourself or you and your partner talking about what you See, Think, and Wonder: </p><ul><li><p><strong>I see: </strong>Describe what you see</p></li><li><p><strong>I think: </strong>Explain what you think is happening. If possible, connect to concepts that we have learned about in class.</p></li><li><p><strong>I wonder: </strong>What questions do you have about what you see?Watch the video or look at the image.</p><p><br></p><p>Record yourself or you and your partner talking about what you See, Think, and Wonder: </p><ul><li><p><strong>I see: </strong>Describe what you see</p></li><li><p><strong>I think: </strong>Explain what you think is happening. If possible, connect to concepts that we have learned about in class.</p></li><li><p><strong>I wonder: </strong>What questions do you have about what you see?Watch the video or look at the image.</p><p><br></p><p>Record yourself or you and your partner talking about what you See, Think, and Wonder: </p><ul><li><p><strong>I see: </strong>Describe what you see</p></li><li><p><strong>I think: </strong>Explain what you think is happening. If possible, connect to concepts that we have learned about in class.</p></li><li><p><strong>I wonder: </strong>What questions do you have about what you see?Watch the video or look at the image.</p><p><br></p><p>Record yourself or you and your partner talking about what you See, Think, and Wonder: </p><ul><li><p><strong>I see: </strong>Describe what you see</p></li><li><p><strong>I think: </strong>Explain what you think is happening. If possible, connect to concepts that we have learned about in class.</p></li><li><p><strong>I wonder: </strong>What questions do you have about what you see?</p></li></ul></li></ul></li></ul></li></ul></li></ul></li></ul><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p><br></p><p>Watch the video or look at the image.</p><p><br></p><p>Record yourself or you and your partner talking about what you See, Think, and Wonder: </p><ul><li><p><strong>I see: </strong>Describe what you see</p></li><li><p><strong>I think: </strong>Explain what you think is happening. If possible, connect to concepts that we have learned about in class.</p></li><li><p><strong>I wonder: </strong>What questions do you have about what you see?</p></li></ul>",
+                                "color": "blue",
+                                "attachment": null,
+                                "reactions": 0,
+                                "hasReacted": false,
+                                "customFieldValues": {}
+                        },
+                        {
+                                "id": "surface-post-subject-c4093588220",
+                                "pinned": false,
+                                "subject": "sd",
+                                "title": "sd",
+                                "body": "",
+                                "color": "default",
+                                "attachment": null,
+                                "reactions": 0,
+                                "hasReacted": false,
+                                "customFieldValues": {}
+                        }
+                ]
+        },
+        {
+                "id": "section-395446117",
+                "title": "Balloon Cars",
+                "cards": [
+                        {
+                                "id": "wish-4085710930",
+                                "pinned": true,
+                                "subject": "",
+                                "title": "",
+                                "body": "",
+                                "color": "blue",
+                                "attachment": {
+                                        "thumbnailUrl": "https://v1.padlet.pics/1/image.webp?t=ar_1.3333333333333333%2Cc_lfill%2Cdpr_1%2Ce_trim%2Cg_auto%2Cw_240&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F50a8c8a452dce013523c4b39bbff35c11e701888%2F36fbb66b68e499a179acc8dda4bf30fc-h-6eadd3623412573bd65fb0421c008910.jpg",
+                                        "caption": "balloon car making",
+                                        "provider": "YouTube",
+                                        "category": "YouTube"
+                                },
+                                "reactions": 0,
+                                "hasReacted": false,
+                                "customFieldValues": {}
+                        },
+                        {
+                                "id": "wish-4085710931",
+                                "pinned": true,
+                                "subject": "",
+                                "title": "",
+                                "body": "",
+                                "color": "blue",
+                                "attachment": {
+                                        "thumbnailUrl": "https://v1.padlet.pics/1/image.webp?t=ar_1.3333333333333333%2Cc_lfill%2Cdpr_1%2Ce_trim%2Cg_auto%2Cw_240&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F523e034bb6995f36504d9755f945d1d9ae81d269%2Ff077ecdd468c21922402c4922b8de6e2-h-3f78d5625cb4750592bd47158ebbf09e.jpg",
+                                        "caption": "Balloon car: Newton’s third law",
+                                        "provider": "YouTube",
+                                        "category": "YouTube"
+                                },
+                                "reactions": 0,
+                                "hasReacted": false,
+                                "customFieldValues": {}
+                        },
+                        {
+                                "id": "surface-post-body-c4093947677",
+                                "pinned": false,
+                                "subject": "",
+                                "title": "",
+                                "body": "<p>asd</p>",
+                                "color": "default",
+                                "attachment": null,
+                                "reactions": 0,
+                                "hasReacted": false,
+                                "customFieldValues": {}
+                        }
+                ]
+        },
+        {
+                "id": "section-395446120",
+                "title": "Newton's First Law",
+                "cards": [
+                        {
+                                "id": "wish-4085710929",
+                                "pinned": true,
+                                "subject": "",
+                                "title": "",
+                                "body": "",
+                                "color": "blue",
+                                "attachment": {
+                                        "thumbnailUrl": "https://v1.padlet.pics/1/image.webp?t=ar_1.3333333333333333%2Cc_lfill%2Cdpr_1%2Ce_trim%2Cg_auto%2Cw_240&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F452a86f942f6d7288eb3d37de942f70a61267e26%2Fc9ddbbc6aa2870fbbd586558643951db-h-72c024387febcc80e85323797288811e.jpg",
+                                        "caption": "Newtons First Law Of Motion : Egg Drop",
+                                        "provider": "YouTube",
+                                        "category": "YouTube"
+                                },
+                                "reactions": 0,
+                                "hasReacted": false,
+                                "customFieldValues": {}
+                        }
+                ]
+        },
+        {
+                "id": "section-395446118",
+                "title": "BIPOC Scientists",
+                "cards": [
+                        {
+                                "id": "wish-4085710927",
+                                "pinned": true,
+                                "subject": "",
+                                "title": "",
+                                "body": "",
+                                "color": "blue",
+                                "attachment": {
+                                        "thumbnailUrl": "https://v1.padlet.pics/1/image.webp?t=ar_1.8703241895261846%2Cc_lfill%2Cdpr_1%2Cg_auto%2Cw_240&url=https%3A%2F%2Fpadlet-artifacts.storage.googleapis.com%2F82782ec566665fe6b49709a0beb62ca368fc9c2d%2Fa40a39f56f16f6666c7728af7c6ee2bd-h-c365868814cf236ba4dadd17a1b721e2.png",
+                                        "caption": "Classroom Resources - I Am A Scientist",
+                                        "provider": "iamascientist.info",
+                                        "category": "iamascientist.info"
+                                },
+                                "reactions": 0,
+                                "hasReacted": false,
+                                "customFieldValues": {}
+                        }
+                ]
+        },
+        {
+                "id": "section-395446173",
+                "title": "Section 5",
+                "cards": [
+                        {
+                                "id": "surface-post-subject-c4093588317",
+                                "pinned": false,
+                                "subject": "sd",
+                                "title": "sd",
+                                "body": "",
+                                "color": "default",
+                                "attachment": null,
+                                "reactions": 0,
+                                "hasReacted": false,
+                                "customFieldValues": {}
+                        },
+                        {
+                                "id": "surface-post-body-c_new47",
+                                "pinned": false,
+                                "subject": "",
+                                "title": "",
+                                "body": "<p>This is a test post for editing. - updated</p>",
+                                "color": "default",
+                                "attachment": null,
+                                "reactions": 0,
+                                "hasReacted": false,
+                                "customFieldValues": {}
+                        }
+                ]
+        }
+],
+        drafts: [],
+        customFields: []
       };
     }
 
     if (!state.drafts) {
-      state.drafts = [
-        { id: 'draft-1', draftNumber: 1, title: '', body: '', color: 'white', sectionId: 'sec-instructions', attachment: null, isMinimized: true },
-        { id: 'draft-2', draftNumber: 2, title: '', body: '', color: 'white', sectionId: 'sec-balloon-cars', attachment: null, isMinimized: true },
-        { id: 'draft-3', draftNumber: 3, title: '', body: '', color: 'white', sectionId: 'sec-newton-1', attachment: null, isMinimized: true }
-      ];
+      state.drafts = [];
     }
 
     if (!state.customFields) {
@@ -356,31 +432,31 @@ class PadlesShelfApp {
       sectionCol.className = 'section-column';
       sectionCol.id = section.id;
 
-      // Section Header
-      const header = document.createElement('div');
-      header.className = 'section-header';
-      header.innerHTML = `
-        <span class="section-title" title="${this.escapeHtml(section.title)}">${this.escapeHtml(section.title)}</span>
-        <button class="section-menu-btn" title="Section options" aria-label="Section options" data-section-id="${section.id}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <circle cx="12" cy="12" r="1.5"/>
-            <circle cx="19" cy="12" r="1.5"/>
-            <circle cx="5" cy="12" r="1.5"/>
-          </svg>
+      // Section Header (Padlet Folder Tab)
+      const headerBox = document.createElement('div');
+      headerBox.className = 'section-header-box';
+      headerBox.innerHTML = `
+        <div class="section-title-capsule">
+          <div class="section-title-body">
+            <h2 class="section-title-text" title="${this.escapeHtml(section.title)}">${this.escapeHtml(section.title)}</h2>
+          </div>
+          <div class="section-title-skew"></div>
+          <button class="section-menu-btn" title="Section actions" aria-label="Section actions" data-section-id="${section.id}">
+            <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor"><path d="M16 10a3.143 3.143 0 1 1 0-6.286A3.143 3.143 0 0 1 16 10m0 9.143a3.143 3.143 0 1 1 0-6.286 3.143 3.143 0 0 1 0 6.286m-3.143 6a3.143 3.143 0 1 0 6.286 0 3.143 3.143 0 0 0-6.286 0"/></svg>
+          </button>
+        </div>
+        <button class="section-add-btn" title="Add post to ${this.escapeHtml(section.title)}" aria-label="Add post to ${this.escapeHtml(section.title)}">
+          <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor"><path d="M15.984 3.319A1 1 0 0 0 15 4.333V15H4.333a1 1 0 0 0-.936.614A1 1 0 0 0 4.333 17H15v10.667a1 1 0 0 0 .614.937q.185.077.386.077a.8.8 0 0 0 .386-.077 1 1 0 0 0 .542-.55c.049-.123.074-.255.072-.387V17h10.667a1 1 0 0 0 .716-.288 1.004 1.004 0 0 0 0-1.424 1 1 0 0 0-.716-.288H17V4.333a1 1 0 0 0-.293-.722 1 1 0 0 0-.722-.292z"/></svg>
         </button>
       `;
 
-      const menuBtn = header.querySelector('.section-menu-btn');
+      const menuBtn = headerBox.querySelector('.section-menu-btn');
       menuBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.openSectionContextMenu(section.id, menuBtn);
       });
 
-      // Quick "+" Add Button under Header
-      const addBtn = document.createElement('button');
-      addBtn.className = 'section-add-btn';
-      addBtn.title = `Add post to ${section.title}`;
-      addBtn.innerHTML = `<span>+</span>`;
+      const addBtn = headerBox.querySelector('.section-add-btn');
       addBtn.addEventListener('click', () => {
         this.openComposer(section.id);
       });
@@ -398,8 +474,7 @@ class PadlesShelfApp {
         cardsStack.appendChild(cardEl);
       });
 
-      sectionCol.appendChild(header);
-      sectionCol.appendChild(addBtn);
+      sectionCol.appendChild(headerBox);
       sectionCol.appendChild(cardsStack);
       this.sectionsTrack.appendChild(sectionCol);
     });
@@ -407,74 +482,68 @@ class PadlesShelfApp {
 
   renderCardElement(card, sectionId) {
     const el = document.createElement('article');
-    el.className = 'padlet-card';
+    const colorClass = card.color === 'blue' ? 'color-blue' : (card.color === 'white' || card.color === 'default' ? 'color-default' : `color-${card.color || 'default'}`);
+    el.className = `padlet-card ${colorClass}`;
     el.id = card.id;
+    el.dataset.color = card.color || 'default';
     el.draggable = true;
 
-    // Apply card custom palette if defined
-    if (card.color) {
+    // Apply custom palette if not default/blue
+    if (card.color && card.color !== 'blue' && card.color !== 'white' && card.color !== 'default') {
       const pal = this.getPalette(card.color);
       if (pal) {
         el.style.backgroundColor = pal.cardBg;
-        el.style.borderColor = pal.border;
       }
     }
 
-    // Header with Pinned status, Quick Edit button, and 3-dots actions
-    let topBarHtml = `
-      <div class="card-top-bar">
-        ${card.pinned ? `
-          <span class="card-pinned-tag">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/>
-            </svg>
-            Pinned
-          </span>` : '<span></span>'}
-        <div class="card-action-group">
-          <button type="button" class="card-edit-btn" title="Edit this post" aria-label="Edit this post" data-testid="surfacePostEditButton">
-            <svg viewBox="0 0 32 32" width="12" height="12" fill="currentColor">
-              <path d="M24 3.34a4.65 4.65 0 0 0-3.299 1.361l-2.547 2.547a1 1 0 0 0-.236.234L5.944 19.456c-.28.28-.485.628-.594 1.01l-1.978 6.926a1 1 0 0 0 .255.981 1 1 0 0 0 .981.255l6.927-1.978.001-.001c.38-.109.727-.312 1.008-.592l11.949-11.951q.169-.113.281-.281l2.525-2.525a4.68 4.68 0 0 0 0-6.599 4.65 4.65 0 0 0-3.3-1.361zm0 1.988c.681 0 1.36.262 1.884.786h.001a2.65 2.65 0 0 1 0 3.771l-1.96 1.96-3.771-3.771 1.96-1.96a2.66 2.66 0 0 1 1.885-.786zm-5.259 4.16 3.771 3.771-11.383 11.383a.35.35 0 0 1-.145.085l-.656.187-3.242-3.242.188-.657v-.001a.3.3 0 0 1 .085-.143L18.742 9.489zM6.457 23.871l1.672 1.672-2.34.668z"/>
-            </svg>
-            <span>Edit</span>
-          </button>
-          <div class="card-action-divider"></div>
-          <button type="button" class="card-dots-btn" title="More post actions" aria-label="More post actions" data-testid="surfacePostMoreActionsButton">
-            <svg viewBox="0 0 32 32" width="14" height="14" fill="currentColor">
-              <path d="M16 10a3.143 3.143 0 1 1 0-6.286A3.143 3.143 0 0 1 16 10m0 9.143a3.143 3.143 0 1 1 0-6.286 3.143 3.143 0 0 1 0 6.286m-3.143 6a3.143 3.143 0 1 0 6.286 0 3.143 3.143 0 0 0-6.286 0"/>
-            </svg>
-          </button>
+    let pinnedHtml = '';
+    if (card.pinned) {
+      pinnedHtml = `
+        <div class="card-pinned-banner" tabindex="0" aria-label="Pinned">
+          <span style="width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center;">
+            <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor"><path d="M28.091 10.344 21.657 3.91c-1.77-1.77-4.753-1.286-5.872.953l-3.247 6.495a1 1 0 0 1-.568.498l-5.555 1.919a1.666 1.666 0 0 0-.634 2.754l4.139 4.139-5.919 5.919v1.414h1.414l5.919-5.919 4.139 4.139c.871.87 2.352.529 2.754-.634l1.919-5.555a1 1 0 0 1 .498-.568l6.495-3.247c2.239-1.119 2.723-4.103.953-5.872z"/></svg>
+          </span>
+          <span>Pinned</span>
         </div>
-      </div>
+      `;
+    }
+
+    const dotsBtnHtml = `
+      <button type="button" class="card-dots-btn" title="More post actions" aria-label="More post actions" data-testid="surfacePostMoreActionsButton">
+        <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor"><path d="M16 10a3.143 3.143 0 1 1 0-6.286A3.143 3.143 0 0 1 16 10m0 9.143a3.143 3.143 0 1 1 0-6.286 3.143 3.143 0 0 1 0 6.286m-3.143 6a3.143 3.143 0 1 0 6.286 0 3.143 3.143 0 0 0-6.286 0"/></svg>
+      </button>
     `;
 
-    let titleHtml = card.title ? `<h3 class="card-title">${this.escapeHtml(card.title)}</h3>` : '';
-    let bodyHtml = '';
-
-    if (card.type === 'video' && card.attachment) {
-      bodyHtml = `
-        <div class="media-attachment-video">
-          <img src="${card.attachment.thumbnailUrl}" class="video-thumb" alt="${this.escapeHtml(card.attachment.caption)}" />
-          <button class="play-overlay-btn" title="Play Video" aria-label="Play">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="6 3 20 12 6 21 6 3"/>
-            </svg>
-          </button>
-          <span class="youtube-badge">${card.attachment.provider || 'YouTube'}</span>
-        </div>
-        <p class="card-caption">${this.escapeHtml(card.attachment.caption)}</p>
-      `;
-      titleHtml = '';
-    } else if (card.type === 'link' && card.attachment) {
-      bodyHtml = `
-        <div class="media-attachment-link">
-          <img src="${card.attachment.thumbnailUrl}" class="link-thumb" alt="${this.escapeHtml(card.attachment.title)}" />
-          <div class="link-meta">
-            <span class="link-domain">${this.escapeHtml(card.attachment.domain)}</span>
-            <span class="link-title">${this.escapeHtml(card.attachment.title)}</span>
+    let attachmentHtml = '';
+    if (card.attachment && card.attachment.thumbnailUrl) {
+      if (card.attachment.category === 'iamascientist.info' || card.type === 'link') {
+        attachmentHtml = `
+          <div class="media-attachment-link">
+            <img src="${card.attachment.thumbnailUrl}" class="link-thumb" alt="${this.escapeHtml(card.attachment.caption || '')}" />
+            <div class="youtube-badge">${this.escapeHtml(card.attachment.category || 'link')}</div>
           </div>
-        </div>
-      `;
-      titleHtml = '';
+        `;
+      } else {
+        attachmentHtml = `
+          <div class="media-attachment-video">
+            <img src="${card.attachment.thumbnailUrl}" class="video-thumb" alt="${this.escapeHtml(card.attachment.caption || '')}" />
+            <div class="play-overlay-btn" title="Play">
+              <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor"><path d="M7 23.54V8.46c0-2.017 2.152-3.304 3.929-2.349l14.033 7.54c1.873 1.006 1.873 3.692 0 4.698l-14.033 7.54C9.152 26.844 7 25.557 7 23.54"/></svg>
+            </div>
+            <div class="youtube-badge">${this.escapeHtml(card.attachment.provider || 'YouTube')}</div>
+          </div>
+        `;
+      }
+    }
+
+    let captionHtml = card.attachment && card.attachment.caption ? `<p class="card-caption">${this.escapeHtml(card.attachment.caption)}</p>` : '';
+
+    let subjectText = card.subject || card.title || '';
+    let subjectHtml = subjectText ? `<h3 class="card-title">${this.escapeHtml(subjectText)}</h3>` : '';
+
+    let bodyHtml = '';
+    if (card.body) {
+      bodyHtml = `<div class="card-text-content">${card.body}</div>`;
     } else if (card.content) {
       bodyHtml = `
         <div class="card-text-content">
@@ -488,21 +557,6 @@ class PadlesShelfApp {
         </div>
       `;
     }
-
-    let bottomBarHtml = `
-      <div class="card-bottom-bar">
-        <button class="reaction-btn ${card.hasReacted ? 'has-reacted' : ''}" title="Add reaction" aria-label="Add reaction">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-            <path d="M11.168 3c0.657 0 1.299 0.064 1.92 0.188-0.171 0.455-0.287 0.937-0.342 1.437-0.511-0.098-1.038-0.151-1.578-0.151-4.616 0-8.359 3.743-8.359 8.359s3.743 8.358 8.359 8.358c4.616 0 8.358-3.742 8.358-8.358 0-0.54-0.053-1.068-0.151-1.579 0.5-0.055 0.982-0.172 1.437-0.342 0.123 0.622 0.189 1.264 0.189 1.922-0 5.431-4.403 9.833-9.833 9.833s-9.833-4.402-9.833-9.833c0-5.431 4.402-9.833 9.833-9.833z"/>
-            <path d="M6.654 15.447c0.32-0.252 0.783-0.196 1.035 0.124 0.835 1.059 2.105 1.689 3.479 1.689 1.373-0 2.64-0.628 3.475-1.685 0.252-0.32 0.717-0.375 1.037-0.122s0.373 0.717 0.121 1.036c-1.112 1.407-2.804 2.246-4.633 2.246-1.831 0-3.525-0.841-4.637-2.251-0.252-0.32-0.197-0.784 0.122-1.036z"/>
-            <path d="M8.219 9.638c0.678 0 1.228 0.551 1.228 1.229s-0.55 1.228-1.228 1.228-1.228-0.55-1.228-1.228c0-0.678 0.549-1.229 1.228-1.229z"/>
-            <path d="M14.119 9.638c0.26 0 0.501 0.081 0.699 0.219 0.050 0.043 0.101 0.085 0.152 0.126 0.232 0.223 0.376 0.537 0.376 0.884-0 0.678-0.55 1.228-1.228 1.228s-1.229-0.55-1.229-1.228c0-0.678 0.551-1.229 1.229-1.229z"/>
-            <path d="M18.667 0.333c-2.761 0-5 2.239-5 5s2.239 5 5 5c2.761 0 5-2.239 5-5s-2.239-5-5-5zM18.667 1.697c0.251 0 0.455 0.204 0.455 0.455v2.727h2.727c0.251 0 0.454 0.204 0.454 0.455s-0.204 0.455-0.454 0.455h-2.727v2.727c0 0.251-0.204 0.455-0.455 0.455s-0.455-0.204-0.455-0.455v-2.727h-2.727c-0.251 0-0.455-0.204-0.455-0.455s0.204-0.455 0.455-0.455h2.727v-2.727c0-0.251 0.204-0.455 0.455-0.455z"/>
-          </svg>
-          <span>${card.reactions > 0 ? card.reactions : '+'}</span>
-        </button>
-      </div>
-    `;
 
     let customFieldsHtml = '';
     if (card.customFieldValues && Object.keys(card.customFieldValues).length > 0) {
@@ -522,16 +576,36 @@ class PadlesShelfApp {
       customFieldsHtml += '</div>';
     }
 
-    el.innerHTML = topBarHtml + titleHtml + bodyHtml + customFieldsHtml + bottomBarHtml;
+    const bottomBarHtml = `
+      <div class="card-bottom-bar">
+        <button class="reaction-btn ${card.hasReacted ? 'has-reacted' : ''}" title="Add reaction" aria-label="Add reaction">
+          <svg viewBox="0 0 24 24" height="18" width="18" fill="currentColor">
+            <path d="M11.168 3c0.657 0 1.299 0.064 1.92 0.188-0.171 0.455-0.287 0.937-0.342 1.437-0.511-0.098-1.038-0.151-1.578-0.151-4.616 0-8.359 3.743-8.359 8.359s3.743 8.358 8.359 8.358c4.616 0 8.358-3.742 8.358-8.358 0-0.54-0.053-1.068-0.151-1.579 0.5-0.055 0.982-0.172 1.437-0.342 0.123 0.622 0.189 1.264 0.189 1.922-0 5.431-4.403 9.833-9.833 9.833s-9.833-4.402-9.833-9.833c0-5.431 4.402-9.833 9.833-9.833z"/>
+            <path d="M6.654 15.447c0.32-0.252 0.783-0.196 1.035 0.124 0.835 1.059 2.105 1.689 3.479 1.689 1.373-0 2.64-0.628 3.475-1.685 0.252-0.32 0.717-0.375 1.037-0.122s0.373 0.717 0.121 1.036c-1.112 1.407-2.804 2.246-4.633 2.246-1.831 0-3.525-0.841-4.637-2.251-0.252-0.32-0.197-0.784 0.122-1.036z"/>
+            <path d="M8.219 9.638c0.678 0 1.228 0.551 1.228 1.229s-0.55 1.228-1.228 1.228-1.228-0.55-1.228-1.228c0-0.678 0.549-1.229 1.228-1.229z"/>
+            <path d="M14.119 9.638c0.26 0 0.501 0.081 0.699 0.219 0.050 0.043 0.101 0.085 0.152 0.126 0.232 0.223 0.376 0.537 0.376 0.884-0 0.678-0.55 1.228-1.228 1.228s-1.229-0.55-1.229-1.228c0-0.678 0.551-1.229 1.229-1.229z"/>
+            <path d="M19.163 7.111c0.61 0.85 1.089 1.8 1.404 2.823-0.452 0.181-0.936 0.298-1.441 0.34-0.155-0.481-0.351-0.944-0.586-1.383 0.026 0.010 0.051 0.023 0.078 0.029l0.092 0.009c0.251-0 0.453-0.204 0.453-0.454v-1.363z"/>
+            <path d="M17.981 5.746c0.093 0.090 0.185 0.18 0.275 0.273v2.383c-0.673-1.074-1.583-1.983-2.658-2.656h2.383z"/>
+            <path d="M14.067 3.434c1.023 0.315 1.972 0.795 2.823 1.405h-1.362l-0.091 0.008c-0.207 0.042-0.363 0.226-0.363 0.445 0 0.059 0.011 0.115 0.031 0.167-0.437-0.234-0.898-0.429-1.378-0.583 0.042-0.506 0.159-0.99 0.34-1.441z"/>
+            <path d="M18.667 0.333c-2.761 0-5 2.239-5 5s2.239 5 5 5c2.761 0 5-2.239 5-5s-2.239-5-5-5zM18.667 1.697c0.251 0 0.455 0.204 0.455 0.455v2.727h2.727c0.251 0 0.454 0.204 0.454 0.455s-0.204 0.455-0.454 0.455h-2.727v2.727c0 0.251-0.204 0.455-0.455 0.455s-0.455-0.204-0.455-0.455v-2.727h-2.727c-0.251 0-0.455-0.204-0.455-0.455s0.204-0.455 0.455-0.455h2.727v-2.727c0-0.251 0.204-0.455 0.455-0.455z"/>
+          </svg>
+          ${card.reactions > 0 ? `<span>${card.reactions}</span>` : ''}
+        </button>
+      </div>
+    `;
 
-    // Quick Edit click handler
-    const editBtn = el.querySelector('.card-edit-btn');
-    if (editBtn) {
-      editBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.editPost(card.id);
-      });
-    }
+    el.innerHTML = `
+      ${pinnedHtml}
+      <div class="card-inner-surface">
+        ${dotsBtnHtml}
+        ${attachmentHtml}
+        ${captionHtml}
+        ${subjectHtml}
+        ${bodyHtml}
+        ${customFieldsHtml}
+        ${bottomBarHtml}
+      </div>
+    `;
 
     // 3-dots Context Menu click handler
     const dotsBtn = el.querySelector('.card-dots-btn');
@@ -549,7 +623,18 @@ class PadlesShelfApp {
       card.hasReacted = !card.hasReacted;
       card.reactions = (card.reactions || 0) + (card.hasReacted ? 1 : -1);
       reactBtn.classList.toggle('has-reacted', card.hasReacted);
-      reactBtn.querySelector('span').textContent = card.reactions > 0 ? card.reactions : '+';
+      const span = reactBtn.querySelector('span');
+      if (card.reactions > 0) {
+        if (!span) {
+          const s = document.createElement('span');
+          s.textContent = card.reactions;
+          reactBtn.appendChild(s);
+        } else {
+          span.textContent = card.reactions;
+        }
+      } else if (span) {
+        span.remove();
+      }
       this.saveState();
       this.showToast(card.hasReacted ? 'Reaction added' : 'Reaction removed');
     });
@@ -594,12 +679,17 @@ class PadlesShelfApp {
 
       if (!sourceSection || !targetSection) return;
 
-      sourceSection.cards = sourceSection.cards.filter(c => c.id !== this.draggedCard.id);
-      targetSection.cards.push(this.draggedCard);
+      const movedCard = this.draggedCard;
+      sourceSection.cards = sourceSection.cards.filter(c => c.id !== movedCard.id);
+      targetSection.cards.push(movedCard);
 
       this.saveState();
       this.renderBoard();
       this.showToast(`Moved to ${targetSection.title}`);
+
+      if (this.backend && this.backend.isConnected) {
+        this.backend.reorderPost(movedCard.id, targetSectionId, 1000.0);
+      }
     });
   }
 
@@ -638,7 +728,7 @@ class PadlesShelfApp {
     this.state.drafts.push(newDraft);
     this.activeDraftId = newDraft.id;
     this.editingCardId = null;
-    this.publishBtn.textContent = 'Publish';
+    this.publishBtn.textContent = 'Submit';
     this.publishBtn.classList.remove('is-update');
     this.saveState();
     this.openDraftInComposer(newDraft);
@@ -653,7 +743,7 @@ class PadlesShelfApp {
     this.composerState.selectedSectionId = draft.sectionId || this.state.sections[0]?.id;
     this.composerState.attachment = draft.attachment || null;
 
-    this.publishBtn.textContent = 'Publish';
+    this.publishBtn.textContent = 'Submit';
     this.publishBtn.classList.remove('is-update');
     this.updateColorPickerUI();
     this.updateSectionSelectorUI();
@@ -673,12 +763,6 @@ class PadlesShelfApp {
     const data = this.findCardAndSection(cardId);
     if (!data) return;
     const { card, section } = data;
-
-    // If active draft open, sync it first
-    if (this.activeDraftId) {
-      this.syncActiveDraftFromInputs();
-      this.activeDraftId = null;
-    }
 
     this.editingCardId = card.id;
 
@@ -710,31 +794,55 @@ class PadlesShelfApp {
 
     this.renderComposerCustomFields(card);
 
-    // Mount composer card into dock wrapper
-    if (this.composerCardWrapper) {
+    // Apply authentic dark edit mode styling to composerCard
+    this.composerCard.className = 'composer-card is-editing-mode';
+
+    // Mount composer card into centered edit overlay (Padlet Authentic Centered Modal)
+    if (this.editPostModalOverlay) {
+      this.editPostModalOverlay.appendChild(this.composerCard);
+      this.editPostModalOverlay.hidden = false;
+    } else if (this.composerCardWrapper) {
       this.composerCardWrapper.hidden = false;
       this.composerCardWrapper.appendChild(this.composerCard);
     }
     this.composerCard.hidden = false;
-    this.composerCard.classList.remove('composer-pop-in');
-    void this.composerCard.offsetWidth;
-    this.composerCard.classList.add('composer-pop-in');
 
-    this.renderDraftsDock();
-    this.titleInput.focus();
+    this.adjustBodyTextareaHeight();
+    this.bodyInput.focus();
     this.showToast(`Editing "${card.title || 'post'}"`);
+  }
+
+  adjustBodyTextareaHeight() {
+    if (!this.bodyInput) return;
+    this.bodyInput.style.height = 'auto';
+    const newHeight = Math.max(160, Math.min(420, this.bodyInput.scrollHeight));
+    this.bodyInput.style.height = `${newHeight}px`;
   }
 
   cancelEditPost() {
     this.editingCardId = null;
-    this.publishBtn.textContent = 'Publish';
+    this.publishBtn.textContent = 'Submit';
     this.publishBtn.classList.remove('is-update');
+    this.composerCard.className = 'composer-card';
     this.composerCard.hidden = true;
-    if (this.composerCardWrapper) this.composerCardWrapper.hidden = true;
-    this.renderDraftsDock();
+
+    // Return composer card to bottom drafts wrapper
+    if (this.composerCardWrapper) {
+      this.composerCardWrapper.appendChild(this.composerCard);
+      this.composerCardWrapper.hidden = true;
+    }
+    if (this.editPostModalOverlay) {
+      this.editPostModalOverlay.hidden = true;
+    }
+
+    // Reset composer inputs
+    this.titleInput.value = '';
+    this.bodyInput.value = '';
+    this.composerState.attachment = null;
+    this.updateAttachmentPreviewUI();
   }
 
-  saveEditedCard() {
+  async saveEditedCard() {
     const data = this.findCardAndSection(this.editingCardId);
     if (!data) return;
     const { card, section: oldSection } = data;
@@ -775,16 +883,34 @@ class PadlesShelfApp {
       }
     }
 
+    const savedCardId = this.editingCardId;
     this.editingCardId = null;
-    this.publishBtn.textContent = 'Publish';
+
+    // Clean up UI & return composer card to dock
+    this.publishBtn.textContent = 'Submit';
     this.publishBtn.classList.remove('is-update');
+    this.composerCard.className = 'composer-card';
     this.composerCard.hidden = true;
-    if (this.composerCardWrapper) this.composerCardWrapper.hidden = true;
+    if (this.composerCardWrapper) {
+      this.composerCardWrapper.appendChild(this.composerCard);
+      this.composerCardWrapper.hidden = true;
+    }
+    if (this.editPostModalOverlay) {
+      this.editPostModalOverlay.hidden = true;
+    }
 
     this.saveState();
     this.renderBoard();
-    this.renderDraftsDock();
     this.showToast('Post updated!');
+
+    // Sync to backend / Supabase
+    if (this.backend && this.backend.isConnected) {
+      try {
+        await this.backend.updatePost(card, targetSectionId);
+      } catch (err) {
+        console.warn('Backend update failed:', err);
+      }
+    }
   }
 
   syncActiveDraftFromInputs() {
@@ -1041,6 +1167,10 @@ class PadlesShelfApp {
     this.renderBoard();
     this.renderDraftsDock();
     this.showToast(`Post published to ${section.title}!`);
+
+    if (this.backend && this.backend.isConnected) {
+      this.backend.createPost(newCard, section.id);
+    }
   }
 
   publishAllDrafts() {
@@ -1071,6 +1201,10 @@ class PadlesShelfApp {
 
       section.cards.push(newCard);
       publishedCount++;
+
+      if (this.backend && this.backend.isConnected) {
+        this.backend.createPost(newCard, section.id);
+      }
     });
 
     this.state.drafts = [];
@@ -1107,9 +1241,13 @@ class PadlesShelfApp {
     this.publishBtn.classList.toggle('is-active', hasContent);
     if (this.editingCardId) {
       this.publishBtn.textContent = 'Update';
+      this.publishBtn.title = 'Update post';
+      this.publishBtn.setAttribute('aria-label', 'Update post');
       this.publishBtn.classList.add('is-update');
     } else {
-      this.publishBtn.textContent = 'Publish';
+      this.publishBtn.textContent = 'Submit';
+      this.publishBtn.title = 'Submit post';
+      this.publishBtn.setAttribute('aria-label', 'Submit post');
       this.publishBtn.classList.remove('is-update');
     }
   }
@@ -1143,7 +1281,11 @@ class PadlesShelfApp {
       row.addEventListener('click', (e) => {
         e.stopPropagation();
         this.composerState.selectedColor = pal.id;
-        this.syncActiveDraftFromInputs();
+        if (this.editingCardId) {
+          this.composerCard.className = `composer-card is-editing-mode palette-${pal.id}`;
+        } else {
+          this.syncActiveDraftFromInputs();
+        }
         this.updateColorPickerUI();
         this.closeAllPopovers();
         this.showToast(`Color set to ${pal.name}`);
@@ -1202,7 +1344,9 @@ class PadlesShelfApp {
       row.addEventListener('click', (e) => {
         e.stopPropagation();
         this.composerState.selectedSectionId = sec.id;
-        this.syncActiveDraftFromInputs();
+        if (!this.editingCardId) {
+          this.syncActiveDraftFromInputs();
+        }
         this.updateSectionSelectorUI();
         this.closeAllPopovers();
         this.showToast(`Section set to ${sec.title}`);
@@ -1281,6 +1425,9 @@ class PadlesShelfApp {
             this.saveState();
             this.renderBoard();
             this.showToast(`Created section to the left`);
+            if (this.backend && this.backend.isConnected) {
+              this.backend.createSection(newSec);
+            }
             break;
           }
           case 'new-section-right': {
@@ -1290,6 +1437,9 @@ class PadlesShelfApp {
             this.saveState();
             this.renderBoard();
             this.showToast(`Created section to the right`);
+            if (this.backend && this.backend.isConnected) {
+              this.backend.createSection(newSec);
+            }
             break;
           }
           case 'move-section-right': {
@@ -1312,6 +1462,9 @@ class PadlesShelfApp {
               this.renderBoard();
               this.updateSectionSelectorUI();
               this.showToast(`Renamed to ${section.title}`);
+              if (this.backend && this.backend.isConnected) {
+                this.backend.renameSection(section.id, section.title);
+              }
             }
             break;
           }
@@ -1339,6 +1492,9 @@ class PadlesShelfApp {
               this.renderBoard();
               this.updateSectionSelectorUI();
               this.showToast(`Deleted ${section.title}`);
+              if (this.backend && this.backend.isConnected) {
+                this.backend.deleteSection(sectionId);
+              }
             }
             break;
           }
@@ -1444,6 +1600,9 @@ class PadlesShelfApp {
               this.saveState();
               this.renderBoard();
               this.showToast('Post duplicated!');
+              if (this.backend && this.backend.isConnected) {
+                this.backend.createPost(clone, section.id);
+              }
             }
             break;
           }
@@ -1461,6 +1620,9 @@ class PadlesShelfApp {
             this.saveState();
             this.renderBoard();
             this.showToast(card.pinned ? 'Post pinned to top' : 'Post unpinned');
+            if (this.backend && this.backend.isConnected) {
+              this.backend.updatePost(card);
+            }
             break;
           }
 
@@ -1470,6 +1632,9 @@ class PadlesShelfApp {
               this.saveState();
               this.renderBoard();
               this.showToast('Post deleted');
+              if (this.backend && this.backend.isConnected) {
+                this.backend.deletePost(card.id);
+              }
             }
             break;
           }
@@ -1506,12 +1671,13 @@ class PadlesShelfApp {
     let top = rect.bottom + 6;
     if (top + menuHeight > window.innerHeight - 12) {
       const topAbove = rect.top - menuHeight - 6;
-      if (topAbove >= 12) {
+      if (topAbove >= 12 && topAbove + menuHeight <= window.innerHeight - 12) {
         top = topAbove;
       } else {
         top = Math.max(12, window.innerHeight - menuHeight - 12);
       }
     }
+    top = Math.max(12, Math.min(top, window.innerHeight - menuHeight - 12));
 
     this.cardContextMenu.style.top = `${top}px`;
     this.cardContextMenu.style.left = `${left}px`;
@@ -1557,6 +1723,10 @@ class PadlesShelfApp {
         this.renderBoard();
         this.renderCardMenuColors(card);
         this.showToast(`Post color set to ${pal.name}`);
+
+        if (this.backend && this.backend.isConnected) {
+          this.backend.updatePost(card);
+        }
       });
 
       this.cardMenuColorRow.appendChild(circle);
@@ -1593,6 +1763,10 @@ class PadlesShelfApp {
         this.saveState();
         this.renderBoard();
         this.showToast(card.hasReacted ? 'Reaction added' : 'Reaction removed');
+
+        if (this.backend && this.backend.isConnected && card.hasReacted) {
+          this.backend.addReaction(card.id);
+        }
       });
     }
 
@@ -1616,6 +1790,10 @@ class PadlesShelfApp {
         this.saveState();
         this.renderDetailComments(card);
         this.showToast('Comment added!');
+
+        if (this.backend && this.backend.isConnected) {
+          this.backend.addComment(card.id, 'Salman Madani', text);
+        }
       });
     }
 
@@ -2529,34 +2707,57 @@ class PadlesShelfApp {
      ======================================================================== */
 
   attachEventListeners() {
-    // Escape key closes modals
+    // Backdrop click for Centered Edit Post Modal
+    if (this.editPostModalOverlay) {
+      this.editPostModalOverlay.addEventListener('click', (e) => {
+        if (e.target === this.editPostModalOverlay) {
+          this.cancelEditPost();
+        }
+      });
+    }
+
+    // Keyboard shortcuts (Escape to dismiss, Cmd/Ctrl+Enter to submit)
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        if (this.editingCardId) {
+          this.cancelEditPost();
+          return;
+        }
         this.closeComposer();
         this.closeSearchModal();
         this.searchOverlay.hidden = true;
         this.searchOverlay.classList.remove('is-open');
       }
+
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        if (this.editingCardId) {
+          e.preventDefault();
+          this.saveEditedCard();
+        } else if (this.activeDraftId && !this.publishBtn.disabled) {
+          e.preventDefault();
+          this.publishActiveDraft();
+        }
+      }
     });
 
     // Window actions for Post Composer
-    document.getElementById('closeModalBtn').addEventListener('click', () => this.closeActiveDraft());
-    document.getElementById('minimizeModalBtn').addEventListener('click', () => this.minimizeActiveDraft());
-    document.getElementById('expandModalBtn').addEventListener('click', () => this.toggleComposerExpanded());
-    document.getElementById('schedulePostBtn').addEventListener('click', () => this.openScheduleModal());
-    document.getElementById('closeSubmodalBtn').addEventListener('click', () => this.closeSearchModal());
+    document.getElementById('closeModalBtn')?.addEventListener('click', () => this.closeActiveDraft());
+    document.getElementById('minimizeModalBtn')?.addEventListener('click', () => this.minimizeActiveDraft());
+    document.getElementById('expandModalBtn')?.addEventListener('click', () => this.toggleComposerExpanded());
+    document.getElementById('schedulePostBtn')?.addEventListener('click', () => this.openScheduleModal());
+    document.getElementById('closeSubmodalBtn')?.addEventListener('click', () => this.closeSearchModal());
 
     // Drafts Bulk Action Dropdown
-    this.dockBulkActionBtn.addEventListener('click', (e) => {
+    this.dockBulkActionBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.draftsBulkMenu.hidden = !this.draftsBulkMenu.hidden;
+      if (this.draftsBulkMenu) this.draftsBulkMenu.hidden = !this.draftsBulkMenu.hidden;
     });
 
-    this.bulkPublishAllBtn.addEventListener('click', () => this.publishAllDrafts());
-    this.bulkDeleteAllBtn.addEventListener('click', () => this.deleteAllDrafts());
+    this.bulkPublishAllBtn?.addEventListener('click', () => this.publishAllDrafts());
+    this.bulkDeleteAllBtn?.addEventListener('click', () => this.deleteAllDrafts());
 
     document.addEventListener('click', (e) => {
-      if (this.draftsBulkMenu && !this.draftsBulkMenu.hidden && !this.dockBulkActionWrapper.contains(e.target)) {
+      if (this.draftsBulkMenu && !this.draftsBulkMenu.hidden && this.dockBulkActionWrapper && !this.dockBulkActionWrapper.contains(e.target)) {
         this.draftsBulkMenu.hidden = true;
       }
       if (this.sectionContextMenu && !this.sectionContextMenu.hidden && !this.sectionContextMenu.contains(e.target)) {
@@ -2564,28 +2765,31 @@ class PadlesShelfApp {
       }
     });
 
-    this.searchAttachmentModal.addEventListener('click', (e) => {
+    this.searchAttachmentModal?.addEventListener('click', (e) => {
       if (e.target === this.searchAttachmentModal) this.closeSearchModal();
     });
 
     // Yellow "+ Post" button opens Composer
-    document.getElementById('mainPostBtn').addEventListener('click', () => {
+    document.getElementById('mainPostBtn')?.addEventListener('click', () => {
       this.createNewDraft(this.state.sections[0]?.id);
     });
 
     // Title & Body typing state for Publish button
     this.titleInput.addEventListener('input', () => this.updatePublishButtonState());
-    this.bodyInput.addEventListener('input', () => this.updatePublishButtonState());
+    this.bodyInput.addEventListener('input', () => {
+      this.updatePublishButtonState();
+      this.adjustBodyTextareaHeight();
+    });
 
     // Publish click
     this.publishBtn.addEventListener('click', () => this.publishActiveDraft());
 
     // Color Popover toggle (Picture 2)
-    document.getElementById('composerPaletteBtn').addEventListener('click', (e) => {
+    document.getElementById('composerPaletteBtn')?.addEventListener('click', (e) => {
       this.toggleColorPopover(e);
     });
 
-    this.colorPickerPill.addEventListener('click', (e) => {
+    this.colorPickerPill?.addEventListener('click', (e) => {
       this.toggleColorPopover(e);
     });
 
@@ -2682,6 +2886,7 @@ class PadlesShelfApp {
         this.closeAllPopovers();
         this.closePostFieldsModal();
         this.closeSearchModal();
+        this.closeCloudSettingsModal();
       }
 
       // Ctrl + Z for Draft Restoration (Blueprint Section 7.1)
@@ -2706,12 +2911,12 @@ class PadlesShelfApp {
     this.initAttachmentToolbar();
 
     // Submodal Search button & Enter key
-    document.getElementById('doSearchBtn').addEventListener('click', () => {
-      const q = this.mediaQueryInput.value.trim();
+    document.getElementById('doSearchBtn')?.addEventListener('click', () => {
+      const q = this.mediaQueryInput?.value.trim();
       if (q) this.performMediaSearch(q);
     });
 
-    this.mediaQueryInput.addEventListener('keydown', (e) => {
+    this.mediaQueryInput?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         const q = this.mediaQueryInput.value.trim();
         if (q) this.performMediaSearch(q);
@@ -2719,7 +2924,7 @@ class PadlesShelfApp {
     });
 
     // Add Section button
-    document.getElementById('addSectionBtn').addEventListener('click', () => {
+    document.getElementById('addSectionBtn')?.addEventListener('click', () => {
       const nextNum = this.state.sections.length + 1;
       const newSec = {
         id: 'sec-' + Date.now(),
@@ -2731,10 +2936,14 @@ class PadlesShelfApp {
       this.renderBoard();
       this.showToast(`Added ${newSec.title}`);
       this.sectionsTrack.parentElement.scrollLeft = this.sectionsTrack.parentElement.scrollWidth;
+
+      if (this.backend && this.backend.isConnected) {
+        this.backend.createSection(newSec);
+      }
     });
 
     // Search Toggle in Top Header
-    document.getElementById('searchToggleBtn').addEventListener('click', () => {
+    document.getElementById('searchToggleBtn')?.addEventListener('click', () => {
       const isOpen = this.searchOverlay.classList.contains('is-open');
       if (isOpen) {
         this.searchOverlay.hidden = true;
@@ -2746,7 +2955,7 @@ class PadlesShelfApp {
       }
     });
 
-    document.getElementById('closeSearchBtn').addEventListener('click', () => {
+    document.getElementById('closeSearchBtn')?.addEventListener('click', () => {
       this.searchOverlay.hidden = true;
       this.searchOverlay.classList.remove('is-open');
       this.boardSearchInput.value = '';
@@ -2757,19 +2966,501 @@ class PadlesShelfApp {
       this.filterBoard(e.target.value);
     });
 
-    // Top action placeholders
-    document.getElementById('slideshowBtn').addEventListener('click', () => {
-      this.showToast('Slideshow mode ready');
+  }
+
+  /* ========================================================================
+     1. Slideshow Presentation Deck
+     ======================================================================== */
+
+  initSlideshow() {
+    this.slideshowModal = document.getElementById('slideshowModal');
+    this.slideshowSlideViewport = document.getElementById('slideshowSlideViewport');
+    this.slideshowCounter = document.getElementById('slideshowCounter');
+    this.slideshowPrevBtn = document.getElementById('slideshowPrevBtn');
+    this.slideshowNextBtn = document.getElementById('slideshowNextBtn');
+    this.slideshowPlayBtn = document.getElementById('slideshowPlayBtn');
+    this.slideshowPlayIcon = document.getElementById('slideshowPlayIcon');
+    this.slideshowTimelineTrack = document.getElementById('slideshowTimelineTrack');
+    this.slideshowState = { activeIndex: 0, slides: [], isPlaying: false, timer: null };
+
+    document.getElementById('slideshowBtn')?.addEventListener('click', () => this.openSlideshow());
+    document.getElementById('exitSlideshowBtn')?.addEventListener('click', () => this.exitSlideshow());
+    this.slideshowPrevBtn?.addEventListener('click', () => this.prevSlide());
+    this.slideshowNextBtn?.addEventListener('click', () => this.nextSlide());
+    this.slideshowPlayBtn?.addEventListener('click', () => this.togglePlaySlideshow());
+    document.getElementById('slideshowShareBtn')?.addEventListener('click', () => {
+      this.exitSlideshow();
+      this.openShareDrawer();
+    });
+    document.getElementById('slideshowFullscreenBtn')?.addEventListener('click', () => this.toggleFullscreen());
+
+    // Keyboard navigation in slideshow
+    window.addEventListener('keydown', (e) => {
+      if (this.slideshowModal && !this.slideshowModal.hidden) {
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+          e.preventDefault();
+          this.nextSlide();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          this.prevSlide();
+        } else if (e.key === 'Escape') {
+          this.exitSlideshow();
+        }
+      }
+    });
+  }
+
+  openSlideshow(startCardId = null) {
+    const slides = [
+      {
+        type: 'title',
+        title: this.state.boardTitle || 'Physics Audio Reflections: I see, I think, I wonder',
+        author: this.state.boardAuthor || 'Salman Madani • 6d'
+      }
+    ];
+
+    this.state.sections.forEach(sec => {
+      sec.cards.forEach(card => {
+        slides.push({
+          type: 'card',
+          section: sec,
+          card: card
+        });
+      });
     });
 
-    document.getElementById('shareBtn').addEventListener('click', () => {
-      navigator.clipboard?.writeText(window.location.href);
-      this.showToast('Board link copied to clipboard!');
+    this.slideshowState.slides = slides;
+    this.slideshowState.activeIndex = 0;
+
+    if (startCardId) {
+      const idx = slides.findIndex(s => s.card && s.card.id === startCardId);
+      if (idx !== -1) this.slideshowState.activeIndex = idx;
+    }
+
+    if (this.slideshowModal) this.slideshowModal.hidden = false;
+    this.renderSlideshowSlide();
+  }
+
+  exitSlideshow() {
+    if (this.slideshowState.timer) {
+      clearInterval(this.slideshowState.timer);
+      this.slideshowState.timer = null;
+    }
+    this.slideshowState.isPlaying = false;
+    if (this.slideshowPlayIcon) {
+      this.slideshowPlayIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+    }
+    if (this.slideshowModal) this.slideshowModal.hidden = true;
+  }
+
+  renderSlideshowSlide() {
+    const { activeIndex, slides } = this.slideshowState;
+    if (!slides.length || !this.slideshowSlideViewport) return;
+
+    const current = slides[activeIndex];
+    if (this.slideshowCounter) this.slideshowCounter.textContent = `${activeIndex + 1} / ${slides.length}`;
+    if (this.slideshowPrevBtn) this.slideshowPrevBtn.disabled = activeIndex === 0;
+    if (this.slideshowNextBtn) this.slideshowNextBtn.disabled = activeIndex === slides.length - 1;
+
+    // Render timeline notches
+    if (this.slideshowTimelineTrack) {
+      this.slideshowTimelineTrack.innerHTML = '';
+      slides.forEach((_, idx) => {
+        const notch = document.createElement('div');
+        notch.className = `slideshow-timeline-notch ${idx === activeIndex ? 'is-active' : ''}`;
+        notch.title = `Slide ${idx + 1}`;
+        notch.addEventListener('click', () => {
+          this.slideshowState.activeIndex = idx;
+          this.renderSlideshowSlide();
+        });
+        this.slideshowTimelineTrack.appendChild(notch);
+      });
+    }
+
+    if (current.type === 'title') {
+      this.slideshowSlideViewport.innerHTML = `
+        <div class="slideshow-title-slide">
+          <div class="slideshow-qr-corner">
+            ${this.generateQrSvg(window.location.href)}
+          </div>
+          <div class="slideshow-title-author">${this.escapeHtml(current.author)}</div>
+          <div class="slideshow-title-heading">${this.escapeHtml(current.title)}</div>
+        </div>
+      `;
+    } else {
+      const { section, card } = current;
+      let mediaHtml = '';
+      if (card.attachment) {
+        if (card.attachment.type === 'youtube' || card.attachment.videoUrl) {
+          mediaHtml = `
+            <div class="slideshow-slide-media">
+              <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+            </div>
+          `;
+        } else if (card.attachment.imageUrl || card.attachment.thumbnailUrl) {
+          mediaHtml = `
+            <div class="slideshow-slide-media">
+              <img src="${this.escapeHtml(card.attachment.imageUrl || card.attachment.thumbnailUrl)}" alt="${this.escapeHtml(card.title || 'Slide image')}" />
+            </div>
+          `;
+        }
+      }
+
+      let bodyText = '';
+      if (card.content) {
+        if (card.content.intro) bodyText += card.content.intro + '\n\n';
+        if (card.content.body) bodyText += card.content.body;
+      } else if (card.attachment && card.attachment.caption) {
+        bodyText = card.attachment.caption;
+      }
+
+      this.slideshowSlideViewport.innerHTML = `
+        <div class="slideshow-card-slide">
+          <div class="slideshow-slide-section-pill">${this.escapeHtml(section.title)}</div>
+          <div class="slideshow-slide-title">${this.escapeHtml(card.title || 'Untitled note')}</div>
+          ${mediaHtml}
+          ${bodyText ? `<div class="slideshow-slide-body">${this.escapeHtml(bodyText)}</div>` : ''}
+          <div class="slideshow-slide-footer">
+            <span>Posted by contributor</span>
+            <span>${card.reactions || 0} reflections</span>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  nextSlide() {
+    if (this.slideshowState.activeIndex < this.slideshowState.slides.length - 1) {
+      this.slideshowState.activeIndex++;
+      this.renderSlideshowSlide();
+    } else if (this.slideshowState.isPlaying) {
+      this.slideshowState.activeIndex = 0;
+      this.renderSlideshowSlide();
+    }
+  }
+
+  prevSlide() {
+    if (this.slideshowState.activeIndex > 0) {
+      this.slideshowState.activeIndex--;
+      this.renderSlideshowSlide();
+    }
+  }
+
+  togglePlaySlideshow() {
+    this.slideshowState.isPlaying = !this.slideshowState.isPlaying;
+    if (this.slideshowState.isPlaying) {
+      if (this.slideshowPlayIcon) {
+        this.slideshowPlayIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+      }
+      this.showToast('Auto-play started (4s)');
+      this.slideshowState.timer = setInterval(() => this.nextSlide(), 4000);
+    } else {
+      if (this.slideshowPlayIcon) {
+        this.slideshowPlayIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
+      }
+      clearInterval(this.slideshowState.timer);
+      this.slideshowState.timer = null;
+      this.showToast('Auto-play paused');
+    }
+  }
+
+  /* ========================================================================
+     2. Share Drawer & QR Modal
+     ======================================================================== */
+
+  initShareDrawer() {
+    this.shareDrawer = document.getElementById('shareDrawer');
+    this.qrModal = document.getElementById('qrModal');
+
+    document.getElementById('shareBtn')?.addEventListener('click', () => this.openShareDrawer());
+    document.getElementById('closeShareDrawerBtn')?.addEventListener('click', () => this.closeShareDrawer());
+    this.shareDrawer?.addEventListener('click', (e) => {
+      if (e.target === this.shareDrawer) this.closeShareDrawer();
     });
 
-    document.getElementById('settingsBtn').addEventListener('click', () => {
-      this.showToast('Settings opened');
+    // Quick Tiles
+    document.getElementById('quickCopyLinkBtn')?.addEventListener('click', () => this.copyBoardLink());
+    document.getElementById('shareCopyLinkItem')?.addEventListener('click', () => this.copyBoardLink());
+
+    document.getElementById('quickQrCodeBtn')?.addEventListener('click', () => this.openQrModal());
+    document.getElementById('shareQrCodeItem')?.addEventListener('click', () => this.openQrModal());
+    document.getElementById('closeQrModalBtn')?.addEventListener('click', () => this.closeQrModal());
+    this.qrModal?.addEventListener('click', (e) => {
+      if (e.target === this.qrModal) this.closeQrModal();
     });
+
+    document.getElementById('quickEmbedBtn')?.addEventListener('click', () => this.copyEmbedSnippet());
+    document.getElementById('shareEmbedItem')?.addEventListener('click', () => this.copyEmbedSnippet());
+
+    document.getElementById('quickExportPdfBtn')?.addEventListener('click', () => window.print());
+    document.getElementById('exportPdfItem')?.addEventListener('click', () => window.print());
+    document.getElementById('exportImageItem')?.addEventListener('click', () => window.print());
+    document.getElementById('printBoardItem')?.addEventListener('click', () => window.print());
+
+    document.getElementById('exportCsvItem')?.addEventListener('click', () => this.exportCsv());
+  }
+
+  openShareDrawer() {
+    this.closeAllDrawers();
+    if (this.shareDrawer) this.shareDrawer.hidden = false;
+  }
+
+  closeShareDrawer() {
+    if (this.shareDrawer) this.shareDrawer.hidden = true;
+  }
+
+  openQrModal() {
+    if (!this.qrModal) return;
+    const container = document.getElementById('qrCanvasContainer');
+    if (container) {
+      container.innerHTML = this.generateQrSvg(window.location.href);
+    }
+    this.qrModal.hidden = false;
+  }
+
+  closeQrModal() {
+    if (this.qrModal) this.qrModal.hidden = true;
+  }
+
+  copyBoardLink() {
+    navigator.clipboard?.writeText(window.location.href);
+    this.showToast('Board link copied to clipboard!');
+  }
+
+  copyEmbedSnippet() {
+    const snippet = `<iframe src="${window.location.href}" width="100%" height="600" style="border:0;border-radius:16px;" allowfullscreen></iframe>`;
+    navigator.clipboard?.writeText(snippet);
+    this.showToast('Embed code copied to clipboard!');
+  }
+
+  exportCsv() {
+    let csv = 'Section,Title,Type,Color,Content,Reactions\n';
+    this.state.sections.forEach(sec => {
+      sec.cards.forEach(c => {
+        let body = '';
+        if (c.content && c.content.body) body = c.content.body;
+        else if (c.attachment && c.attachment.caption) body = c.attachment.caption;
+        const line = [
+          `"${(sec.title || '').replace(/"/g, '""')}"`,
+          `"${(c.title || '').replace(/"/g, '""')}"`,
+          `"${c.type || 'text'}"`,
+          `"${c.color || 'white'}"`,
+          `"${body.replace(/"/g, '""')}"`,
+          `"${c.reactions || 0}"`
+        ].join(',');
+        csv += line + '\n';
+      });
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'padles-physics-reflections.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    this.showToast('Exported padles-physics-reflections.csv');
+  }
+
+  /* ========================================================================
+     3. Settings Drawer & Theme Switcher
+     ======================================================================== */
+
+  initSettingsDrawer() {
+    this.settingsDrawer = document.getElementById('settingsDrawer');
+    document.getElementById('settingsBtn')?.addEventListener('click', () => this.openSettingsDrawer());
+    document.getElementById('closeSettingsDrawerBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
+    this.settingsDrawer?.addEventListener('click', (e) => {
+      if (e.target === this.settingsDrawer) this.closeSettingsDrawer();
+    });
+
+    // Theme Switcher Cards
+    document.querySelectorAll('.wallpaper-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.wallpaper-card').forEach(c => c.classList.remove('is-active'));
+        card.classList.add('is-active');
+        const theme = card.dataset.theme;
+        this.setWallpaperTheme(theme);
+      });
+    });
+
+    // Save Settings Button
+    document.getElementById('saveSettingsBtn')?.addEventListener('click', () => {
+      const titleInput = document.getElementById('settingTitleInput');
+      const descInput = document.getElementById('settingDescInput');
+      if (titleInput && titleInput.value.trim()) {
+        this.state.boardTitle = titleInput.value.trim();
+        const titleEl = document.querySelector('.board-title') || document.querySelector('h1');
+        if (titleEl) titleEl.textContent = this.state.boardTitle;
+      }
+      if (descInput && descInput.value.trim()) {
+        this.state.boardAuthor = descInput.value.trim();
+        const authorEl = document.querySelector('.board-author');
+        if (authorEl) authorEl.textContent = this.state.boardAuthor;
+      }
+      this.saveState();
+      this.closeSettingsDrawer();
+      this.showToast('Settings saved!');
+    });
+  }
+
+  openSettingsDrawer() {
+    this.closeAllDrawers();
+    const titleInput = document.getElementById('settingTitleInput');
+    const descInput = document.getElementById('settingDescInput');
+    if (titleInput) titleInput.value = this.state.boardTitle || 'Physics Audio Reflections: I see, I think, I wonder';
+    if (descInput) descInput.value = this.state.boardAuthor || 'Salman Madani • 6d';
+    if (this.settingsDrawer) this.settingsDrawer.hidden = false;
+  }
+
+  closeSettingsDrawer() {
+    if (this.settingsDrawer) this.settingsDrawer.hidden = true;
+  }
+
+  setWallpaperTheme(themeName) {
+    document.body.classList.remove('theme-aurora', 'theme-midnight', 'theme-blueprint', 'theme-corkboard');
+    if (themeName !== 'aurora') {
+      document.body.classList.add(`theme-${themeName}`);
+    }
+    this.state.wallpaperTheme = themeName;
+    this.saveState();
+    this.showToast(`Wallpaper changed to ${themeName}`);
+  }
+
+  /* ========================================================================
+     4. More Options Drawer
+     ======================================================================== */
+
+  initMoreDrawer() {
+    this.moreDrawer = document.getElementById('moreDrawer');
+    document.getElementById('moreBtn')?.addEventListener('click', () => this.openMoreDrawer());
+    document.getElementById('closeMoreDrawerBtn')?.addEventListener('click', () => this.closeMoreDrawer());
+    this.moreDrawer?.addEventListener('click', (e) => {
+      if (e.target === this.moreDrawer) this.closeMoreDrawer();
+    });
+
+    // Quick Action Tiles
+    document.getElementById('moreQuickShareBtn')?.addEventListener('click', () => {
+      this.closeMoreDrawer();
+      this.openShareDrawer();
+    });
+
+    document.getElementById('moreQuickRemakeBtn')?.addEventListener('click', () => this.remakeBoard());
+    document.getElementById('moreRemakeItem')?.addEventListener('click', () => this.remakeBoard());
+
+    document.getElementById('moreQuickActivityBtn')?.addEventListener('click', () => {
+      this.closeMoreDrawer();
+      this.showToast('Recent activity: Board updated with Supabase Realtime');
+    });
+
+    document.getElementById('moreQuickSlideshowBtn')?.addEventListener('click', () => {
+      this.closeMoreDrawer();
+      this.openSlideshow();
+    });
+
+    document.getElementById('moreQuickSettingsBtn')?.addEventListener('click', () => {
+      this.closeMoreDrawer();
+      this.openSettingsDrawer();
+    });
+
+    document.getElementById('moreFullscreenItem')?.addEventListener('click', () => {
+      this.closeMoreDrawer();
+      this.toggleFullscreen();
+    });
+
+    document.getElementById('morePrintItem')?.addEventListener('click', () => {
+      this.closeMoreDrawer();
+      window.print();
+    });
+
+    document.getElementById('moreClearPostsItem')?.addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear all posts from this board?')) {
+        this.state.sections.forEach(sec => sec.cards = []);
+        this.saveState();
+        this.renderBoard();
+        this.closeMoreDrawer();
+        this.showToast('All posts cleared');
+      }
+    });
+  }
+
+  openMoreDrawer() {
+    this.closeAllDrawers();
+    if (this.moreDrawer) this.moreDrawer.hidden = false;
+  }
+
+  closeMoreDrawer() {
+    if (this.moreDrawer) this.moreDrawer.hidden = true;
+  }
+
+  closeAllDrawers() {
+    if (this.shareDrawer) this.shareDrawer.hidden = true;
+    if (this.settingsDrawer) this.settingsDrawer.hidden = true;
+    if (this.moreDrawer) this.moreDrawer.hidden = true;
+  }
+
+  toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  remakeBoard() {
+    if (confirm('Create a clean remake clone of this board?')) {
+      const clonedState = JSON.parse(JSON.stringify(this.state));
+      clonedState.boardTitle = (this.state.boardTitle || 'Board') + ' (Remake)';
+      this.state = clonedState;
+      this.saveState();
+      this.renderBoard();
+      this.closeMoreDrawer();
+      this.showToast('Board remade successfully!');
+    }
+  }
+
+  generateQrSvg(url) {
+    return `<svg width="140" height="140" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="33" height="33" fill="white"/>
+      <rect x="2" y="2" width="7" height="7" fill="black"/>
+      <rect x="3" y="3" width="5" height="5" fill="white"/>
+      <rect x="4" y="4" width="3" height="3" fill="black"/>
+      <rect x="24" y="2" width="7" height="7" fill="black"/>
+      <rect x="25" y="3" width="5" height="5" fill="white"/>
+      <rect x="26" y="4" width="3" height="3" fill="black"/>
+      <rect x="2" y="24" width="7" height="7" fill="black"/>
+      <rect x="3" y="25" width="5" height="5" fill="white"/>
+      <rect x="4" y="26" width="3" height="3" fill="black"/>
+      <rect x="20" y="20" width="5" height="5" fill="black"/>
+      <rect x="21" y="21" width="3" height="3" fill="white"/>
+      <rect x="22" y="22" width="1" height="1" fill="black"/>
+      <line x1="9" y1="5" x2="23" y2="5" stroke="black" stroke-dasharray="1,1"/>
+      <line x1="5" y1="9" x2="5" y2="23" stroke="black" stroke-dasharray="1,1"/>
+      <rect x="11" y="2" width="2" height="2" fill="black"/>
+      <rect x="15" y="2" width="1" height="2" fill="black"/>
+      <rect x="18" y="2" width="2" height="1" fill="black"/>
+      <rect x="10" y="7" width="3" height="2" fill="black"/>
+      <rect x="14" y="8" width="2" height="2" fill="black"/>
+      <rect x="18" y="7" width="2" height="1" fill="black"/>
+      <rect x="11" y="11" width="2" height="2" fill="black"/>
+      <rect x="15" y="12" width="3" height="1" fill="black"/>
+      <rect x="20" y="10" width="2" height="2" fill="black"/>
+      <rect x="25" y="11" width="1" height="2" fill="black"/>
+      <rect x="28" y="12" width="3" height="2" fill="black"/>
+      <rect x="10" y="15" width="2" height="2" fill="black"/>
+      <rect x="13" y="16" width="3" height="1" fill="black"/>
+      <rect x="18" y="15" width="2" height="3" fill="black"/>
+      <rect x="22" y="16" width="2" height="1" fill="black"/>
+      <rect x="27" y="15" width="2" height="2" fill="black"/>
+      <rect x="11" y="24" width="2" height="2" fill="black"/>
+      <rect x="15" y="25" width="2" height="2" fill="black"/>
+      <rect x="27" y="24" width="3" height="2" fill="black"/>
+      <rect x="10" y="28" width="3" height="2" fill="black"/>
+      <rect x="16" y="29" width="2" height="2" fill="black"/>
+      <rect x="26" y="28" width="2" height="2" fill="black"/>
+    </svg>`;
   }
 
   filterBoard(query) {
@@ -2791,6 +3482,379 @@ class PadlesShelfApp {
     this.toastTimeout = setTimeout(() => {
       this.toastEl.classList.remove('show');
     }, 2200);
+  }
+
+  /* ========================================================================
+     Supabase Cloud Backend & Realtime Integration
+     ======================================================================== */
+
+  initCloudBackendUI() {
+    if (!this.backend) return;
+
+    // Load initial values into modal inputs
+    const savedUrl = localStorage.getItem('padles_supabase_url') || window.PADLES_SUPABASE_CONFIG?.url || '';
+    const savedKey = localStorage.getItem('padles_supabase_anon_key') || window.PADLES_SUPABASE_CONFIG?.anonKey || '';
+    const boardId = this.backend.activeBoardId || 'board-default-physics';
+
+    if (this.supabaseUrlInput) this.supabaseUrlInput.value = savedUrl;
+    if (this.supabaseKeyInput) this.supabaseKeyInput.value = savedKey;
+    if (this.supabaseBoardIdInput) this.supabaseBoardIdInput.value = boardId;
+
+    // Set initial status UI
+    this.updateCloudStatusUI(this.backend.isConnected, this.backend.isConnected ? 'Supabase Live' : 'Local Mode');
+
+    // Listen to backend status events
+    this.backend.on('statusChange', ({ connected, message }) => {
+      this.updateCloudStatusUI(connected, connected ? 'Supabase Live' : 'Local Mode');
+      if (this.modalStatusLabel) {
+        this.modalStatusLabel.textContent = `Status: ${message || (connected ? 'Connected to Supabase Cloud' : 'Local Storage mode (Offline)')}`;
+      }
+    });
+
+    // Listen to presence events
+    this.backend.on('presenceUpdated', (collaborators) => {
+      this.renderCollaborators(collaborators);
+    });
+
+    // Listen to Realtime database changes
+    this.backend.on('postChanged', (payload) => {
+      this.handleRealtimePostChange(payload);
+    });
+
+    this.backend.on('sectionChanged', (payload) => {
+      this.handleRealtimeSectionChange(payload);
+    });
+
+    // Header Cloud Button opens modal
+    if (this.cloudSyncBtn) {
+      this.cloudSyncBtn.addEventListener('click', () => {
+        this.openCloudSettingsModal();
+      });
+    }
+
+    // Modal Close button
+    if (this.closeCloudSettingsBtn) {
+      this.closeCloudSettingsBtn.addEventListener('click', () => {
+        this.closeCloudSettingsModal();
+      });
+    }
+
+    // Click backdrop to close
+    if (this.cloudSettingsModal) {
+      this.cloudSettingsModal.addEventListener('click', (e) => {
+        if (e.target === this.cloudSettingsModal) {
+          this.closeCloudSettingsModal();
+        }
+      });
+    }
+
+    // Toggle API Key visibility
+    if (this.toggleKeyVisibilityBtn && this.supabaseKeyInput) {
+      this.toggleKeyVisibilityBtn.addEventListener('click', () => {
+        const isPw = this.supabaseKeyInput.type === 'password';
+        this.supabaseKeyInput.type = isPw ? 'text' : 'password';
+        this.toggleKeyVisibilityBtn.textContent = isPw ? '🔒' : '👁';
+      });
+    }
+
+    // Test Connection Button
+    if (this.testConnectionBtn) {
+      this.testConnectionBtn.addEventListener('click', async () => {
+        const url = (this.supabaseUrlInput?.value || '').trim();
+        const key = (this.supabaseKeyInput?.value || '').trim();
+        if (!url || !key) {
+          this.showToast('Please enter both Supabase URL and Anon Key');
+          return;
+        }
+
+        this.testConnectionBtn.textContent = 'Testing...';
+        this.testConnectionBtn.disabled = true;
+
+        const res = await this.backend.testConnection(url, key);
+        this.testConnectionBtn.textContent = 'Test Connection';
+        this.testConnectionBtn.disabled = false;
+
+        if (res.success) {
+          this.showToast('Connection verified successfully!');
+          if (this.modalStatusLabel) this.modalStatusLabel.textContent = 'Status: Verified & Reachable!';
+          if (this.modalStatusDot) {
+            this.modalStatusDot.className = 'status-indicator-dot connected';
+          }
+        } else {
+          this.showToast(`Test failed: ${res.error}`);
+          if (this.modalStatusLabel) this.modalStatusLabel.textContent = `Status: Error - ${res.error}`;
+          if (this.modalStatusDot) {
+            this.modalStatusDot.className = 'status-indicator-dot disconnected';
+          }
+        }
+      });
+    }
+
+    // Form Submit: Save & Connect
+    if (this.cloudConfigForm) {
+      this.cloudConfigForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const url = (this.supabaseUrlInput?.value || '').trim();
+        const key = (this.supabaseKeyInput?.value || '').trim();
+        const bId = (this.supabaseBoardIdInput?.value || 'board-default-physics').trim();
+
+        if (!url || !key) {
+          this.showToast('Please enter both Project URL and Anon Key');
+          return;
+        }
+
+        this.backend.activeBoardId = bId;
+        const connectBtn = document.getElementById('saveConnectBtn');
+        if (connectBtn) connectBtn.disabled = true;
+
+        this.showToast('Connecting to Supabase...');
+        const res = await this.backend.connect(url, key, true);
+        if (connectBtn) connectBtn.disabled = false;
+
+        if (res.success) {
+          this.closeCloudSettingsModal();
+          this.showToast('Connected to Supabase! Syncing data...');
+          await this.syncFromCloud();
+        } else {
+          this.showToast(`Connection failed: ${res.error}`);
+        }
+      });
+    }
+
+    // Disconnect Button
+    if (this.disconnectCloudBtn) {
+      this.disconnectCloudBtn.addEventListener('click', () => {
+        this.backend.disconnect();
+        if (this.supabaseUrlInput) this.supabaseUrlInput.value = '';
+        if (this.supabaseKeyInput) this.supabaseKeyInput.value = '';
+        this.updateCloudStatusUI(false, 'Local Mode');
+        this.showToast('Disconnected. Running in local storage mode.');
+      });
+    }
+
+    // Push Local to Cloud Button
+    if (this.pushLocalToCloudBtn) {
+      this.pushLocalToCloudBtn.addEventListener('click', async () => {
+        if (!this.backend || !this.backend.isConnected) {
+          this.showToast('Please connect to Supabase first.');
+          return;
+        }
+
+        try {
+          this.pushLocalToCloudBtn.textContent = 'Pushing...';
+          this.pushLocalToCloudBtn.disabled = true;
+          await this.backend.pushLocalStateToCloud(this.state, this.backend.activeBoardId);
+          this.showToast('Local board state pushed to Supabase!');
+        } catch (err) {
+          this.showToast(`Push failed: ${err.message}`);
+        } finally {
+          this.pushLocalToCloudBtn.textContent = 'Push Local to Cloud ⬆';
+          this.pushLocalToCloudBtn.disabled = false;
+        }
+      });
+    }
+
+    // Guide Accordion Toggle
+    if (this.guideAccordionToggle && this.guideAccordionContent) {
+      this.guideAccordionToggle.addEventListener('click', () => {
+        const isHidden = this.guideAccordionContent.hidden;
+        this.guideAccordionContent.hidden = !isHidden;
+        const icon = document.getElementById('guideAccordionIcon');
+        if (icon) {
+          icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+      });
+    }
+
+    // Copy Schema Path Button
+    if (this.copySchemaPathBtn) {
+      this.copySchemaPathBtn.addEventListener('click', () => {
+        navigator.clipboard?.writeText('supabase/schema.sql');
+        this.copySchemaPathBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          if (this.copySchemaPathBtn) this.copySchemaPathBtn.textContent = 'Copy Path';
+        }, 1500);
+      });
+    }
+  }
+
+  openCloudSettingsModal() {
+    if (!this.cloudSettingsModal) return;
+    this.cloudSettingsModal.hidden = false;
+    if (this.backend) {
+      if (this.backend.envConfig) {
+        if (this.supabaseUrlInput && !this.supabaseUrlInput.value) this.supabaseUrlInput.value = this.backend.envConfig.url;
+        if (this.supabaseKeyInput && !this.supabaseKeyInput.value) this.supabaseKeyInput.value = this.backend.envConfig.anonKey;
+        if (this.supabaseBoardIdInput) this.supabaseBoardIdInput.value = this.backend.envConfig.boardId || this.backend.activeBoardId;
+      }
+      const isConn = this.backend.isConnected;
+      if (this.modalStatusDot) {
+        this.modalStatusDot.className = `status-indicator-dot ${isConn ? 'connected' : 'disconnected'}`;
+      }
+      if (this.modalStatusLabel) {
+        const sourceText = this.backend.envSource ? ` (via ${this.backend.envSource})` : '';
+        this.modalStatusLabel.textContent = `Status: ${isConn ? `Connected to Supabase Cloud${sourceText}` : 'Local Storage mode (Offline)'}`;
+      }
+    }
+  }
+
+  closeCloudSettingsModal() {
+    if (this.cloudSettingsModal) {
+      this.cloudSettingsModal.hidden = true;
+    }
+  }
+
+  updateCloudStatusUI(connected, label = '') {
+    if (this.cloudStatusDot) {
+      this.cloudStatusDot.className = `status-indicator-dot ${connected ? 'connected' : 'disconnected'}`;
+    }
+    if (this.cloudStatusText) {
+      this.cloudStatusText.textContent = label || (connected ? 'Supabase Live' : 'Local Mode');
+    }
+    if (this.modalStatusDot) {
+      this.modalStatusDot.className = `status-indicator-dot ${connected ? 'connected' : 'disconnected'}`;
+    }
+    if (this.modalStatusLabel) {
+      this.modalStatusLabel.textContent = `Status: ${connected ? 'Connected to Supabase Cloud' : 'Local Storage mode (Offline)'}`;
+    }
+  }
+
+  renderCollaborators(collaborators) {
+    if (!this.collaboratorsStrip) return;
+    this.collaboratorsStrip.innerHTML = '';
+
+    const seen = new Set();
+    const unique = [];
+    (collaborators || []).forEach(c => {
+      if (c && c.id && !seen.has(c.id)) {
+        seen.add(c.id);
+        unique.push(c);
+      }
+    });
+
+    unique.forEach(c => {
+      const badge = document.createElement('div');
+      badge.className = 'collaborator-avatar-badge';
+      badge.title = `${c.name || 'Collaborator'} (Online)`;
+      if (c.avatar) {
+        badge.innerHTML = `<img src="${this.escapeHtml(c.avatar)}" alt="${this.escapeHtml(c.name || '')}" />`;
+      } else {
+        badge.textContent = (c.name || 'C').charAt(0).toUpperCase();
+        badge.style.backgroundColor = c.color || '#ff1f6d';
+      }
+      this.collaboratorsStrip.appendChild(badge);
+    });
+  }
+
+  async syncFromCloud() {
+    if (!this.backend || !this.backend.isConnected) return;
+    try {
+      const cloudData = await this.backend.loadBoard(this.backend.activeBoardId);
+      if (cloudData && cloudData.sections && cloudData.sections.length > 0) {
+        const localDrafts = this.state.drafts;
+        this.state = cloudData;
+        this.state.drafts = localDrafts || [];
+        this.saveState();
+        this.renderBoard();
+        this.showToast('Board synchronized with Supabase!');
+      } else if (cloudData && (!cloudData.sections || cloudData.sections.length === 0)) {
+        // Cloud board exists but is empty, push local state
+        await this.backend.pushLocalStateToCloud(this.state, this.backend.activeBoardId);
+        this.showToast('Cloud board initialized from local data!');
+      }
+    } catch (err) {
+      console.warn('Error during cloud sync:', err);
+    }
+  }
+
+  handleRealtimePostChange(payload) {
+    const { eventType, new: newRecord, old: oldRecord } = payload;
+    if (eventType === 'INSERT') {
+      const existing = this.findCardById(newRecord.id);
+      if (existing) return;
+
+      const targetSection = this.state.sections.find(s => s.id === newRecord.section_id);
+      if (targetSection) {
+        const card = {
+          id: newRecord.id,
+          title: newRecord.title || '',
+          pinned: !!newRecord.pinned,
+          type: newRecord.type || 'text',
+          color: newRecord.color || 'white',
+          content: newRecord.content || (newRecord.body ? { body: newRecord.body } : null),
+          attachment: newRecord.attachment || null,
+          customFieldValues: newRecord.custom_field_values || {},
+          reactions: newRecord.reactions_count || 0,
+          hasReacted: false,
+          rank: newRecord.rank || 1000.0,
+          comments: []
+        };
+        targetSection.cards.push(card);
+        this.saveState();
+        this.renderBoard();
+        this.showToast('New post received from collaborator!');
+      }
+    } else if (eventType === 'UPDATE') {
+      const data = this.findCardAndSection(newRecord.id);
+      if (!data) return;
+      const { card, section } = data;
+
+      card.title = newRecord.title || '';
+      card.color = newRecord.color || 'white';
+      card.type = newRecord.type || 'text';
+      card.content = newRecord.content || (newRecord.body ? { body: newRecord.body } : null);
+      card.attachment = newRecord.attachment || null;
+      card.customFieldValues = newRecord.custom_field_values || {};
+      card.pinned = !!newRecord.pinned;
+      card.reactions = newRecord.reactions_count || 0;
+      if (typeof newRecord.rank === 'number') card.rank = newRecord.rank;
+
+      if (newRecord.section_id && newRecord.section_id !== section.id) {
+        section.cards = section.cards.filter(c => c.id !== card.id);
+        const newSec = this.state.sections.find(s => s.id === newRecord.section_id);
+        if (newSec) newSec.cards.push(card);
+      }
+
+      this.saveState();
+      this.renderBoard();
+    } else if (eventType === 'DELETE') {
+      const data = this.findCardAndSection(oldRecord.id);
+      if (!data) return;
+      data.section.cards = data.section.cards.filter(c => c.id !== oldRecord.id);
+      this.saveState();
+      this.renderBoard();
+    }
+  }
+
+  handleRealtimeSectionChange(payload) {
+    const { eventType, new: newRecord, old: oldRecord } = payload;
+    if (eventType === 'INSERT') {
+      if (this.state.sections.some(s => s.id === newRecord.id)) return;
+      this.state.sections.push({
+        id: newRecord.id,
+        title: newRecord.title,
+        rank: newRecord.rank || 1000.0,
+        isDefault: !!newRecord.is_default,
+        cards: []
+      });
+      this.saveState();
+      this.renderBoard();
+      this.updateSectionSelectorUI();
+    } else if (eventType === 'UPDATE') {
+      const sec = this.state.sections.find(s => s.id === newRecord.id);
+      if (sec) {
+        sec.title = newRecord.title;
+        if (typeof newRecord.rank === 'number') sec.rank = newRecord.rank;
+        this.saveState();
+        this.renderBoard();
+        this.updateSectionSelectorUI();
+      }
+    } else if (eventType === 'DELETE') {
+      this.state.sections = this.state.sections.filter(s => s.id !== oldRecord.id);
+      this.saveState();
+      this.renderBoard();
+      this.updateSectionSelectorUI();
+    }
   }
 
   escapeHtml(str) {

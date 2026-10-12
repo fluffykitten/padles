@@ -40,7 +40,7 @@ npx -y rea-agents@latest doctor --client antigravity
 
 **Expected output**:
 * `antigravity`: State `aligned` / `configured`
-* `reverse-engineer-anything`: State `installed`
+* `reverse-engineer-anything`: State `aligned` (installed with 170+ analysis tools)
 
 ---
 
@@ -55,32 +55,50 @@ To allow Antigravity and REA scripts to inspect live Padlet DOM, CSS tokens, SVG
 
 > [!IMPORTANT]
 > **Why `--user-data-dir` is required**:
-> If Edge is already running with your default profile, passing `--remote-debugging-port=9222` will be silently ignored by Chromium. Providing a dedicated `--user-data-dir` forces Edge to spawn a standalone debug instance that binds to port `9222`.
+> If Edge is already running with your default profile or Windows Startup Boost, passing `--remote-debugging-port=9222` alone will be silently ignored by Chromium. Providing a dedicated `--user-data-dir` forces Edge to spawn an isolated debug instance that binds to port `9222`.
 
 ---
 
-### Option A: Launch via PowerShell / Terminal (Fastest)
+### Option A: Launch via Helper Batch Script (Recommended & Fastest)
+
+Use the pre-configured launcher in the repository root:
+
+* Run [`start-edge-debug.bat`](file:///e:/VibeCoding/padles/start-edge-debug.bat)
+
+This script automatically:
+1. Locates `msedge.exe` (in `Program Files (x86)` or `Program Files`).
+2. Creates `%LOCALAPPDATA%\EdgeDebugProfile` if it doesn't already exist.
+3. Launches Edge with `--remote-debugging-port=9222`, `--no-first-run`, opening both the Padlet reference board and local Padles clone.
+4. Verifies CDP port 9222 availability and prints status in console.
+
+---
+
+### Option B: Launch via PowerShell
 
 Run this command in PowerShell:
 
 ```powershell
-Start-Process "msedge.exe" -ArgumentList "--remote-debugging-port=9222 --user-data-dir=$env:LOCALAPPDATA\EdgeDebugProfile https://padlet.com"
-```
+# Ensure profile folder exists
+New-Item -ItemType Directory -Force -Path "$env:LOCALAPPDATA\EdgeDebugProfile"
 
-Or in Windows Command Prompt (cmd):
-
-```cmd
-start msedge.exe --remote-debugging-port=9222 --user-data-dir="%LOCALAPPDATA%\EdgeDebugProfile" https://padlet.com
+# Launch Edge with remote debugging
+Start-Process "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" -ArgumentList @(
+  "--remote-debugging-port=9222",
+  "--user-data-dir=$env:LOCALAPPDATA\EdgeDebugProfile",
+  "--no-first-run",
+  "https://padlet.com/ezzarscarlet/physics-audio-reflections-i-see-i-think-i-wonder-s0248vnouoewo8lw6wn6/wish/PVKBQOrEoXD5aj5x",
+  "file:///E:/VibeCoding/padles/index.html"
+)
 ```
 
 ---
 
-### Option B: Create a Dedicated Desktop Shortcut (One-Click)
+### Option C: Create a Dedicated Desktop Shortcut (One-Click)
 
 1. Right-click on your Windows Desktop → **New** → **Shortcut**.
-2. Paste the following target (adjust path if Edge is installed in `Program Files` instead of `Program Files (x86)`):
+2. Paste the following target:
    ```text
-   "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --user-data-dir="%LOCALAPPDATA%\EdgeDebugProfile" https://padlet.com
+   "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --user-data-dir="%LOCALAPPDATA%\EdgeDebugProfile" --no-first-run https://padlet.com
    ```
 3. Click **Next**, name the shortcut `Edge Debugger (Padlet)`, and click **Finish**.
 4. Double-click this shortcut anytime you want to start Edge for REA and Antigravity automation.
@@ -92,19 +110,19 @@ start msedge.exe --remote-debugging-port=9222 --user-data-dir="%LOCALAPPDATA%\Ed
 Open any browser or terminal and test the CDP endpoint:
 
 * **In browser**: Navigate to `http://127.0.0.1:9222/json`
-  * You should see a JSON list of open tabs and their `webSocketDebuggerUrl`.
+  * You will see a JSON array of open tabs with their `title`, `url`, and `webSocketDebuggerUrl`.
 * **In PowerShell**:
   ```powershell
   Invoke-RestMethod http://127.0.0.1:9222/json/version
   ```
-  * Returns:
+  * Output:
     ```json
     {
-      "Browser": "Edg/...",
+      "Browser": "Edg/154.0.4258.37",
       "Protocol-Version": "1.3",
       "User-Agent": "Mozilla/5.0 ...",
-      "V8-Version": "...",
-      "WebKit-Version": "...",
+      "V8-Version": "15.4.11.5",
+      "WebKit-Version": "537.36 ...",
       "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/browser/..."
     }
     ```
@@ -115,21 +133,65 @@ Open any browser or terminal and test the CDP endpoint:
 
 Once Edge is running on port 9222 and REA is active:
 
-1. **Tab 1 (Reference)**: Open the real Padlet board in your Edge debug window:
+1. **Tab 1 (Reference)**: Real Padlet board:
    `https://padlet.com/ezzarscarlet/physics-audio-reflections-i-see-i-think-i-wonder-s0248vnouoewo8lw6wn6/wish/PVKBQOrEoXD5aj5x`
-2. **Tab 2 (Local Clone)**: Open your local clone:
-   `file:///C:/padles/index.html`
-3. **Automate & Compare**:
-   Antigravity can now query both tabs via CDP WebSocket:
-   * Dump exact computed CSS styles, font families, and color tokens.
-   * Extract raw SVGs directly from Padlet's icon buttons.
-   * Run side-by-side automated test scripts (like `scratch/test_post_workflow.mjs`).
-   * Trigger interactive modal states and take matching screenshots.
+2. **Tab 2 (Local Clone)**: Local Padles clone:
+   `file:///e:/VibeCoding/padles/index.html`
+
+### Useful Programmatic CDP Commands
+
+#### Open a New Tab Programmatically:
+```powershell
+Invoke-RestMethod -Method Put "http://127.0.0.1:9222/json/new?file:///E:/VibeCoding/padles/index.html"
+```
+
+#### List All Open Page Tabs via Node.js:
+```javascript
+const tabs = await (await fetch('http://127.0.0.1:9222/json')).json();
+const pages = tabs.filter(t => t.type === 'page');
+console.log(pages.map(p => ({ title: p.title, url: p.url })));
+```
+
+#### Evaluate JavaScript in Live Page via WebSocket:
+```javascript
+const tabs = await (await fetch('http://127.0.0.1:9222/json')).json();
+const targetTab = tabs.find(t => t.url.includes('padles/index.html'));
+const ws = new WebSocket(targetTab.webSocketDebuggerUrl);
+
+ws.onopen = () => {
+  ws.send(JSON.stringify({
+    id: 1,
+    method: 'Runtime.evaluate',
+    params: { expression: 'document.title' }
+  }));
+};
+
+ws.onmessage = (e) => {
+  const res = JSON.parse(e.data);
+  console.log('Result:', res.result?.result?.value);
+  ws.close();
+};
+```
 
 ---
 
-## 🚀 Quick Launch Helper Script Included
+## 🔍 Troubleshooting
 
-This repository includes a one-click launcher script in the root directory:
+| Issue | Cause | Fix |
+|---|---|---|
+| Port 9222 refuses connection | Edge running with default profile or Startup Boost | Ensure `--user-data-dir="%LOCALAPPDATA%\EdgeDebugProfile"` is passed, or launch via [`start-edge-debug.bat`](file:///e:/VibeCoding/padles/start-edge-debug.bat). |
+| REA tools not appearing in IDE | IDE hasn't reloaded MCP configuration | Fully restart Antigravity IDE after running `npx -y rea-agents@latest setup`. |
+| MCP Config missing | Config file blank or corrupted | Run `npx -y rea-agents@latest setup --client antigravity -y` to regenerate. |
 
-* Run [`start-edge-debug.bat`](file:///c:/padles/start-edge-debug.bat) to launch Edge with port 9222 and the EdgeDebugProfile automatically.
+---
+
+## ✅ Verified Setup Status on This Machine
+
+* **Node.js**: `v24.12.0` (Verified)
+* **Git**: `2.52.0` (Verified)
+* **REA MCP Configuration**: Configured in `C:\Users\orin\.gemini\config\mcp_config.json` (Verified)
+* **REA Skill**: Installed at `C:\Users\orin\.gemini\config\skills\reverse-engineer-anything` (Verified, 170 tools aligned)
+* **Edge CDP Port 9222**: Active on `127.0.0.1:9222` (Verified)
+* **Live Session Tabs**:
+  * Tab 1: Padlet Reference Board (`padlet.com`) (Active & Connected)
+  * Tab 2: Local Padles Board (`file:///E:/VibeCoding/padles/index.html`) (Active & Connected)

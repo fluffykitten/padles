@@ -11,74 +11,94 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="aurora-theme">
-  <!-- Top Global Header -->
-  <header class="padlet-header">
-    <div class="header-main-row">
-      <div class="header-left">
-        <span class="padlet-logo">Padles</span>
+  <!-- Top Global Header (Padlet Surface Topbar) -->
+  <nav id="surface-topbar" data-testid="surfaceTopbar" class="surface-topbar">
+    <div class="topbar-left">
+      <a class="padlet-logo-link" href="https://padlet.com/dashboard" data-testid="surfaceTopBarPadletLogo" title="Padlet dashboard">
+        <svg viewBox="0 0 72 20" xmlns="http://www.w3.org/2000/svg" role="img" class="padlet-logo-svg">
+          <title>Padlet logo</title>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M7.2 14.7984C11.1765 14.7984 14.4 11.5749 14.4 7.59844C14.4 3.62199 11.1765 0.398438 7.2 0.398438C7.13312 0.398438 7.06644 0.39935 7 0.401162V0.398438H3.6H2.4H0V7.59844V19.5984H3.6V14.7984H7V14.7957C7.06644 14.7975 7.13312 14.7984 7.2 14.7984ZM7.19992 11.1984H7.2C9.16019 11.1984 10.7492 9.58664 10.7492 7.59844C10.7492 5.61024 9.16019 3.99848 7.2 3.99844H7.19992H3.6V11.1984H7.19992ZM25.2 5.19844H28.8V19.5984H25.2V18.6353C24.141 19.2479 22.9114 19.5985 21.6 19.5985C17.6235 19.5985 14.4 16.3749 14.4 12.3985C14.4 8.42204 17.6235 5.19849 21.6 5.19849C22.9114 5.19849 24.141 5.54911 25.2 6.16172V5.19844ZM21.6 8.79844C23.5882 8.79844 25.2 10.4102 25.2 12.3984C25.2 14.3867 23.5882 15.9984 21.6 15.9984C19.6118 15.9984 18 14.3867 18 12.3984C18 10.4102 19.6118 8.79844 21.6 8.79844ZM44 0.398438H40.4V6.16167C39.3409 5.54906 38.1114 5.19844 36.8 5.19844C32.8235 5.19844 29.6 8.42199 29.6 12.3984C29.6 16.3749 32.8235 19.5984 36.8 19.5984C38.1114 19.5984 39.3409 19.2478 40.4 18.6352V19.5984H44V12.3984V0.398438ZM40.4 12.4169C40.39 14.3966 38.7821 15.9984 36.8 15.9984C34.8118 15.9984 33.2 14.3866 33.2 12.3984C33.2 10.4102 34.8118 8.79839 36.8 8.79839C38.7821 8.79839 40.39 10.4002 40.4 12.3799V12.4169ZM49 0.398438H45.4V19.5984H49V0.398438ZM64.33 13.6088C63.9644 15.7426 62.6474 17.7036 60.6252 18.7339C56.9257 20.6189 52.5901 19.2102 50.8645 15.8236C48.9795 12.1241 50.3883 7.78843 54.0878 5.90344C57.4743 4.17789 61.81 5.58664 63.695 9.28615C63.884 9.65698 64.0353 10.0392 64.1506 10.4281L60.5086 12.2838L60.5088 12.2838L54.882 15.1508C55.9628 16.051 57.5435 16.2637 58.9871 15.5282C60.1296 14.9461 60.8166 13.695 60.8047 12.3864L64.33 13.6088ZM53.6108 12.656L59.5229 9.64364C58.4565 8.73604 56.9329 8.49409 55.7184 9.11291C54.2747 9.84852 53.5176 11.2525 53.6108 12.656ZM65.4 0.398438H68.9985V6.39844H71.7984V9.99844H68.9985V19.5984H65.4V0.398438Z"/>
+        </svg>
+      </a>
+    </div>
+
+    <div class="topbar-right">
+      <!-- Search Button Pill -->
+      <div id="surface-search-bar" class="topbar-glass-pill search-pill" data-testid="surfaceSearchBar" title="Search posts">
+        <span class="icon-wrap" style="width: 20px; height: 20px;">
+          <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor"><path d="M13.667 4C8.344 4 4 8.344 4 13.667s4.344 9.667 9.667 9.667a9.6 9.6 0 0 0 5.814-1.966l6.243 6.242a1.34 1.34 0 0 0 .948.41 1.337 1.337 0 0 0 1.348-1.348 1.34 1.34 0 0 0-.41-.948l-6.242-6.243a9.6 9.6 0 0 0 1.966-5.814C23.334 8.344 18.99 4 13.667 4m0 2.667c3.882 0 7 3.118 7 7a6.97 6.97 0 0 1-1.901 4.798 1.3 1.3 0 0 0-.298.298 6.97 6.97 0 0 1-4.801 1.904c-3.882 0-7-3.118-7-7s3.118-7 7-7"/></svg>
+        </span>
+        <input id="surfaceSearchBarInput" type="search" placeholder="" autocomplete="off" />
       </div>
 
-      <div class="header-right">
-        <!-- Search Button -->
-        <button id="searchToggleBtn" class="icon-btn" title="Search posts" aria-label="Search">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.3-4.3"/>
-          </svg>
-        </button>
+      <!-- Slideshow Button -->
+      <button id="slideshowBtn" class="topbar-glass-pill" title="Open slideshow" aria-label="Open slideshow" data-testid="surfaceSlideshowButton">
+        <span class="icon-wrap" style="width: 20px; height: 20px;">
+          <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor"><path d="M10.143 7.528a1.568 1.568 0 0 0-2.31 1.381v14.183a1.568 1.568 0 0 0 2.31 1.381l13.198-7.092c1.101-.592 1.101-2.17 0-2.762zM5.952 8.909c0-2.608 2.783-4.272 5.081-3.038l13.198 7.092c2.422 1.301 2.422 4.775 0 6.076l-13.198 7.092c-2.297 1.235-5.081-.43-5.081-3.038z"/></svg>
+        </span>
+        <span>Slideshow</span>
+      </button>
 
-        <!-- Slideshow Button -->
-        <button id="slideshowBtn" class="pill-btn" title="Start slideshow" aria-label="Slideshow">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="5 3 19 12 5 21 5 3"/>
-          </svg>
-          <span>Slideshow</span>
-        </button>
+      <!-- Share Button -->
+      <button id="shareBtn" class="topbar-glass-pill" title="Open share panel" aria-label="Open share panel" data-testid="surfaceShareButton">
+        <span class="icon-wrap" style="width: 20px; height: 20px;">
+          <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor"><path d="M18.319 4.667a1 1 0 0 0-.986 1v5.19c-1.772.198-4.685.705-7.617 2.604-3.329 2.156-6.289 6.119-6.358 12.663l-.005.013h.003c-.001.072-.022.124-.022.197a1.003 1.003 0 0 0 .901.994 1.002 1.002 0 0 0 1.079-.798c.792-3.958 3.259-5.711 5.994-6.611 2.308-.759 4.568-.759 6.026-.682v5.096a1 1 0 0 0 .618.923 1 1 0 0 0 1.09-.216l9.333-9.333a1.003 1.003 0 0 0 0-1.414L19.042 4.96a1 1 0 0 0-.721-.293zm1.014 3.414L26.252 15l-6.919 6.919v-3.663a1 1 0 0 0-.906-.996c-1.389-.13-4.567-.286-7.745.759a11.5 11.5 0 0 0-4.224 2.484c1.013-2.476 2.572-4.215 4.345-5.363 2.916-1.888 6.267-2.347 7.603-2.445a.997.997 0 0 0 .927-.998V8.08z"/></svg>
+        </span>
+        <span>Share</span>
+      </button>
 
-        <!-- Share Button -->
-        <button id="shareBtn" class="pill-btn" title="Share board" aria-label="Share">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="m4 12 10-8v5c7 0 9 6 9 11-2-4-5-6-9-6v6L4 12z"/>
-          </svg>
-          <span>Share</span>
+      <!-- Group Pill: Bell (Activity) + Remake + More -->
+      <div class="topbar-glass-pill-group">
+        <button id="surfaceActivityPanelButton" class="group-pill-btn" title="Open activity panel" aria-label="Open activity panel" data-testid="surfaceActivityPanelButton">
+          <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor"><path d="M16 2.662c5.4 0 9.809 4.26 9.994 9.665l.006.335v5.463l1.84 4.208a1.667 1.667 0 0 1-1.527 2.335L20 24.67a4 4 0 0 1-7.993.235L12 24.667l-6.3.001a1.668 1.668 0 0 1-1.529-2.331L6 18.126v-5.464a9.984 9.984 0 0 1 10-10m1.999 22.004L14 24.669a2 2 0 0 0 3.991.193l.009-.196zM16 4.662a7.985 7.985 0 0 0-8 8v5.879l-1.792 4.126h19.595L24 18.543v-5.864l-.005-.3A7.984 7.984 0 0 0 16 4.662"/></svg>
         </button>
-
-        <!-- Settings Gear -->
-        <button id="settingsBtn" class="icon-btn" title="Board settings" aria-label="Settings">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-          </svg>
+        <span class="group-divider"></span>
+        <button id="surfaceRemakePanelButton" class="group-pill-btn" title="Remake this board" aria-label="Remake this board" data-testid="surfaceRemakePanelButton">
+          <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor"><path d="M4.986 5.333c-.26.004-.509.109-.693.293L.96 8.959a.99.99 0 0 0-.307.712 1 1 0 0 0 .293.717q.143.142.329.219c.186.077.255.075.388.074a1 1 0 0 0 .712-.307l1.626-1.626v13.586a4.34 4.34 0 0 0 4.333 4.333h14.76l-1.547-1.547a3 3 0 0 1-.374-.453H8.333A2.336 2.336 0 0 1 6 22.334V8.748l1.626 1.626a.99.99 0 0 0 .712.307 1 1 0 0 0 .717-.293q.142-.143.219-.329c.077-.186.075-.255.074-.388a1 1 0 0 0-.307-.712L5.708 5.626a1 1 0 0 0-.721-.293zM8.906 6l1.547 1.547q.212.212.374.453h12.874a2.336 2.336 0 0 1 2.333 2.333v13.62l-1.66-1.66a1 1 0 0 0-1.276-.132 1 1 0 0 0-.138 1.547l3.333 3.333a1.003 1.003 0 0 0 1.414 0l3.333-3.333a.99.99 0 0 0 .307-.712 1 1 0 0 0-.293-.717q-.143-.142-.329-.219c-.186-.077-.255-.075-.388-.074a1 1 0 0 0-.712.307l-1.592 1.593V10.334A4.34 4.34 0 0 0 23.7 6.001z"/></svg>
         </button>
-
-        <!-- More Options -->
-        <button id="moreBtn" class="icon-btn" title="More options" aria-label="More">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <circle cx="12" cy="12" r="1.5"/>
-            <circle cx="19" cy="12" r="1.5"/>
-            <circle cx="5" cy="12" r="1.5"/>
-          </svg>
+        <span class="group-divider"></span>
+        <button id="moreBtn" class="group-pill-btn" title="More padlet actions" aria-label="More padlet actions" data-testid="surfaceMoreButton">
+          <svg viewBox="0 0 768 768" height="20" width="20" fill="currentColor"><path d="M384 64c-176.447 0-320 143.553-320 320s143.553 320 320 320c176.448 0 320-143.552 320-320 0-176.446-143.552-320-320-320zM384 112c150.505 0 272 121.495 272 272s-121.495 272-272 272c-150.506 0-272-121.495-272-272s121.494-272 272-272zM240 336c-12.731 0-24.94 5.056-33.941 14.057s-14.059 21.213-14.059 33.943c0 12.73 5.057 24.941 14.059 33.943s21.211 14.057 33.941 14.057c12.731 0 24.94-5.056 33.941-14.057s14.059-21.213 14.059-33.943c0-12.73-5.057-24.94-14.059-33.943s-21.211-14.057-33.941-14.057zM384 336c-12.73 0-24.941 5.056-33.943 14.057s-14.057 21.213-14.057 33.943c0 12.73 5.056 24.941 14.057 33.943s21.213 14.057 33.943 14.057c12.73 0 24.941-5.056 33.943-14.057s14.057-21.213 14.057-33.943c0-12.73-5.056-24.94-14.057-33.943s-21.213-14.057-33.943-14.057zM528 336c-12.73 0-24.941 5.056-33.943 14.057s-14.057 21.213-14.057 33.943c0 12.73 5.056 24.941 14.057 33.943s21.213 14.057 33.943 14.057c12.73 0 24.941-5.056 33.943-14.057s14.057-21.213 14.057-33.943c0-12.73-5.056-24.94-14.057-33.943s-21.213-14.057-33.943-14.057z"/></svg>
         </button>
-
-        <!-- User Avatar -->
-        <div class="user-avatar" title="Salman Madani">
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces" alt="Avatar" />
-        </div>
       </div>
-    </div>
 
-    <!-- Board Info Row -->
-    <div class="board-info-row">
-      <div class="board-author" id="boardAuthor">Salman Madani • 6d</div>
-      <h1 class="board-title-display" id="boardTitle">Physics Audio Reflections: I see, I think, I wonder</h1>
-    </div>
+      <!-- Cloud Sync / Local indicator (styled like Padlet pill) -->
+      <button id="cloudSyncBtn" class="topbar-glass-pill" style="display: none;" title="Supabase Cloud Backend Settings" aria-label="Supabase Cloud Backend Settings">
+        <span class="status-indicator-dot disconnected" id="cloudStatusDot"></span>
+        <span id="cloudStatusText">Local Mode</span>
+      </button>
 
-    <!-- Search Overlay Box (Toggled) -->
-    <div id="searchOverlay" class="search-overlay" hidden>
-      <input type="text" id="boardSearchInput" placeholder="Filter cards across all sections..." />
-      <button id="closeSearchBtn">&times;</button>
+      <!-- Collaborators Presence Strip -->
+      <div id="collaboratorsStrip" class="collaborators-strip" style="display: none;" title="Active collaborators"></div>
+
+      <!-- Sign up for Padlet CTA -->
+      <a href="https://padlet.com/auth/signup" class="topbar-signup-btn" data-testid="surfaceHeaderSignupButton">
+        <span>Sign up for Padlet</span>
+      </a>
+
+      <!-- Guest Avatar Anchor -->
+      <button id="guest-id-card-avatar-anchor" class="topbar-avatar-btn" data-testid="appBarAccountAvatar" title="Anonymous">
+        <img width="24" height="24" alt="Anonymous" src="https://padlet.net/identicons/6461510121x24.png" />
+      </button>
     </div>
+  </nav>
+
+  <!-- Board Info Block -->
+  <header class="surface-header-block">
+    <div class="surface-builder-line" data-testid="surfaceBuilder">
+      <a href="https://padlet.com/ezzarscarlet" target="_blank" class="builder-link" id="boardAuthor">Salman Madani</a>
+      <button class="contributor-count-btn" title="1 contributor" aria-label="Open activity panel"> + <span>1</span></button>
+      <span class="byline-dot"> • </span>
+      <time class="byline-time" title="October 12, 2026">8h</time>
+    </div>
+    <h1 class="surface-board-title" data-testid="surfaceTitle" id="boardTitle">Physics Audio Reflections: I see, I think, I wonder</h1>
   </header>
+
+  <!-- Search Overlay Box (Toggled) -->
+  <div id="searchOverlay" class="search-overlay" hidden>
+    <input type="text" id="boardSearchInput" placeholder="Filter cards across all sections..." />
+    <button id="closeSearchBtn">&times;</button>
+  </div>
 
   <!-- Horizontal Scrollable Sections Canvas -->
   <main class="board-container" id="boardContainer">
@@ -87,25 +107,25 @@
     </div>
 
     <!-- Add Section Button at the end of the track -->
-    <div class="add-section-wrapper">
+    <div class="add-section-wrapper" style="display: none;">
       <button id="addSectionBtn" class="add-section-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
+        <svg width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+          <path d="M15.984 3.319A1 1 0 0 0 15 4.333V15H4.333a1 1 0 0 0-.936.614A1 1 0 0 0 4.333 17H15v10.667a1 1 0 0 0 .614.937q.185.077.386.077a.8.8 0 0 0 .386-.077 1 1 0 0 0 .542-.55c.049-.123.074-.255.072-.387V17h10.667a1 1 0 0 0 .716-.288 1.004 1.004 0 0 0 0-1.424 1 1 0 0 0-.716-.288H17V4.333a1 1 0 0 0-.293-.722 1 1 0 0 0-.722-.292z"/>
         </svg>
         <span>Add section</span>
       </button>
     </div>
   </main>
 
-  <!-- Floating "+ Post" Button (Padlet Signature Yellow Pill) -->
-  <button id="mainPostBtn" class="padlet-post-fab" title="Create a new post">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-      <line x1="12" y1="5" x2="12" y2="19"/>
-      <line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    <span>Post</span>
-  </button>
+  <!-- Floating "+ Post" Button (Padlet Signature Canary Yellow Pill) -->
+  <div id="new-post-button-container" class="floating-post-container">
+    <button id="mainPostBtn" class="padlet-floating-post-btn" data-testid="surfaceAddPostButton" title="Start writing a new post" aria-label="Start writing a new post">
+      <span class="icon-wrap" style="width: 20px; height: 20px;">
+        <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor"><path d="M15.981 3.315a1.333 1.333 0 0 0-1.314 1.352v10h-10a1.32 1.32 0 0 0-.955.384 1.33 1.33 0 0 0-.397.95 1.34 1.34 0 0 0 .836 1.238c.164.066.339.099.516.096h10v10a1.32 1.32 0 0 0 .384.955 1.33 1.33 0 0 0 .95.397 1.34 1.34 0 0 0 1.238-.836 1.3 1.3 0 0 0 .096-.516v-10h10a1.32 1.32 0 0 0 .955-.384 1.33 1.33 0 0 0 .397-.95 1.34 1.34 0 0 0-.836-1.238 1.3 1.3 0 0 0-.516-.096h-10v-10a1.34 1.34 0 0 0-.391-.961 1.33 1.33 0 0 0-.962-.39z"/></svg>
+      </span>
+      <span class="btn-text">Post</span>
+    </button>
+  </div>
 
   <!-- Padlet-Authentic Dockable Multiple Drafts System -->
   <aside id="dockableModalsContainer" class="dockable-modals-dock" aria-label="Post drafts dock">
@@ -146,7 +166,7 @@
             </button>
 
             <!-- Publish Button (Padlet bg-padlet-pink #ff1f6d) -->
-            <button id="publishBtn" class="composer-publish-btn" disabled data-testid="publishPostButton" title="Publish post" aria-label="Publish post">Publish</button>
+            <button id="publishBtn" class="composer-publish-btn" disabled data-testid="publishPostButton" title="Submit post" aria-label="Submit post">Submit</button>
           </div>
         </div>
 
@@ -352,11 +372,9 @@
               </div>
             </div>
 
-            <!-- Fields Button (Exact Padlet Pencil + "Fields") -->
+            <!-- Fields Button (Exact Padlet + Fields) -->
             <button type="button" class="composer-fields-btn" id="composerFieldsBtn" title="Go to post fields panel" aria-label="Go to post fields panel" data-testid="surfacePostComposerModalPostPropertiesButton">
-              <svg viewBox="0 0 32 32" width="14" height="14" fill="currentColor" aria-hidden="true">
-                <path d="m25.771 12.357 1.627-1.627a4.34 4.34 0 0 0 0-6.129c-.818-.817-1.905-1.267-3.065-1.267s-2.247.45-3.065 1.267l-1.626 1.626 6.129 6.129zm-7.542-4.714L6.183 19.689a2.3 2.3 0 0 0-.565.917l-2.233 6.747a1 1 0 0 0 1.264 1.263l6.745-2.234c.345-.113.662-.309.919-.566l12.045-12.045z"/>
-              </svg>
+              <span class="fields-plus-icon">+</span>
               <span>Fields</span>
             </button>
           </div>
@@ -396,6 +414,11 @@
       </div>
     </div>
   </aside>
+
+  <!-- Centered Edit Post Modal Overlay (Padlet-Authentic Centered Dialog with Blurred Backdrop) -->
+  <div id="editPostModalOverlay" class="edit-post-modal-overlay" hidden>
+    <!-- When editing a post, #composerCard is dynamically moved here -->
+  </div>
 
   <!-- Search / Attachment Sub-Modal (When clicking Search / Link icon) -->
   <div id="searchAttachmentModal" class="submodal-backdrop" hidden>
@@ -841,8 +864,423 @@
     </div>
   </div>
 
+  <!-- Cloud Backend Settings Modal -->
+  <div id="cloudSettingsModal" class="submodal-backdrop" hidden>
+    <div class="submodal-dialog cloud-settings-dialog">
+      <div class="submodal-header">
+        <div class="cloud-header-left">
+          <div class="cloud-icon-circle">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="cloud-modal-title">Supabase Cloud Backend</h3>
+            <div class="cloud-modal-subtitle">Realtime multi-user sync & persistent Postgres storage</div>
+          </div>
+        </div>
+        <button class="icon-btn close-modal-btn" id="closeCloudSettingsBtn" title="Close dialog">&times;</button>
+      </div>
+
+      <div class="submodal-body cloud-modal-body">
+        <div class="cloud-status-banner" id="cloudStatusBanner">
+          <div class="status-banner-info">
+            <span class="status-indicator-dot disconnected" id="modalStatusDot"></span>
+            <span id="modalStatusLabel">Status: Local Storage mode (Offline)</span>
+          </div>
+          <button type="button" class="cloud-test-btn" id="testConnectionBtn">Test Connection</button>
+        </div>
+
+        <form id="cloudConfigForm" class="cloud-form">
+          <div class="cloud-form-field">
+            <label for="supabaseUrlInput" class="cloud-form-label">Project URL</label>
+            <input type="url" id="supabaseUrlInput" class="cloud-input" placeholder="https://your-project-ref.supabase.co" autocomplete="off" spellcheck="false" />
+            <div class="cloud-input-hint">Found in Supabase Dashboard &rarr; Project Settings &rarr; API</div>
+          </div>
+
+          <div class="cloud-form-field">
+            <label for="supabaseKeyInput" class="cloud-form-label">Anon / Public API Key</label>
+            <div class="cloud-input-wrapper">
+              <input type="password" id="supabaseKeyInput" class="cloud-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI..." autocomplete="off" spellcheck="false" />
+              <button type="button" id="toggleKeyVisibilityBtn" class="cloud-key-toggle-btn" title="Toggle key visibility">👁</button>
+            </div>
+            <div class="cloud-input-hint">Public anon key (safe for browser clients)</div>
+          </div>
+
+          <div class="cloud-form-field">
+            <label for="supabaseBoardIdInput" class="cloud-form-label">Board ID</label>
+            <input type="text" id="supabaseBoardIdInput" class="cloud-input" value="board-default-physics" autocomplete="off" spellcheck="false" />
+            <div class="cloud-input-hint">Database identifier for this board in the <code>boards</code> table</div>
+          </div>
+
+          <div class="cloud-actions-row">
+            <button type="submit" class="cloud-btn-primary" id="saveConnectBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Connect & Sync</span>
+            </button>
+            <button type="button" class="cloud-btn-secondary" id="disconnectCloudBtn">
+              Disconnect
+            </button>
+            <button type="button" class="cloud-btn-outline" id="pushLocalToCloudBtn" title="Push current board state to Supabase">
+              <span>Push Local to Cloud ⬆</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Collapsible Schema Guide -->
+        <div class="cloud-guide-accordion">
+          <button type="button" class="cloud-guide-toggle" id="guideAccordionToggle">
+            <span>Database Schema Setup (schema.sql)</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" id="guideAccordionIcon"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="cloud-guide-content" id="guideAccordionContent" hidden>
+            <p>To initialize the tables, RLS policies, and Realtime publications in your Supabase project:</p>
+            <ol>
+              <li>Go to <a href="https://supabase.com/dashboard" target="_blank" rel="noopener">Supabase Dashboard</a> and open your project.</li>
+              <li>Navigate to the <strong>SQL Editor</strong> tab on the left.</li>
+              <li>Paste the contents of <code>supabase/schema.sql</code> and click <strong>Run</strong>.</li>
+            </ol>
+            <div class="guide-copy-box">
+              <span>Path: <code>supabase/schema.sql</code></span>
+              <button type="button" class="guide-copy-btn" id="copySchemaPathBtn">Copy Path</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       Padlet Parity Header Modals & Slide-in Drawers
+       ======================================================================== -->
+
+  <!-- 1. Fullscreen Slideshow Mode Overlay (Padlet-Authentic Presentation Deck) -->
+  <div id="slideshowModal" class="slideshow-overlay" hidden>
+    <div class="slideshow-deck-container">
+      <!-- Top Bar: Exit button -->
+      <div class="slideshow-top-controls">
+        <button id="exitSlideshowBtn" class="slideshow-icon-btn" title="Exit slideshow (Esc)" aria-label="Exit slideshow">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Slide Viewport -->
+      <div id="slideshowSlideViewport" class="slideshow-slide-viewport">
+        <!-- Rendered dynamically by JS: Title Slide (Slide 1) or Card Slide (Slide 2+) -->
+      </div>
+
+      <!-- Bottom Floating Nav Bar -->
+      <div class="slideshow-bottom-bar">
+        <div class="slideshow-nav-group">
+          <button id="slideshowPrevBtn" class="slideshow-pill-btn" title="Previous slide (←)" aria-label="Previous slide">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <span id="slideshowCounter" class="slideshow-counter-text">1 / 15</span>
+          <button id="slideshowNextBtn" class="slideshow-pill-btn" title="Next slide (→)" aria-label="Next slide">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+          <button id="slideshowPlayBtn" class="slideshow-pill-btn" title="Auto-advance slideshow" aria-label="Auto-advance slideshow">
+            <svg id="slideshowPlayIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </button>
+        </div>
+
+        <!-- Middle Timeline Track -->
+        <div id="slideshowTimelineTrack" class="slideshow-timeline-track">
+          <!-- Notches generated dynamically by JS -->
+        </div>
+
+        <!-- Right Presentation Actions -->
+        <div class="slideshow-actions-group">
+          <button id="slideshowShareBtn" class="slideshow-pill-action" title="Share board">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <span>Share</span>
+          </button>
+          <button id="slideshowFullscreenBtn" class="slideshow-pill-btn" title="Toggle Fullscreen">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Share Drawer Modal (Padlet Authentic Sliding Panel) -->
+  <div id="shareDrawer" class="drawer-backdrop" hidden>
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Share this board">
+      <div class="drawer-header">
+        <button id="closeShareDrawerBtn" class="drawer-close-btn" title="Close" aria-label="Close">&times;</button>
+        <h3 class="drawer-title">Share this board</h3>
+        <div class="drawer-header-spacer"></div>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Quick Colored Tiles -->
+        <div class="share-quick-tiles">
+          <button type="button" class="quick-tile tile-pink" id="quickCopyLinkBtn">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <span>Copy link</span>
+          </button>
+
+          <button type="button" class="quick-tile tile-orange" id="quickQrCodeBtn">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </div>
+            <span>QR code</span>
+          </button>
+
+          <button type="button" class="quick-tile tile-teal" id="quickEmbedBtn">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </div>
+            <span>Embed</span>
+          </button>
+
+          <button type="button" class="quick-tile tile-blue" id="quickExportPdfBtn">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <span>Export PDF</span>
+          </button>
+        </div>
+
+        <!-- Section: Share Options -->
+        <div class="drawer-section">
+          <div class="drawer-section-heading">Share</div>
+          <div class="drawer-menu-list">
+            <button type="button" class="drawer-menu-item" id="shareCopyLinkItem">
+              <div class="drawer-item-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </div>
+              <div class="drawer-item-text">Copy link to board</div>
+            </button>
+
+            <button type="button" class="drawer-menu-item" id="shareQrCodeItem">
+              <div class="drawer-item-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              </div>
+              <div class="drawer-item-text">QR code</div>
+            </button>
+
+            <button type="button" class="drawer-menu-item" id="shareEmbedItem">
+              <div class="drawer-item-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              </div>
+              <div class="drawer-item-text">Embed in your blog or website</div>
+              <span class="drawer-chevron">›</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Section: Export Options -->
+        <div class="drawer-section">
+          <div class="drawer-section-heading">Export</div>
+          <div class="drawer-menu-list">
+            <button type="button" class="drawer-menu-item" id="exportImageItem">
+              <div class="drawer-item-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
+              <div class="drawer-item-text">Export image</div>
+              <span class="drawer-chevron">›</span>
+            </button>
+
+            <button type="button" class="drawer-menu-item" id="exportPdfItem">
+              <div class="drawer-item-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <div class="drawer-item-text">Export PDF</div>
+              <span class="drawer-chevron">›</span>
+            </button>
+
+            <button type="button" class="drawer-menu-item" id="exportCsvItem">
+              <div class="drawer-item-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/></svg>
+              </div>
+              <div class="drawer-item-text">Export CSV</div>
+            </button>
+
+            <button type="button" class="drawer-menu-item" id="printBoardItem">
+              <div class="drawer-item-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              </div>
+              <div class="drawer-item-text">Print</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Settings Drawer Modal (Padlet Authentic Settings) -->
+  <div id="settingsDrawer" class="drawer-backdrop" hidden>
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Settings">
+      <div class="drawer-header">
+        <button id="closeSettingsDrawerBtn" class="drawer-close-btn" title="Close" aria-label="Close">&times;</button>
+        <h3 class="drawer-title">Settings</h3>
+        <button id="saveSettingsBtn" class="settings-save-pill">Save</button>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Board Basic Info -->
+        <div class="drawer-section">
+          <div class="drawer-section-heading">Basic info</div>
+          <div class="settings-input-group">
+            <label class="settings-label" for="settingTitleInput">Title</label>
+            <input type="text" id="settingTitleInput" class="settings-text-input" value="Physics Audio Reflections: I see, I think, I wonder" />
+          </div>
+          <div class="settings-input-group">
+            <label class="settings-label" for="settingDescInput">Description / Author</label>
+            <input type="text" id="settingDescInput" class="settings-text-input" value="Salman Madani • 6d" />
+          </div>
+        </div>
+
+        <!-- Wallpaper Theme Switcher -->
+        <div class="drawer-section">
+          <div class="drawer-section-heading">Wallpaper theme</div>
+          <div class="wallpaper-theme-grid">
+            <button type="button" class="wallpaper-card is-active" data-theme="aurora">
+              <div class="wallpaper-swatch theme-swatch-aurora"></div>
+              <span>Aurora Glow</span>
+            </button>
+            <button type="button" class="wallpaper-card" data-theme="midnight">
+              <div class="wallpaper-swatch theme-swatch-midnight"></div>
+              <span>Midnight</span>
+            </button>
+            <button type="button" class="wallpaper-card" data-theme="blueprint">
+              <div class="wallpaper-swatch theme-swatch-blueprint"></div>
+              <span>Blueprint</span>
+            </button>
+            <button type="button" class="wallpaper-card" data-theme="corkboard">
+              <div class="wallpaper-swatch theme-swatch-corkboard"></div>
+              <span>Corkboard</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Reactions Setting -->
+        <div class="drawer-section">
+          <div class="drawer-section-heading">Engagement</div>
+          <div class="settings-input-group">
+            <label class="settings-label" for="settingReactionSelect">Reactions style</label>
+            <select id="settingReactionSelect" class="settings-select-input">
+              <option value="smileys">😊 Smileys</option>
+              <option value="hearts">❤️ Hearts / Likes</option>
+              <option value="stars">⭐ 1-5 Stars</option>
+              <option value="upvote">👍 Upvotes</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. More Options Drawer Modal (Padlet Authentic Additional Options) -->
+  <div id="moreDrawer" class="drawer-backdrop" hidden>
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Additional options">
+      <div class="drawer-header">
+        <button id="closeMoreDrawerBtn" class="drawer-close-btn" title="Close" aria-label="Close">&times;</button>
+        <h3 class="drawer-title">Additional options</h3>
+        <div class="drawer-header-spacer"></div>
+      </div>
+
+      <div class="drawer-body">
+        <!-- Quick Action Colored Tiles (Picture-matching) -->
+        <div class="share-quick-tiles">
+          <button type="button" class="quick-tile tile-pink" id="moreQuickShareBtn">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </div>
+            <span>Share</span>
+          </button>
+
+          <button type="button" class="quick-tile tile-gray" id="moreQuickRemakeBtn">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            </div>
+            <span>Remake</span>
+          </button>
+
+          <button type="button" class="quick-tile tile-green" id="moreQuickActivityBtn">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </div>
+            <span>Activity</span>
+          </button>
+
+          <button type="button" class="quick-tile tile-teal" id="moreQuickSlideshowBtn">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+            <span>Slideshow</span>
+          </button>
+
+          <button type="button" class="quick-tile tile-gray" id="moreQuickSettingsBtn">
+            <div class="tile-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <span>Settings</span>
+          </button>
+        </div>
+
+        <!-- Options List -->
+        <div class="drawer-section">
+          <div class="drawer-menu-list">
+            <button type="button" class="drawer-menu-item" id="moreFullscreenItem">
+              <div class="drawer-item-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+              </div>
+              <div class="drawer-item-text">Go full screen</div>
+            </button>
+
+            <button type="button" class="drawer-menu-item" id="morePrintItem">
+              <div class="drawer-item-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              </div>
+              <div class="drawer-item-text">Print board</div>
+            </button>
+
+            <button type="button" class="drawer-menu-item" id="moreRemakeItem">
+              <div class="drawer-item-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              </div>
+              <div class="drawer-item-text">Remake / Clone board</div>
+            </button>
+
+            <button type="button" class="drawer-menu-item item-danger" id="moreClearPostsItem">
+              <div class="drawer-item-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </div>
+              <div class="drawer-item-text">Clear posts</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. QR Code Modal Dialog -->
+  <div id="qrModal" class="submodal-backdrop" hidden>
+    <div class="submodal-dialog" style="max-width: 360px; text-align: center; border-radius: 20px;">
+      <div class="submodal-header">
+        <h4>Scan QR code</h4>
+        <button id="closeQrModalBtn" class="modal-close">&times;</button>
+      </div>
+      <div class="submodal-body" style="padding: 24px;">
+        <div id="qrCanvasContainer" style="display: flex; justify-content: center; margin-bottom: 16px;">
+          <!-- SVG QR Code rendered here -->
+        </div>
+        <p style="font-size: 13.5px; color: #94a3b8; margin: 0;">Point your phone camera to open this board instantly.</p>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
 
+  <!-- Supabase JS Client & Padles Backend Integration -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="supabase-service.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
