@@ -80,9 +80,11 @@ padles/
 ├── index.html                                                  # Core semantic markup, modals & SVG icons
 ├── styles.css                                                  # Comprehensive Padlet design system & tokens
 ├── app.js                                                      # Application logic, state management & UI handlers
+├── start-edge-debug.bat                                        # One-click launcher for Edge Remote Debugging (port 9222)
 ├── padles_pixel_perfect_clone_specification_antigravity_blueprint.md  # Detailed feature blueprint specification
 ├── docs/
 │   ├── architecture_comparison_and_migration_plan.md          # Supabase (Postgres/Realtime/Auth) + Cloudflare R2 architecture
+│   ├── rea_and_edge_setup_guide.md                            # Setup guide for REA MCP & Edge Remote Debugging
 │   ├── post_workflow_iteration_report.md                      # Post features parity verification report
 │   └── screenshots/                                           # High-resolution verification captures
 └── README.md
@@ -93,6 +95,7 @@ padles/
 ## 📐 Plans & Architecture Roadmap
 
 * **[Production Architecture & Implementation Plan](docs/architecture_comparison_and_migration_plan.md)**: Deep-dive production engineering architecture detailing **Supabase** (PostgreSQL DDL schema, Realtime multiplayer sync, Anonymous/OAuth authentication, Row-Level Security) and **Cloudflare R2** (zero-egress object storage, presigned upload pipeline, OpenGraph link preview workers) along with a 5-phase migration roadmap.
+* **[REA & Microsoft Edge DevTools Setup Guide](docs/rea_and_edge_setup_guide.md)**: Complete guide on installing REA MCP (`rea-agents`) and launching Microsoft Edge on remote debugging port `9222` for live reverse engineering and browser automation on a new computer.
 * **[Post Workflow Iteration & Parity Report](docs/post_workflow_iteration_report.md)**: Verification documentation covering tests across post creation, in-place update, context menu actions, and theater view.
 * **[Blueprint Specification](padles_pixel_perfect_clone_specification_antigravity_blueprint.md)**: Complete functional and behavioral specification derived from live Padlet reverse engineering.
 
