@@ -1,170 +1,259 @@
-# Architectural Evolution Plan: Scaling Padles from Vanilla Prototype to Production
+# Padles Production Architecture & Implementation Plan: Supabase + Cloudflare R2
 
-## 1. Executive Summary & Recommendation
-
-Padles currently runs as a client-side vanilla JavaScript monolith (`index.html`, `styles.css`, `app.js` ~3,000 lines each) storing state in browser `localStorage`. 
-
-While this prototype architecture provided zero-dependency iteration speed, a **100% Padlet clone** fundamentally requires:
-1. **Multiplayer Real-Time Sync**: Multiple users viewing and editing cards, dragging sections, and commenting concurrently via WebSockets.
-2. **Persistent Cloud Storage**: Reliable relational database storage (PostgreSQL/SQLite) replacing local browser storage.
-3. **Media Processing Pipeline**: Server-side file uploads, image compression, YouTube/Link OpenGraph metadata scraping, and audio recording storage.
-4. **Maintainable Codebase**: Component modularization so cards, sections, drafts dock, and theater view can be maintained independently without 3,000-line single-file cognitive overload.
-
-### The Recommendation
-> [!IMPORTANT]
-> **Recommended Stack**: **Vite + React (or Modular TypeScript) Frontend + Node.js / Fastify / TypeScript Backend + PostgreSQL / SQLite + WebSockets**.
-> 
-> **Why Node.js over Rust for this stage**: Padlet's business logic involves rapid UI iterations, complex nested JSON schemas (custom fields, reactions, draft docks, 21 media tools), and dynamic third-party API integrations (OpenGraph scrapers, Google Drive, YouTube oEmbed). TypeScript across client and server provides **shared type definitions**, instant iteration velocity, and unmatched web ecosystem libraries (`sharp`, `open-graph-scraper`, `ws`, `drizzle-orm`).
->
-> **Where Rust Shines**: If your primary objective is learning Rust systems programming, minimizing VPS hosting memory to under 30MB RAM, or building an ultra-high-throughput WebSocket broadcast engine that handles 50,000+ simultaneous connections on a $5/mo server, **Rust (Axum + Tokio)** is unbeatable.
+This document details the production engineering architecture and implementation roadmap for transitioning **Padles** from a local vanilla prototype to a real-time, multi-user collaborative platform using **Supabase** (Postgres, Auth, Realtime) and **Cloudflare R2** (Zero-Egress Object Storage).
 
 ---
 
-## 2. Deep Dive: Option A (Node.js / TypeScript) vs Option B (Rust)
+## 1. System Architecture Overview
 
 ```mermaid
 graph TD
-    subgraph Client [Frontend Client]
-        UI[Padlet UI: Board, Cards, Composer, Drafts Dock, Theater]
+    subgraph Clients [Clients & Collaborators]
+        UserA[User A Browser]
+        UserB[User B Browser]
+        Guest[Guest User (Anonymous Auth)]
     end
 
-    subgraph OptionA [Option A: Full-Stack Node.js / TypeScript]
-        NodeAPI[Fastify / Express API Server]
-        NodeWS[WebSocket Server ws/socket.io]
-        NodeMedia[Sharp / OpenGraph Media Scrapers]
-        Drizzle[Drizzle / Prisma ORM]
+    subgraph SupabasePlatform [Supabase Backend Platform]
+        Auth[Supabase Auth: Anonymous, Email, Google OAuth]
+        Postgres[(Managed PostgreSQL 15+)]
+        RLS[Row-Level Security Engine]
+        RealtimeEngine[Supabase Realtime Engine: WAL + WS]
+        EdgeFunc[Supabase Edge Functions: Deno / TS]
     end
 
-    subgraph OptionB [Option B: Rust Backend Engine]
-        Axum[Axum / Actix-Web HTTP Server]
-        TokioWS[Tokio Concurrent WebSockets]
-        RustMedia[image-rs / reqwest Scraper]
-        SQLx[SQLx Async Compile-Time Checked DB]
+    subgraph Storage [Cloudflare Edge & Storage]
+        R2[(Cloudflare R2 Bucket: Zero Egress)]
+        CDN[Cloudflare Global Edge CDN]
     end
 
-    subgraph Storage [Database & Storage]
-        DB[(PostgreSQL / SQLite)]
-        S3[(S3 / MinIO Object Storage)]
-    end
+    UserA -->|1. Auth & Queries| Auth
+    UserA -->|2. CRUD via REST / SDK| Postgres
+    UserA <-->|3. WebSockets: Postgres Changes, Presence, Broadcast| RealtimeEngine
+    Postgres -->|WAL Streams| RealtimeEngine
+    RealtimeEngine -->|Broadcast Sync| UserB
+    RealtimeEngine -->|Broadcast Sync| Guest
 
-    UI -->|REST / WS| NodeAPI
-    NodeAPI --> Drizzle --> DB
-    NodeWS --> NodeAPI
-    NodeMedia --> S3
-
-    UI -.->|REST / WS| Axum
-    Axum --> SQLx --> DB
-    TokioWS --> Axum
-    RustMedia --> S3
+    UserA -->|4. Request Presigned Upload URL| EdgeFunc
+    EdgeFunc -->|Generate Presigned S3 PUT URL| UserA
+    UserA -->|5. Direct Upload Attachment| R2
+    R2 --> CDN -->|Public Read Stream| Clients
 ```
 
-### 2.1 Option A: Node.js + TypeScript (Pragmatic & Rapid Feature Velocity)
-* **Architecture**: 
-  * **Frontend**: Vite + TypeScript (React or Lightweight Web Components) preserving all current Padlet CSS and DOM structures.
-  * **Backend**: Fastify or Express + TypeScript.
-  * **Real-Time**: Native `ws` or `Socket.io` rooms per board (`room: board-{id}`).
-  * **Data Layer**: Drizzle ORM or Prisma with PostgreSQL (or SQLite for single-file deployment).
-  * **Media Worker**: `sharp` (instant WebP/JPEG thumbnail generation), `open-graph-scraper` (link card scraping).
+---
 
-#### Strengths
-* **End-to-End Type Safety**: A single `types/board.ts` file defines `Card`, `Section`, `Draft`, `CustomField`, and `WebSocketMessage`. If you modify a card field, both client and server validate it instantly at compile time.
-* **Ecosystem Richness for Media**: Padlet requires scraping link thumbnails, embedding Spotify/YouTube, and processing attachments. Node.js has pre-built packages for every web metadata specification.
-* **Rapid Iteration**: Zero compile wait times; changes reflect in sub-second Hot Module Replacement (HMR).
+## 2. Why This Stack is Superior for Padles
 
-#### Weaknesses
-* Memory footprint: ~150MB–250MB baseline RAM per container.
-* Single-threaded event loop requires worker threads for heavy media transcoding.
+### 2.1 Supabase (Database, Realtime & Auth)
+1. **Built-in Multiplayer Primitives**:
+   * **Postgres Changes (`postgres_changes`)**: Streams `INSERT`, `UPDATE`, and `DELETE` events directly from PostgreSQL WAL logs. When any user recolors a card, moves a section, or adds a comment, all active viewers receive the update in real time with zero backend boilerplate.
+   * **Presence (`presence`)**: Tracks live collaborator avatars, showing who is currently on the board.
+   * **Broadcast (`broadcast`)**: Ephemeral, sub-50ms peer messaging for live card dragging previews and "User is writing..." typing indicators without writing to the database.
+2. **Row-Level Security (RLS)**:
+   * Enforces board privacy (Public, Secret Link, Password, Private) directly in the database engine.
+   * Restricts contributors to only editing or deleting their own posts while granting board creators full moderation rights.
+3. **Anonymous Authentication**:
+   * Critical for educational/classroom Padlet workflows where students join and contribute immediately without registering a permanent account.
+
+### 2.2 Cloudflare R2 (Media Storage)
+1. **$0 Egress Fees**:
+   * Padlet boards are media-intensive (embedded videos, audio reflections, camera snapshots, high-res photos). Standard AWS S3 egress costs can become exorbitant when dozens of users view the same board. R2 has **zero bandwidth egress charges**.
+2. **S3-Compatible API**:
+   * Standard `@aws-sdk/client-s3` and `@aws-sdk/s3-request-presigner` packages work out of the box.
+3. **Global Edge Delivery**:
+   * Files and audio recordings are cached and delivered through Cloudflare’s worldwide edge CDN.
 
 ---
 
-### 2.2 Option B: Rust Backend (Maximum Concurrency, Safety & Efficiency)
-* **Architecture**:
-  * **Frontend**: Vite + TypeScript (React or Svelte).
-  * **Backend**: **Axum** (maintained by the Tokio team) + **Tokio** runtime.
-  * **Real-Time**: Tokio Broadcast Channels / WebSockets.
-  * **Data Layer**: **SQLx** (compile-time checked SQL queries against real DB schema) + PostgreSQL/SQLite.
-  * **Media Handling**: `image-rs` for image resizing, `reqwest` + `scraper` for HTML scraping.
+## 3. Production Database Schema (PostgreSQL DDL)
 
-#### Strengths
-* **Extreme Resource Efficiency**: Idles at ~15MB–30MB RAM. Can easily serve thousands of active boards on a minimal $4–$5/mo VPS.
-* **Rock-Solid Real-Time Concurrency**: Tokio handles tens of thousands of concurrent WebSocket broadcast connections without memory leaks or garbage collection stutter.
-* **Reliability & Crash Resistance**: Rust's ownership model and strict type system eliminate runtime crashes, null pointer exceptions, and data races. Compile-time SQL validation ensures zero SQL syntax typos reach production.
+```sql
+-- Enable UUID extension
+create extension if not exists "uuid-ossp";
 
-#### Weaknesses
-* **Development Velocity**: Developing complex dynamic mutations (such as custom field builders with flexible JSON types, dynamic filter graphs, and rich text parser trees) takes roughly 2.5x to 3x longer than TypeScript.
-* **No Direct Shared Client-Server Code**: The frontend remains TypeScript, meaning types must be kept in sync manually or via code generators (e.g., `ts-rs` or OpenAPI generators).
+-- ============================================================================
+-- 1. Boards
+-- ============================================================================
+create table public.boards (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text default '',
+  author_id uuid references auth.users(id) on delete set null,
+  author_display_name text default 'Anonymous',
+  settings jsonb default '{"wallpaper": "dark", "reactions": "smileys"}'::jsonb,
+  is_public boolean default true,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- ============================================================================
+-- 2. Sections (Columns)
+-- ============================================================================
+create table public.sections (
+  id uuid primary key default gen_random_uuid(),
+  board_id uuid not null references public.boards(id) on delete cascade,
+  title text not null,
+  rank float8 not null default 1000.0, -- Fractional indexing for drag-and-drop
+  is_default boolean default false,
+  created_at timestamptz default now()
+);
+
+-- ============================================================================
+-- 3. Posts (Cards)
+-- ============================================================================
+create table public.posts (
+  id uuid primary key default gen_random_uuid(),
+  section_id uuid not null references public.sections(id) on delete cascade,
+  board_id uuid not null references public.boards(id) on delete cascade,
+  author_id uuid references auth.users(id) on delete set null,
+  author_name text default 'Anonymous',
+  title text default '',
+  body text default '',
+  color text default 'white', -- 'white', 'red', 'yellow', 'green', 'blue', 'purple'
+  type text default 'text',   -- 'text', 'video', 'link', 'image', 'audio'
+  attachment jsonb default null, -- { provider, url, thumbnailUrl, caption, title, domain }
+  custom_field_values jsonb default '{}'::jsonb,
+  pinned boolean default false,
+  rank float8 not null default 1000.0, -- Fractional indexing
+  reactions_count int default 0,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- ============================================================================
+-- 4. Comments
+-- ============================================================================
+create table public.comments (
+  id uuid primary key default gen_random_uuid(),
+  post_id uuid not null references public.posts(id) on delete cascade,
+  author_id uuid references auth.users(id) on delete set null,
+  author_name text not null default 'Anonymous',
+  text text not null,
+  created_at timestamptz default now()
+);
+
+-- ============================================================================
+-- 5. Reactions
+-- ============================================================================
+create table public.reactions (
+  id uuid primary key default gen_random_uuid(),
+  post_id uuid not null references public.posts(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  reaction_type text default 'smiley',
+  created_at timestamptz default now(),
+  unique (post_id, user_id)
+);
+
+-- ============================================================================
+-- 6. Custom Field Definitions
+-- ============================================================================
+create table public.custom_fields (
+  id uuid primary key default gen_random_uuid(),
+  board_id uuid not null references public.boards(id) on delete cascade,
+  name text not null,
+  type text not null, -- 'text', 'rating', 'select', 'boolean'
+  options jsonb default '[]'::jsonb,
+  is_required boolean default false,
+  created_at timestamptz default now()
+);
+
+-- ============================================================================
+-- Realtime Subscriptions Configuration
+-- ============================================================================
+alter publication supabase_realtime add table public.sections;
+alter publication supabase_realtime add table public.posts;
+alter publication supabase_realtime add table public.comments;
+alter publication supabase_realtime add table public.reactions;
+
+-- ============================================================================
+-- Row-Level Security (RLS) Policies
+-- ============================================================================
+alter table public.boards enable row level security;
+alter table public.sections enable row level security;
+alter table public.posts enable row level security;
+alter table public.comments enable row level security;
+alter table public.reactions enable row level security;
+
+-- Public boards read policy
+create policy "Anyone can view public boards" on public.boards
+  for select using (is_public = true);
+
+-- Public sections read policy
+create policy "Anyone can view sections of public boards" on public.sections
+  for select using (exists (
+    select 1 from public.boards b where b.id = sections.board_id and b.is_public = true
+  ));
+
+-- Public posts read policy
+create policy "Anyone can view posts of public boards" on public.posts
+  for select using (exists (
+    select 1 from public.boards b where b.id = posts.board_id and b.is_public = true
+  ));
+
+-- Anyone can insert posts on public boards
+create policy "Anyone can insert posts on public boards" on public.posts
+  for insert with check (exists (
+    select 1 from public.boards b where b.id = posts.board_id and b.is_public = true
+  ));
+
+-- Authors can update their own posts
+create policy "Authors can update their own posts" on public.posts
+  for update using (author_id = auth.uid() or author_id is null);
+```
 
 ---
 
-## 3. Side-by-Side Comparison Matrix
+## 4. Key Engineering Workflows
 
-| Evaluation Dimension | Option A: Node.js (TypeScript) | Option B: Rust (Axum / Tokio) | Winner / Verdict |
-| :--- | :--- | :--- | :--- |
-| **Development Speed** | ⚡ **Very Fast** (Instant turnaround, hot reload) | 🐢 **Moderate to Slow** (Strict compiler, borrow checker) | **Node.js** |
-| **Code Reuse** | 🔗 **100% Shared Types** (`shared/types.ts` on client & server) | 🔄 **Requires Code Gen** (`ts-rs` or manual sync) | **Node.js** |
-| **Real-Time Concurrency** | 🟢 **Good** (10,000+ connections per node with `ws`) | 🚀 **Extraordinary** (100,000+ connections on tiny footprint) | **Rust** |
-| **Memory / CPU Footprint** | 🟡 **~150–300 MB RAM** | 🟢 **~15–30 MB RAM** (Minimal resource cost) | **Rust** |
-| **Media & Web Scraping** | 🟢 **Abundant Ecosystem** (`sharp`, `cheerio`, `oembed`) | 🟡 **Requires Custom Assembly** (`reqwest`, `scraper`) | **Node.js** |
-| **Maintainability for Padlet** | 🟢 **High** (Matches web standards, easy to refactor) | 🟢 **High** (Ultra-reliable once compiled) | **Tie** |
+### 4.1 Fractional Indexing (Lexorank) for Reordering
+* **Design**: Store order as floating point numbers (`rank: 1000.0, 2000.0, 3000.0`).
+* **Workflow**: When moving a card between rank `1000.0` and `2000.0`, the client calculates `newRank = (1000.0 + 2000.0) / 2 = 1500.0`.
+* **Advantage**: Updating a single card updates only **one database row**, emitting exactly **one Realtime event** across WebSockets with zero cascading re-renders.
+
+### 4.2 Secure Cloudflare R2 Upload Flow
+1. Client calls Supabase Edge Function: `POST /functions/v1/get-r2-upload-url` with `{ fileName, contentType, boardId }`.
+2. Edge Function checks user permissions and creates a presigned S3 `PutObjectCommand` URL with a 5-minute expiry.
+3. Client uploads the raw binary directly to Cloudflare R2 using `fetch(presignedUrl, { method: 'PUT', body: file })`.
+4. Client attaches public CDN URL (`https://cdn.padles.com/attachments/<id>.<ext>`) to the card and inserts the post into Supabase.
+
+### 4.3 Link Preview OpenGraph Scraper
+1. In the Composer Link tool, client submits a URL (e.g., YouTube or article).
+2. Edge Function scrapes the target URL using `open-graph-scraper` or `cheerio`.
+3. Returns `{ title, description, domain, thumbnailUrl, provider }` to populate the link card preview.
 
 ---
 
-## 4. Phased Implementation Roadmap
+## 5. Phased Migration Roadmap
 
 ```mermaid
 timeline
-    title Padles Architecture Migration Timeline
-    Phase 1 : Modularize Frontend : Setup Vite & Split app.js into clean modules (Board, Composer, Dock, Theater)
-    Phase 2 : Database & REST API : Define Postgres/SQLite Schema & build CRUD endpoints
-    Phase 3 : Real-Time WebSockets : Live sync card moves, comments, edits across browsers
-    Phase 4 : Media Storage & Auth : Cloudflare R2 / S3 upload pipeline, Link scraping & User Accounts
+    title Padles Production Roadmap
+    Phase 1 : Supabase Schema & Client : Deploy Postgres DDL, import @supabase/supabase-js, replace localStorage
+    Phase 2 : Multiplayer Realtime Sync : Listen to postgres_changes, live update cards/columns/comments
+    Phase 3 : Cloudflare R2 Storage : Deploy Edge Function for presigned URLs & direct media upload
+    Phase 4 : Auth & Multi-Board Routing : Anonymous guest sessions + Google Auth, board URL routing
+    Phase 5 : Modular Frontend : Transition to Vite + TypeScript component modules
 ```
 
-### Phase 1: Frontend Modularization (Vite + Modular TypeScript)
-* **Goal**: Decompose monolithic `app.js` (2,800 lines) and `styles.css` (3,100 lines) without touching the 100% pixel-perfect UI.
-* **Structure**:
-  ```
-  padles-web/
-  ├── src/
-  │   ├── components/
-  │   │   ├── board/           # Column, Section Header, DropZone
-  │   │   ├── card/            # PadletCard, CardContextMenu, HoverActions
-  │   │   ├── composer/        # PostComposer, AttachmentPicker, ColorPopover
-  │   │   ├── drafts/          # DraftsDock, DockSlot, BulkMenu
-  │   │   └── theater/         # TheaterModal, MediaCanvas, CommentsThread
-  │   ├── state/               # BoardState store (Zustand or reactive signals)
-  │   ├── styles/              # Design tokens, variables, component styles
-  │   └── types/               # TypeScript interfaces for Post, Section, Attachment
-  ```
+### Phase 1: Database Migration & Supabase Client
+* Create Supabase project and execute the SQL schema.
+* Include `@supabase/supabase-js` via CDN in `index.html`.
+* Adapt `app.js` `loadState()` and `saveState()` to query and mutate Supabase tables instead of `localStorage`.
 
-### Phase 2: Relational Persistence Layer (PostgreSQL or SQLite)
-* **Core Database Tables**:
-  * `boards` (`id`, `title`, `author`, `settings_json`, `created_at`)
-  * `sections` (`id`, `board_id`, `title`, `position_rank`, `is_default`)
-  * `posts` (`id`, `section_id`, `title`, `content_json`, `color`, `pinned`, `position_rank`, `created_at`)
-  * `comments` (`id`, `post_id`, `author_name`, `author_id`, `text`, `created_at`)
-  * `reactions` (`id`, `post_id`, `user_id`, `reaction_type`)
-  * `custom_field_definitions` (`id`, `board_id`, `name`, `type`, `options_json`)
+### Phase 2: Live Realtime Subscriptions
+* Subscribe to `supabase.channel('board-realtime')` on board load.
+* Listen for `INSERT`, `UPDATE`, `DELETE` events on `posts` and `sections`.
+* Synchronize changes live across open tabs and multiple users with optimistic local UI fallback.
 
-### Phase 3: Real-Time Multiplayer Sync (WebSockets)
-* **Message Protocol**:
-  * `CARD_MOVED`: `{ cardId, sourceSectionId, targetSectionId, newIndex }`
-  * `CARD_UPDATED`: `{ cardId, fields }`
-  * `CARD_RECOLORED`: `{ cardId, color }`
-  * `COMMENT_ADDED`: `{ cardId, comment }`
-  * `USER_TYPING` / `CURSOR_POSITION`: Live collaborative indicators.
+### Phase 3: Cloudflare R2 Media Integration
+* Configure Cloudflare R2 bucket with custom domain / public read URL.
+* Deploy Supabase Edge Function to vend presigned upload URLs.
+* Wire attachment buttons (Upload, Camera, Audio Recorder) to direct R2 uploads.
 
-### Phase 4: Media Uploads & Metadata Worker
-* Server endpoint for presigned upload URLs (Cloudflare R2 or AWS S3).
-* Background scraper endpoint: given a URL (e.g. YouTube or article), returns `{ title, description, thumbnail_url, domain, provider }`.
+### Phase 4: Authentication & Board Routing
+* Implement Anonymous Guest Auth for zero-barrier student collaboration.
+* Add Google & Email OAuth login in the top navigation bar.
+* Enable multi-board support with dynamic URL routing (`padles.com/b/:boardId`).
 
----
-
-## 5. Decision Checklist: Which Direction Should We Take?
-
-1. **Option 1 (Recommended)**: **TypeScript + Node.js (Vite + Fastify/Express + Drizzle)**.
-   * *Best if*: You want to ship real-time multiplayer, database persistence, and file attachments as quickly as possible with unified TypeScript.
-2. **Option 2**: **Rust Backend (Axum + Tokio + SQLx) + TypeScript Frontend (Vite)**.
-   * *Best if*: You want to explore Rust, prioritize rock-bottom hosting costs, and engineer a high-throughput systems backend.
-3. **Option 3**: **Refactor Frontend First (Modular Vite/TS)** before introducing any backend.
-   * *Best if*: You want to clean up the code organization first while keeping the app zero-server runnable in Edge/Chrome.
+### Phase 5: Modular TypeScript Build System
+* Decompose monolithic `app.js` and `styles.css` into focused Vite + TypeScript component modules without altering any design tokens or UI states.

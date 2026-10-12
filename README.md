@@ -82,7 +82,7 @@ padles/
 ├── app.js                                                      # Application logic, state management & UI handlers
 ├── padles_pixel_perfect_clone_specification_antigravity_blueprint.md  # Detailed feature blueprint specification
 ├── docs/
-│   ├── architecture_comparison_and_migration_plan.md          # Full-stack Node.js vs. Rust architecture plan
+│   ├── architecture_comparison_and_migration_plan.md          # Supabase (Postgres/Realtime/Auth) + Cloudflare R2 architecture
 │   ├── post_workflow_iteration_report.md                      # Post features parity verification report
 │   └── screenshots/                                           # High-resolution verification captures
 └── README.md
@@ -92,7 +92,7 @@ padles/
 
 ## 📐 Plans & Architecture Roadmap
 
-* **[Architectural Evolution Plan: Node.js vs. Rust](docs/architecture_comparison_and_migration_plan.md)**: Deep-dive analysis and phased migration roadmap for transitioning Padles to a production multi-user stack (WebSocket real-time sync, PostgreSQL/SQLite database schema, and S3 media pipeline).
+* **[Production Architecture & Implementation Plan](docs/architecture_comparison_and_migration_plan.md)**: Deep-dive production engineering architecture detailing **Supabase** (PostgreSQL DDL schema, Realtime multiplayer sync, Anonymous/OAuth authentication, Row-Level Security) and **Cloudflare R2** (zero-egress object storage, presigned upload pipeline, OpenGraph link preview workers) along with a 5-phase migration roadmap.
 * **[Post Workflow Iteration & Parity Report](docs/post_workflow_iteration_report.md)**: Verification documentation covering tests across post creation, in-place update, context menu actions, and theater view.
 * **[Blueprint Specification](padles_pixel_perfect_clone_specification_antigravity_blueprint.md)**: Complete functional and behavioral specification derived from live Padlet reverse engineering.
 
