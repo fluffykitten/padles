@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Physics Audio Reflections: I see, I think, I wonder — Padles</title>
+  <meta name="description" content="Padles Section & Shelf board inspired by Padlet, featuring columns, rich media attachments, and interactive reactions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="aurora-theme">
+  <!-- Top Global Header -->
+  <header class="padlet-header">
+    <div class="header-main-row">
+      <div class="header-left">
+        <span class="padlet-logo">Padles</span>
+      </div>
+
+      <div class="header-right">
+        <!-- Search Button -->
+        <button id="searchToggleBtn" class="icon-btn" title="Search posts" aria-label="Search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.3-4.3"/>
+          </svg>
+        </button>
+
+        <!-- Slideshow Button -->
+        <button id="slideshowBtn" class="pill-btn" title="Start slideshow" aria-label="Slideshow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <span>Slideshow</span>
+        </button>
+
+        <!-- Share Button -->
+        <button id="shareBtn" class="pill-btn" title="Share board" aria-label="Share">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="m4 12 10-8v5c7 0 9 6 9 11-2-4-5-6-9-6v6L4 12z"/>
+          </svg>
+          <span>Share</span>
+        </button>
+
+        <!-- Settings Gear -->
+        <button id="settingsBtn" class="icon-btn" title="Board settings" aria-label="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+
+        <!-- More Options -->
+        <button id="moreBtn" class="icon-btn" title="More options" aria-label="More">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="1.5"/>
+            <circle cx="19" cy="12" r="1.5"/>
+            <circle cx="5" cy="12" r="1.5"/>
+          </svg>
+        </button>
+
+        <!-- User Avatar -->
+        <div class="user-avatar" title="Salman Madani">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces" alt="Avatar" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Board Info Row -->
+    <div class="board-info-row">
+      <div class="board-author" id="boardAuthor">Salman Madani • 6d</div>
+      <h1 class="board-title-display" id="boardTitle">Physics Audio Reflections: I see, I think, I wonder</h1>
+    </div>
+
+    <!-- Search Overlay Box (Toggled) -->
+    <div id="searchOverlay" class="search-overlay" hidden>
+      <input type="text" id="boardSearchInput" placeholder="Filter cards across all sections..." />
+      <button id="closeSearchBtn">&times;</button>
+    </div>
+  </header>
+
+  <!-- Horizontal Scrollable Sections Canvas -->
+  <main class="board-container" id="boardContainer">
+    <div class="sections-track" id="sectionsTrack">
+      <!-- Dynamic Sections rendered here -->
+    </div>
+
+    <!-- Add Section Button at the end of the track -->
+    <div class="add-section-wrapper">
+      <button id="addSectionBtn" class="add-section-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <span>Add section</span>
+      </button>
+    </div>
+  </main>
+
+  <!-- Floating "+ Post" Button (Padlet Signature Yellow Pill) -->
+  <button id="mainPostBtn" class="padlet-post-fab" title="Create a new post">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    <span>Post</span>
+  </button>
+
+  <!-- Padlet-Authentic Dockable Multiple Drafts System -->
+  <aside id="dockableModalsContainer" class="dockable-modals-dock" aria-label="Post drafts dock">
+    <!-- Minimized Draft Tabs -->
+    <div id="dockedTabsTrack" class="docked-tabs-track" role="group" aria-label="Post drafts list">
+      <!-- Minimized tabs dynamically rendered here: Draft 1, Draft 2, Draft 3 -->
+    </div>
+
+    <!-- Active Composer Modal (Docked in the same flex row alongside draft tabs) -->
+    <div id="composerCardWrapper" class="composer-card-wrapper" hidden>
+      <div id="composerCard" class="composer-card" role="dialog" aria-modal="true" aria-label="Create Post">
+        <!-- Top Action Bar -->
+        <div class="composer-top-bar">
+          <div class="composer-window-actions">
+            <button id="closeModalBtn" class="composer-icon-btn" title="Close post" aria-label="Close post" data-testid="composerModalCloseButton">
+              <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+                <path d="M4.478 25.112c-.625.625-.655 1.741.015 2.395.655.655 1.77.64 2.395.015l9.105-9.119 9.12 9.119c.64.64 1.741.64 2.395-.015.64-.669.655-1.755 0-2.395l-9.105-9.119 9.105-9.105c.655-.64.655-1.741 0-2.395-.669-.64-1.756-.655-2.395-.015l-9.12 9.119-9.105-9.119c-.625-.625-1.756-.655-2.395.015-.655.655-.64 1.77-.015 2.395l9.12 9.105z"/>
+              </svg>
+            </button>
+            <button id="expandModalBtn" class="composer-icon-btn" title="Expand post" aria-label="Expand post" data-testid="expandPostComposerModalButton">
+              <svg id="expandModalSvg" viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+                <path d="M5.721 4h-.006a1.72 1.72 0 0 0-1.099.385c-.36.28-.593.689-.595 1.141q-.02.18 0 .361l-.02 14.571c0 .809.779 1.56 1.704 1.541.926 0 1.705-.731 1.705-1.54l.007-10.65 17.701 17.713c.625.625 1.756.655 2.395-.015.655-.655.64-1.77.015-2.395l-9.12-9.105-8.593-8.604 12.195.015c.884 0 1.704-.778 1.683-1.704 0-.926-.799-1.705-1.682-1.705l-16.289-.01z"/>
+              </svg>
+            </button>
+            <button id="minimizeModalBtn" class="composer-icon-btn" title="Minimize post" aria-label="Minimize post" data-testid="surfaceComposerModalHeaderBarMinimizeButton">
+              <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+                <path d="M5.7 24.6h20.6a1.7 1.7 0 1 1 0 3.4H5.7a1.7 1.7 0 1 1 0-3.4"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="composer-header-right">
+            <!-- Schedule Post Button -->
+            <button id="schedulePostBtn" class="composer-icon-btn" title="Set a future publish date" aria-label="Open modal to set a future publish date" data-testid="composerSchedulePostButton">
+              <svg viewBox="0 0 32 32" width="20" height="20" fill="currentColor" aria-hidden="true">
+                <path d="M16 2.667C8.648 2.667 2.667 8.648 2.667 16S8.648 29.333 16 29.333c.351 0 .696-.025 1.04-.052a8.7 8.7 0 0 1-1.4-1.966C9.558 27.123 4.666 22.128 4.666 16c0-6.249 5.084-11.333 11.333-11.333 6.128 0 11.123 4.892 11.315 10.974a8.7 8.7 0 0 1 1.966 1.4c.027-.345.052-.689.052-1.04 0-7.352-5.981-13.333-13.333-13.333zm.318 5.319A1 1 0 0 0 15.334 9v7h-4.333a1 1 0 0 0-.936.614A1 1 0 0 0 11.001 18h5.333a.997.997 0 0 0 1-1V9a1 1 0 0 0-.293-.722q-.143-.143-.332-.219a.8.8 0 0 0-.391-.073M23.333 16a7.333 7.333 0 1 0 0 14.666 7.333 7.333 0 0 0 0-14.666m0 2c.368 0 .667.299.667.667v4h4a.667.667 0 0 1 0 1.334h-4v4a.667.667 0 0 1-1.334 0v-4h-4a.667.667 0 0 1 0-1.334h4v-4c0-.368.299-.667.667-.667"/>
+              </svg>
+            </button>
+
+            <!-- Publish Button (Padlet bg-padlet-pink #ff1f6d) -->
+            <button id="publishBtn" class="composer-publish-btn" disabled data-testid="publishPostButton" title="Publish post" aria-label="Publish post">Publish</button>
+          </div>
+        </div>
+
+        <!-- Scrollable Composer Content -->
+        <div class="composer-scroll-area">
+          <!-- Subject / Title Input -->
+          <div class="composer-title-section">
+            <input type="text" id="composerTitleInput" class="composer-title-input" placeholder="Your name" autocomplete="off" />
+          </div>
+
+          <!-- Attachment Toolbar Box (Padlet Signature Striped Multi-Tool) -->
+          <div class="attachment-picker-box" id="attachmentPickerBox">
+            <div class="attachment-tools-strip" id="attachmentToolsStrip">
+              <!-- 1: Upload -->
+              <button type="button" class="tool-strip-col" data-tool="upload" data-title="Upload" data-desc="a file from your device." data-shortcut="Ctrl + 1" title="Upload a file" aria-label="Upload a file">
+                <svg class="tool-strip-bg" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="0" y1="16" x2="100%" y2="0" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="28" x2="100%" y2="12" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="40" x2="100%" y2="24" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="52" x2="100%" y2="36" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="64" x2="100%" y2="48" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="76" x2="100%" y2="60" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="88" x2="100%" y2="72" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="100" x2="100%" y2="84" stroke="currentColor" stroke-width="1.2"/>
+                </svg>
+                <span class="tool-icon-wrapper">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="m13.15 14.333c0 .635-.515 1.15-1.15 1.15s-1.15-.515-1.15-1.15v-7.556l-2.036 2.036c-.449.449-1.177.449-1.626 0s-.449-1.177 0-1.626l3.973-3.972c.21-.225.509-.365.84-.365.323 0 .615.133.824.348l3.989 3.989c.449.449.449 1.177 0 1.626s-1.177.449-1.626 0l-2.037-2.037v7.557z"/>
+                    <path d="m5.15 14.168c0-.635-.515-1.15-1.15-1.15s-1.15.515-1.15 1.15v4.333c0 1.003.813 1.817 1.817 1.817h14.667c1.003 0 1.817-.813 1.817-1.817v-4.333c0-.635-.515-1.15-1.15-1.15s-1.15.515-1.15 1.15v3.85h-13.7v-3.85z"/>
+                  </svg>
+                </span>
+              </button>
+
+              <!-- 2: Camera -->
+              <button type="button" class="tool-strip-col" data-tool="camera" data-title="Camera" data-desc="take a photo with your camera." data-shortcut="Ctrl + 2" title="Take a photo" aria-label="Take a photo">
+                <svg class="tool-strip-bg" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="0" y1="0" x2="100%" y2="16" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="12" x2="100%" y2="28" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="24" x2="100%" y2="40" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="36" x2="100%" y2="52" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="48" x2="100%" y2="64" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="60" x2="100%" y2="76" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="72" x2="100%" y2="88" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="84" x2="100%" y2="100" stroke="currentColor" stroke-width="1.2"/>
+                </svg>
+                <span class="tool-icon-wrapper">
+                  <svg width="24" height="24" viewBox="0 0 32 32" fill="currentColor">
+                    <path d="M12.848 4.333a2.665 2.665 0 0 0-2.496 1.73L9.5 8.333H5.667a3.333 3.333 0 0 0-3.333 3.333v12.667a3.333 3.333 0 0 0 3.333 3.333h20.667a3.333 3.333 0 0 0 3.333-3.333V11.666a3.333 3.333 0 0 0-3.333-3.333h-3.167l-.852-2.27a2.665 2.665 0 0 0-2.496-1.73zm3.485 7.334c3.492 0 6.333 2.841 6.333 6.333s-2.841 6.333-6.333 6.333S10 21.492 10 18s2.841-6.333 6.333-6.333m0 2C13.944 13.667 12 15.611 12 18s1.944 4.333 4.333 4.333 4.333-1.944 4.333-4.333-1.944-4.333-4.333-4.333"/>
+                  </svg>
+                </span>
+              </button>
+
+              <!-- 3: AI Art -->
+              <button type="button" class="tool-strip-col" data-tool="ai" data-title="AI Art" data-desc="use AI image generator." data-shortcut="Ctrl + 3" title="Use AI Art Generator" aria-label="Use AI Art Generator">
+                <svg class="tool-strip-bg" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="0" y1="16" x2="100%" y2="0" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="28" x2="100%" y2="12" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="40" x2="100%" y2="24" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="52" x2="100%" y2="36" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="64" x2="100%" y2="48" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="76" x2="100%" y2="60" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="88" x2="100%" y2="72" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="100" x2="100%" y2="84" stroke="currentColor" stroke-width="1.2"/>
+                </svg>
+                <span class="tool-icon-wrapper">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="m11.289 14.481c.36-.282.865-.285 1.227-.006l6.153 4.732c.757.582.345 1.793-.61 1.793h-12.171c-.949 0-1.364-1.199-.618-1.786z"/>
+                    <path d="m5 11c1.105 0 2 .895 2 2s-.895 2-2 2-2-.895-2-2 .895-2 2-2z"/>
+                    <path d="m16.399 3c.295 0 .591.16.724.483l.887 2.177c.135.331.398.594.729.729l2.176.886c.647.265.647 1.183 0 1.447l-2.176.889c-.331.135-.594.398-.729.729l-.887 2.174c-.265.647-1.182.647-1.446 0l-.889-2.174c-.135-.331-.398-.594-.729-.729l-2.173-.889c-.647-.265-.647-1.183 0-1.447l2.173-.886c.33-.134.594-.398.729-.729l.889-2.177c.132-.324.427-.483.723-.483z"/>
+                  </svg>
+                </span>
+              </button>
+
+              <!-- 4: Link -->
+              <button type="button" class="tool-strip-col" data-tool="link" data-title="Link" data-desc="an image, video, audio, link, or file." data-shortcut="Ctrl + 4" title="Attach a link" aria-label="Attach a link">
+                <svg class="tool-strip-bg" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="0" y1="0" x2="100%" y2="16" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="12" x2="100%" y2="28" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="24" x2="100%" y2="40" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="36" x2="100%" y2="52" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="48" x2="100%" y2="64" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="60" x2="100%" y2="76" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="72" x2="100%" y2="88" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="84" x2="100%" y2="100" stroke="currentColor" stroke-width="1.2"/>
+                </svg>
+                <span class="tool-icon-wrapper">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M4.222 12c-2.14 2.14-2.14 5.639 0 7.778s5.639 2.14 7.778 0l1.414-1.414c0.095-0.092 0.171-0.203 0.223-0.325s0.079-0.253 0.080-0.386c0.001-0.132-0.024-0.264-0.075-0.387s-0.124-0.234-0.218-0.328c-0.094-0.094-0.205-0.168-0.328-0.218s-0.254-0.076-0.387-0.075c-0.132 0.001-0.264 0.028-0.385 0.080s-0.232 0.128-0.325 0.223l-1.414 1.414c-1.375 1.375-3.574 1.375-4.95 0s-1.375-3.574 0-4.95l1.414-1.414c0.095-0.092 0.171-0.203 0.223-0.325s0.079-0.253 0.080-0.385c0.001-0.133-0.024-0.264-0.075-0.387s-0.124-0.234-0.218-0.328-0.205-0.168-0.328-0.218c-0.123-0.050-0.254-0.076-0.387-0.075s-0.264 0.028-0.385 0.080-0.232 0.128-0.325 0.223l-1.414 1.414zM10.586 5.636c-0.095 0.092-0.171 0.203-0.223 0.325s-0.079 0.253-0.080 0.385c-0.001 0.133 0.024 0.264 0.075 0.387s0.124 0.234 0.218 0.328c0.094 0.094 0.205 0.168 0.328 0.218s0.254 0.076 0.387 0.075c0.132-0.001 0.264-0.028 0.385-0.080s0.232-0.128 0.325-0.223l1.414-1.414c1.376-1.375 3.574-1.375 4.95 0s1.375 3.574 0 4.95l-1.414 1.414c-0.095 0.092-0.171 0.203-0.223 0.325s-0.079 0.253-0.080 0.385c-0.001 0.133 0.024 0.264 0.075 0.387s0.125 0.234 0.218 0.328 0.205 0.168 0.328 0.218c0.123 0.050 0.254 0.076 0.387 0.075s0.264-0.028 0.386-0.080c0.122-0.052 0.232-0.128 0.325-0.223l1.414-1.414c2.14-2.14 2.14-5.639 0-7.778s-5.639-2.14-7.778 0l-1.414 1.414zM7.050 15.536c-0.095 0.092-0.171 0.203-0.223 0.325s-0.079 0.253-0.080 0.385c-0.001 0.132 0.024 0.264 0.075 0.387s0.124 0.234 0.218 0.328c0.094 0.094 0.205 0.168 0.328 0.218s0.254 0.076 0.387 0.075c0.133-0.001 0.264-0.028 0.385-0.080s0.232-0.128 0.325-0.223l8.485-8.485c0.095-0.092 0.171-0.203 0.223-0.325s0.079-0.253 0.080-0.385c0.001-0.133-0.024-0.264-0.075-0.387s-0.125-0.234-0.218-0.328-0.205-0.168-0.328-0.218c-0.123-0.050-0.254-0.076-0.387-0.075s-0.264 0.028-0.386 0.080-0.232 0.128-0.325 0.223l-8.485 8.485z"/>
+                  </svg>
+                </span>
+              </button>
+
+              <!-- 5: Search -->
+              <button type="button" class="tool-strip-col" data-tool="search" data-title="Search" data-desc="for an image, video, audio, link, or file." data-shortcut="Ctrl + 5" title="Search for an image" aria-label="Search for an image">
+                <svg class="tool-strip-bg" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="0" y1="16" x2="100%" y2="0" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="28" x2="100%" y2="12" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="40" x2="100%" y2="24" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="52" x2="100%" y2="36" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="64" x2="100%" y2="48" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="76" x2="100%" y2="60" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="88" x2="100%" y2="72" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="100" x2="100%" y2="84" stroke="currentColor" stroke-width="1.2"/>
+                </svg>
+                <span class="tool-icon-wrapper">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M11.289 14.48c0.36-0.282 0.865-0.285 1.227-0.006l6.153 4.732c0.757 0.582 0.345 1.793-0.61 1.793h-12.171c-0.949-0-1.364-1.199-0.618-1.786l6.019-4.733z"/>
+                    <path d="M5 11c1.105 0 2 .895 2 2s-0.895 2-2 2c-1.105 0-2-0.895-2-2s0.895-2 2-2z"/>
+                    <path d="M13.317 3c2.464-0.32 4.721 1.417 5.042 3.882 0.142 1.091-0.119 2.14-0.668 3l3.172 2.442c0.328 0.253 0.389 0.724 0.137 1.052s-0.724 0.389-1.052 0.137l-3.267-2.515c-0.616 0.486-1.369 0.818-2.204 0.927-2.464 0.32-4.722-1.418-5.043-3.883s1.418-4.721 3.883-5.042zM16.872 7.075c-0.214-1.643-1.719-2.801-3.361-2.588s-2.801 1.718-2.588 3.361c0.214 1.643 1.718 2.802 3.361 2.588s2.802-1.718 2.588-3.361z"/>
+                  </svg>
+                </span>
+              </button>
+
+              <!-- 6: All Tools -->
+              <button type="button" class="tool-strip-col tool-strip-all" data-tool="all" data-title="All tools" data-desc="open dialog to view more attachment types." data-shortcut="Ctrl + 6" title="All tools" aria-label="Open dialog to view more attachment types">
+                <svg class="tool-strip-bg" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="0" y1="0" x2="100%" y2="16" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="12" x2="100%" y2="28" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="24" x2="100%" y2="40" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="36" x2="100%" y2="52" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="48" x2="100%" y2="64" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="60" x2="100%" y2="76" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="72" x2="100%" y2="88" stroke="currentColor" stroke-width="1.2"/>
+                  <line x1="0" y1="84" x2="100%" y2="100" stroke="currentColor" stroke-width="1.2"/>
+                </svg>
+                <span class="tool-all-label">All<br>tools</span>
+              </button>
+            </div>
+
+            <!-- Bottom Prompt & Shortcut Bar -->
+            <div class="attachment-prompt-bar" id="attachmentPromptBar">
+              <div class="prompt-bar-left">
+                <span class="prompt-bar-tick" id="promptBarTick"></span>
+                <span class="prompt-bar-text" id="promptBarText">Add an image, video, audio, link, or file.</span>
+              </div>
+              <div class="prompt-bar-right">
+                <span class="prompt-bar-shortcut" id="promptBarShortcut"></span>
+              </div>
+            </div>
+
+            <!-- Active Attachment Preview Strip (Hidden until selected) -->
+            <div id="activeAttachmentPreview" class="active-attachment-preview" hidden>
+              <div class="attachment-preview-badge">
+                <span id="previewTypeBadge">Link</span>
+                <span id="previewTitleText">Attachment attached</span>
+                <button id="removeAttachmentBtn" class="remove-attachment-btn" title="Remove attachment">&times;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Body / Notes Input -->
+          <div class="composer-body-section">
+            <textarea id="composerBodyInput" class="composer-body-textarea" placeholder="Write something beautiful..."></textarea>
+          </div>
+
+          <!-- Dynamic Custom Fields Inputs in Composer -->
+          <div id="composerCustomFieldsArea" class="composer-custom-fields-area"></div>
+        </div>
+
+        <!-- Bottom Settings Bar (Color, Section, Fields) -->
+        <div class="composer-bottom-bar">
+          <div class="composer-bottom-left">
+            <!-- Color Dot Selector -->
+            <div class="bottom-popover-anchor">
+              <button type="button" class="composer-selector-pill" id="colorPickerPill" title="Open post color selection dialog" aria-label="Open post color selection dialog" aria-haspopup="true" data-testid="surfacePostComposerModalPostColorInputChip">
+                <span class="color-dot-indicator" id="currentColorDot"></span>
+                <span id="currentColorLabel">White</span>
+                <svg viewBox="0 0 32 32" width="12" height="12" fill="currentColor" aria-hidden="true">
+                  <path d="M5.626 11.293a1 1 0 0 1 1.414 0l8.96 8.96 8.96-8.96a.999.999 0 1 1 1.414 1.414l-9.667 9.667a1 1 0 0 1-1.414 0l-9.667-9.667a1 1 0 0 1 0-1.414"/>
+                </svg>
+              </button>
+
+              <!-- Color Popover -->
+              <div id="colorSelectPopover" class="padlet-popover color-popover" hidden>
+                <div class="popover-title-row">Color</div>
+                <div class="color-options-list" id="colorOptionsList">
+                  <!-- Rendered in JS with pastel options: White, Red, Yellow, Green, Blue, Purple -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Section Selector -->
+            <div class="bottom-popover-anchor">
+              <button type="button" class="composer-selector-pill" id="sectionSelectorPill" title="Open post section selection dialog" aria-label="Open post section selection dialog" aria-haspopup="true" data-testid="surfacePostComposerModalSectionInputChip">
+                <svg viewBox="0 0 32 32" width="14" height="14" fill="currentColor" aria-hidden="true" class="section-icon-svg">
+                  <path d="M14 2.667c-1.374 0-2.678.359-3.682 1.15s-1.651 2.05-1.651 3.517c0 1.726.823 3.048 1.953 3.896-.344.16-.671.353-.969.587C8.646 12.608 8 13.867 8 15.334c0 1.917 1.103 3.32 2.484 4.108s3.035 1.156 4.618 1.531 3.097.757 4.09 1.323 1.474 1.121 1.474 2.371c0 .927-.324 1.501-.888 1.945s-1.426.721-2.445.721c-2.933 0-5.779-1.832-5.779-1.832a1 1 0 0 0-1.121-.009.998.998 0 0 0 .012 1.674s3.155 2.168 6.888 2.168c1.374 0 2.678-.359 3.682-1.15s1.651-2.05 1.651-3.517c0-1.72-.89-3.023-2.072-3.842.389-.17.755-.379 1.087-.641 1.005-.791 1.651-2.05 1.651-3.517 0-1.917-1.113-3.309-2.499-4.069s-3.037-1.095-4.616-1.448-3.084-.725-4.069-1.299-1.483-1.167-1.483-2.517c0-.926.324-1.501.888-1.945s1.426-.721 2.445-.721c2.933 0 5.779 1.832 5.779 1.832a1 1 0 0 0 1.121.009.998.998 0 0 0-.012-1.673s-3.155-2.168-6.888-2.168zm-.108 9.976a45 45 0 0 0 1.889.457c1.587.355 3.103.708 4.093 1.25s1.46 1.066 1.46 2.316c0 .927-.324 1.501-.888 1.945s-1.426.721-2.445.721h-.667a1 1 0 0 0-.322.049 74 74 0 0 0-1.448-.355c-1.583-.375-3.097-.757-4.09-1.323S10 16.582 10 15.332c0-.927.324-1.501.888-1.945s1.426-.721 2.445-.721h.333a1 1 0 0 0 .225-.023z"/>
+                </svg>
+                <span id="currentSectionLabel">Instructions</span>
+                <svg viewBox="0 0 32 32" width="12" height="12" fill="currentColor" aria-hidden="true">
+                  <path d="M5.626 11.293a1 1 0 0 1 1.414 0l8.96 8.96 8.96-8.96a.999.999 0 1 1 1.414 1.414l-9.667 9.667a1 1 0 0 1-1.414 0l-9.667-9.667a1 1 0 0 1 0-1.414"/>
+                </svg>
+              </button>
+
+              <!-- Section Popover -->
+              <div id="sectionSelectPopover" class="padlet-popover section-popover" hidden>
+                <div class="popover-header-row">
+                  <span class="popover-header-title">Section</span>
+                  <button type="button" id="popoverNewSectionBtn" class="popover-new-btn">New</button>
+                </div>
+                <div class="section-options-list" id="sectionOptionsList">
+                  <!-- Rendered dynamically in JS with checkmark -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Fields Button (Exact Padlet Pencil + "Fields") -->
+            <button type="button" class="composer-fields-btn" id="composerFieldsBtn" title="Go to post fields panel" aria-label="Go to post fields panel" data-testid="surfacePostComposerModalPostPropertiesButton">
+              <svg viewBox="0 0 32 32" width="14" height="14" fill="currentColor" aria-hidden="true">
+                <path d="m25.771 12.357 1.627-1.627a4.34 4.34 0 0 0 0-6.129c-.818-.817-1.905-1.267-3.065-1.267s-2.247.45-3.065 1.267l-1.626 1.626 6.129 6.129zm-7.542-4.714L6.183 19.689a2.3 2.3 0 0 0-.565.917l-2.233 6.747a1 1 0 0 0 1.264 1.263l6.745-2.234c.345-.113.662-.309.919-.566l12.045-12.045z"/>
+              </svg>
+              <span>Fields</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drafts Bulk Action Menu Button -->
+    <div class="dock-bulk-action-wrapper" id="dockBulkActionWrapper" hidden>
+      <button id="dockBulkActionBtn" class="dock-tab-btn dock-bulk-btn" title="Open drafts bulk action menu" aria-label="Open drafts bulk action menu" data-testid="surfaceDraftBulkActionButton">
+        <svg viewBox="0 0 32 32" width="18" height="18" fill="currentColor" aria-hidden="true">
+          <path d="M10.667 5.678A3.67 3.67 0 0 0 7 9.345v13.31a3.67 3.67 0 0 0 3.667 3.667h13.31A3.67 3.67 0 0 0 27.644 22.655V9.345A3.67 3.67 0 0 0 23.977 5.678H10.667zm-5.334 4A3.67 3.67 0 0 0 1.667 13.345v13.31A3.67 3.67 0 0 0 5.333 30.322h13.31a3.67 3.67 0 0 0 3.667-3.667v-.667H10.667a5.673 5.673 0 0 1-5.667-5.667v-10.666h-.667z"/>
+        </svg>
+      </button>
+
+      <!-- Bulk Action Dropdown Menu with Speech-Bubble Tail -->
+      <div id="draftsBulkMenu" class="drafts-bulk-menu" hidden data-testid="surfaceDraftBulkActionPopover" role="menu" aria-label="Draft bulk actions">
+        <div class="bulk-menu-inner">
+          <button id="bulkPublishAllBtn" class="bulk-menu-item" data-testid="surfaceDraftBulkActionPopoverPublishAllDraftsButton" role="menuitem">
+            <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M3.63 2.668a1 1 0 0 0-.803.456 1 1 0 0 0-.087.919L7.588 16 2.74 27.957a1.01 1.01 0 0 0 .247 1.111 1 1 0 0 0 1.126.161L28.78 16.896a1 1 0 0 0 .552-.895 1.01 1.01 0 0 0-.552-.895L4.113 2.773a1 1 0 0 0-.483-.104zm1.958 3.078L26.097 16 5.588 26.254 9.341 17h8.992a1 1 0 0 0 .937-.614q.078-.185.077-.386a.8.8 0 0 0-.077-.386 1 1 0 0 0-.55-.542 1 1 0 0 0-.387-.072H9.341z"/>
+            </svg>
+            <span>Publish all drafts</span>
+          </button>
+          <div class="menu-divider"></div>
+          <button id="bulkDeleteAllBtn" class="bulk-menu-item bulk-item-danger" data-testid="surfaceDraftBulkActionPopoverDeleteAllDraftsButton" role="menuitem">
+            <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d="M16 2.667c-2.339 0-4.286 1.748-4.613 4H6.826a1 1 0 0 0-.32 0H4.334a1 1 0 0 0-.936.614 1 1 0 0 0 .936 1.386H5.76L7.438 26.02a3.68 3.68 0 0 0 3.65 3.314h9.824a3.68 3.68 0 0 0 3.65-3.314l1.68-17.353h1.426a1 1 0 0 0 .936-.614 1 1 0 0 0-.936-1.386h-2.171a1 1 0 0 0-.32 0h-4.563c-.327-2.252-2.274-4-4.613-4zm0 2a2.64 2.64 0 0 1 2.574 2h-5.148a2.64 2.64 0 0 1 2.574-2m-8.233 4h16.465l-1.661 17.16a1.655 1.655 0 0 1-1.659 1.507h-9.824a1.655 1.655 0 0 1-1.659-1.507zm5.884 3.319A1 1 0 0 0 12.667 13v10a1 1 0 0 0 .614.937A1 1 0 0 0 14.667 23V13a1 1 0 0 0-.293-.722q-.144-.143-.332-.219a.8.8 0 0 0-.391-.073m4.667 0A1 1 0 0 0 17.334 13v10a1 1 0 0 0 .614.937A1 1 0 0 0 19.334 23V13a1 1 0 0 0-.293-.722q-.143-.143-.332-.219a.8.8 0 0 0-.391-.073"/>
+            </svg>
+            <span>Delete all drafts</span>
+          </button>
+        </div>
+        <!-- Speech-bubble pointer tail -->
+        <svg class="bulk-menu-tail" width="24" height="12" viewBox="0 0 24 12" fill="currentColor">
+          <path d="M0 0h24-.652a4 4 0 0 0-2.788 1.147l-5.717 5.62a4 4 0 0 1-5.608 0l-5.718-5.62A4 4 0 0 0 .73 0H0z"/>
+        </svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Search / Attachment Sub-Modal (When clicking Search / Link icon) -->
+  <div id="searchAttachmentModal" class="submodal-backdrop" hidden>
+    <div class="submodal-dialog">
+      <div class="submodal-header">
+        <h4 id="submodalTitle">Search Media or Web</h4>
+        <button id="closeSubmodalBtn" class="modal-close">&times;</button>
+      </div>
+      <div class="submodal-body">
+        <div class="submodal-search-row">
+          <input type="text" id="mediaQueryInput" placeholder="Search YouTube, web, or images..." />
+          <button id="doSearchBtn" class="btn-submodal-search">Search</button>
+        </div>
+        <div id="mediaSearchResults" class="media-results-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post Fields Modal (Picture 4) -->
+  <div id="postFieldsModal" class="post-fields-backdrop" hidden>
+    <div class="post-fields-dialog" role="dialog" aria-modal="true" aria-label="Post fields">
+      <div class="post-fields-header">
+        <button type="button" id="closePostFieldsBtn" class="post-fields-close-btn" title="Close post fields" aria-label="Close">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+        <h3 class="post-fields-title">Post fields</h3>
+        <div style="width: 32px;"></div>
+      </div>
+
+      <div class="post-fields-body">
+        <!-- System Fields Group -->
+        <div class="fields-group-box">
+          <div class="field-item-row">
+            <span class="field-label">Subject</span>
+            <div class="field-status-chip">
+              <span>Show</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+          </div>
+          <div class="field-item-row">
+            <span class="field-label">Attachment</span>
+            <div class="field-status-chip">
+              <span>Show</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+          </div>
+          <div class="field-item-row">
+            <span class="field-label">Body</span>
+            <div class="field-status-chip">
+              <span>Show</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta Fields Group -->
+        <div class="fields-group-box">
+          <div class="field-item-row">
+            <span class="field-label">Color</span>
+            <div class="field-status-chip">
+              <span>Show</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="7 15 12 20 17 15"/>
+                <polyline points="7 9 12 4 17 9"/>
+              </svg>
+            </div>
+          </div>
+          <div class="field-item-row">
+            <span class="field-label">Location</span>
+            <div class="field-status-chip">
+              <span>Maps only</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="7 15 12 20 17 15"/>
+                <polyline points="7 9 12 4 17 9"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Fields Section -->
+        <div class="custom-fields-wrapper">
+          <div class="custom-fields-headline">Custom fields</div>
+          <div class="custom-fields-list" id="customFieldsList"></div>
+          <button type="button" class="add-custom-field-btn" id="addCustomFieldBtn">
+            <div class="custom-field-meta-left">
+              <span class="custom-field-plus-icon">+</span>
+              <div class="custom-field-meta-text">
+                <div class="custom-field-main-title">Add custom field</div>
+                <div class="custom-field-subtitle">New: Score, vote and rating fields</div>
+              </div>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="custom-field-arrow-icon">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 13-Item Context Menu (Blueprint Section 2.2) -->
+  <div id="sectionContextMenu" class="padlet-dropdown-menu section-context-menu" hidden>
+    <button type="button" class="menu-action-item" data-action="add-post">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>+ Add post</span>
+    </button>
+    <button type="button" class="menu-action-item" data-action="start-slideshow">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      <span>Start slideshow from this section</span>
+    </button>
+    <div class="menu-divider"></div>
+    <button type="button" class="menu-action-item" data-action="new-section-left">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <span>New section left</span>
+    </button>
+    <button type="button" class="menu-action-item" data-action="new-section-right">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      <span>New section right</span>
+    </button>
+    <button type="button" class="menu-action-item" data-action="move-section-right">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <span>Move section right</span>
+    </button>
+    <div class="menu-divider"></div>
+    <button type="button" class="menu-action-item" data-action="rename-section">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      <span>Rename section</span>
+    </button>
+    <button type="button" class="menu-action-item" data-action="make-default">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>Make section default</span>
+    </button>
+    <button type="button" class="menu-action-item" data-action="copy-section-name">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span>Copy section name</span>
+    </button>
+    <button type="button" class="menu-action-item" data-action="copy-breakout-link">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <span>Copy breakout room link</span>
+    </button>
+    <div class="menu-divider"></div>
+    <button type="button" class="menu-action-item menu-item-danger" data-action="delete-section">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      <span>Delete section</span>
+    </button>
+  </div>
+
+  <!-- Schedule Post Modal (Blueprint Section 5.2) -->
+  <div id="schedulePostModal" class="submodal-backdrop" hidden>
+    <div class="schedule-dialog">
+      <div class="schedule-header">
+        <div>
+          <h3 class="schedule-title">Schedule post</h3>
+          <p class="schedule-subtitle">Set a future publish date</p>
+        </div>
+        <button type="button" id="closeScheduleBtn" class="modal-close">&times;</button>
+      </div>
+      <div class="schedule-body">
+        <label class="schedule-input-label" for="scheduleDateTimeInput">Publish Date & Time</label>
+        <div class="schedule-input-wrap">
+          <input type="datetime-local" id="scheduleDateTimeInput" class="schedule-datetime-input" />
+        </div>
+        <div class="schedule-timezone-text" id="scheduleTimezoneText">Timezone: Western Indonesia Time (UTC+7)</div>
+      </div>
+      <div class="schedule-footer">
+        <button type="button" id="cancelScheduleBtn" class="schedule-btn-cancel">Cancel</button>
+        <button type="button" id="confirmScheduleBtn" class="schedule-btn-set">Set date</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Tools Modal (Blueprint Section 5.1: 21 Built-In Tools) -->
+  <div id="allToolsModal" class="submodal-backdrop" hidden>
+    <div class="all-tools-dialog">
+      <div class="all-tools-header">
+        <div class="all-tools-search-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="all-tools-search-icon">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input type="text" id="allToolsSearchInput" class="all-tools-search-input" placeholder="Search web or paste URL" />
+        </div>
+        <button type="button" id="closeAllToolsBtn" class="modal-close">&times;</button>
+      </div>
+      <div class="all-tools-grid" id="allToolsGrid">
+        <!-- 21 tools rendered with icon, label, and badges -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Field Schema Builder Sub-View (Blueprint Section 6.2) -->
+  <div id="customFieldBuilderModal" class="submodal-backdrop" hidden>
+    <div class="custom-field-dialog">
+      <div class="custom-field-header">
+        <button type="button" id="backCustomFieldBtn" class="custom-field-back-btn" title="Back">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h3 class="custom-field-dialog-title">Add custom field</h3>
+        <button type="button" id="closeCustomFieldModalBtn" class="modal-close">&times;</button>
+      </div>
+      <div class="custom-field-builder-body">
+        <div class="builder-row">
+          <label class="builder-label" for="customFieldNameInput">Field name</label>
+          <input type="text" id="customFieldNameInput" class="builder-input" placeholder="e.g. Rating, Due date, Score, Status" />
+        </div>
+        <div class="builder-row">
+          <label class="builder-label" for="customFieldTypeSelect">Field type</label>
+          <select id="customFieldTypeSelect" class="builder-select">
+            <option value="text">Text (Single line string)</option>
+            <option value="date">Date (Calendar picker & format)</option>
+            <option value="vote">Vote (Upvote / Downvote)</option>
+            <option value="rating">Rating (1–10 Star scale)</option>
+            <option value="score">Score (1–100 Numerical score)</option>
+            <option value="user">User (Member tag)</option>
+            <option value="select">Single select (Custom options list)</option>
+            <option value="number">Number (Formatted numeric)</option>
+            <option value="email">Email</option>
+            <option value="phone">Phone number</option>
+            <option value="url">URL (Outbound link)</option>
+            <option value="button">Button (Action trigger)</option>
+          </select>
+        </div>
+
+        <div id="customFieldTypeOptions" class="builder-type-options">
+          <!-- Type-specific options rendered dynamically in JS -->
+        </div>
+
+        <div class="builder-row builder-toggle-row">
+          <div>
+            <div class="builder-toggle-title">Required field</div>
+            <div class="builder-toggle-desc">Require this field before publishing</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="customFieldRequiredToggle" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="custom-field-footer">
+        <button type="button" id="cancelCustomFieldBtn" class="schedule-btn-cancel">Discard</button>
+        <button type="button" id="saveCustomFieldBtn" class="custom-field-save-btn">Create field</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3-Dots Context Menu (Padlet Authentic 14-Item Menu with 6 Inline Color Swatches) -->
+  <div id="cardContextMenu" class="padlet-dropdown-menu card-context-menu" hidden data-testid="surfacePostActionsPopover" role="menu" aria-label="Post actions">
+    <div class="menu-group">
+      <button type="button" class="menu-action-item" data-action="open-post" role="menuitem">
+        <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M6 8.333A2.333 2.333 0 0 1 8.333 6h5.333a1 1 0 0 0 0-2H8.333A4.333 4.333 0 0 0 4 8.333v15.333a4.333 4.333 0 0 0 4.333 4.333h15.333a4.333 4.333 0 0 0 4.333-4.333v-5.333a1 1 0 0 0-2 0v5.333a2.333 2.333 0 0 1-2.333 2.333h-7.667v-6.333a3.667 3.667 0 0 0-3.667-3.667H5.999zM6 18h6.333c.92 0 1.667.746 1.667 1.667V26H8.333A2.333 2.333 0 0 1 6 23.667zM17.333 5a1 1 0 0 1 1-1H27a1 1 0 0 1 1 1v8.667a1 1 0 0 1-2 0V7.415l-6.96 6.96a1 1 0 0 1-1.414-1.414l6.96-6.96h-6.253a1 1 0 0 1-1-1z"/>
+        </svg>
+        <span>Open post</span>
+      </button>
+      <div class="menu-divider"></div>
+      <button type="button" class="menu-action-item" data-action="open-new-tab" role="menuitem">
+        <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M18.333 4a1 1 0 0 0 0 2h6.253l-6.96 6.96a.999.999 0 1 0 1.414 1.414L26 7.414v6.252a1 1 0 0 0 2 0V4.999a1 1 0 0 0-1-1z"/>
+          <path d="M6.333 12.667a1 1 0 0 1 1-1h7.333a1 1 0 0 0 0-2H7.333a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-7.333a1 1 0 0 0-2 0v7.333a1 1 0 0 1-1 1h-12a1 1 0 0 1-1-1z"/>
+        </svg>
+        <span>Open post in new tab</span>
+      </button>
+      <div class="menu-divider"></div>
+      <button type="button" class="menu-action-item" data-action="copy-link" role="menuitem">
+        <svg viewBox="0 0 33 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M20.578 20.889a2.8 2.8 0 0 0 0 5.6h.622a.933.933 0 0 1 0 1.866h-.622a4.667 4.667 0 0 1 0-9.334h.622a.933.933 0 0 1 0 1.866h-.622z"/>
+          <path d="M19.644 23.689c0-.515.418-.933.933-.933h6.845a.933.933 0 0 1 0 1.866h-6.845a.933.933 0 0 1-.933-.933"/>
+          <path d="M30.222 23.689a2.8 2.8 0 0 1-2.8 2.8H26.8a.933.933 0 0 0 0 1.866h.622a4.667 4.667 0 0 0 0-9.334H26.8a.933.933 0 0 0 0 1.866h.622a2.8 2.8 0 0 1 2.8 2.8zM10 7a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h4.813a6 6 0 0 1-.106-2h-4.706a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v7.778h2V10a3 3 0 0 0-3-3z"/>
+        </svg>
+        <span>Copy link to post</span>
+      </button>
+      <div class="menu-divider"></div>
+      <button type="button" class="menu-action-item" data-action="start-slideshow" role="menuitem">
+        <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M10.143 7.528a1.568 1.568 0 0 0-2.31 1.381v14.183a1.568 1.568 0 0 0 2.31 1.381l13.198-7.092c1.101-.592 1.101-2.17 0-2.762zM5.952 8.909c0-2.608 2.783-4.272 5.081-3.038l13.198 7.092c2.422 1.301 2.422 4.775 0 6.076l-13.198 7.092c-2.297 1.235-5.081-.43-5.081-3.038z"/>
+        </svg>
+        <span>Start slideshow from this post</span>
+      </button>
+    </div>
+
+    <!-- Inline Row of 6 Color Circles -->
+    <div class="menu-group menu-colors-group">
+      <div class="menu-color-row" role="radiogroup" aria-label="Post color selection" id="cardMenuColorRow">
+        <!-- Rendered in JS with White, Red, Yellow, Green, Blue, Purple & active checkmark -->
+      </div>
+      <div class="menu-divider"></div>
+      <button type="button" class="menu-action-item" data-action="edit-post" role="menuitem">
+        <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M24 3.34a4.65 4.65 0 0 0-3.299 1.361l-2.547 2.547a1 1 0 0 0-.236.234L5.944 19.456c-.28.28-.485.628-.594 1.01l-1.978 6.926a1 1 0 0 0 .255.981 1 1 0 0 0 .981.255l6.927-1.978.001-.001c.38-.109.727-.312 1.008-.592l11.949-11.951q.169-.113.281-.281l2.525-2.525a4.68 4.68 0 0 0 0-6.599 4.65 4.65 0 0 0-3.3-1.361zm0 1.988c.681 0 1.36.262 1.884.786h.001a2.65 2.65 0 0 1 0 3.771l-1.96 1.96-3.771-3.771 1.96-1.96a2.66 2.66 0 0 1 1.885-.786zm-5.259 4.16 3.771 3.771-11.383 11.383a.35.35 0 0 1-.145.085l-.656.187-3.242-3.242.188-.657v-.001a.3.3 0 0 1 .085-.143L18.742 9.489zM6.457 23.871l1.672 1.672-2.34.668z"/>
+        </svg>
+        <span>Edit post</span>
+      </button>
+    </div>
+
+    <div class="menu-group">
+      <button type="button" class="menu-action-item" data-action="add-post-before" role="menuitem">
+        <svg viewBox="0 0 35 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M19.2 5.2c0-2.416 1.984-4.4 4.4-4.4H34v2.4H23.6c-1.119 0-2 .881-2 2v21.6c0 1.119.881 2 2 2H34v2.4H23.6c-2.416 0-4.4-1.984-4.4-4.4zM7.6 8a1.2 1.2 0 0 0-1.2 1.2v5.2H1.2a1.2 1.2 0 1 0 0 2.4h5.2V22a1.2 1.2 0 1 0 2.4 0v-5.2H14a1.2 1.2 0 1 0 0-2.4H8.8V9.2A1.2 1.2 0 0 0 7.6 8"/>
+        </svg>
+        <span>Add post before</span>
+      </button>
+      <div class="menu-divider"></div>
+      <button type="button" class="menu-action-item" data-action="add-post-after" role="menuitem">
+        <svg viewBox="0 0 35 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M15.6 5.2c0-2.416-1.984-4.4-4.4-4.4H.8v2.4h10.4c1.119 0 2 .881 2 2v21.6c0 1.119-.881 2-2 2H.8v2.4h10.4c2.416 0 4.4-1.984 4.4-4.4zM26.8 8a1.2 1.2 0 0 0-1.2 1.2v5.2h-5.2a1.2 1.2 0 1 0 0 2.4h5.2V22a1.2 1.2 0 1 0 2.4 0v-5.2h5.2a1.2 1.2 0 1 0 0-2.4H28V9.2A1.2 1.2 0 0 0 26.8 8"/>
+        </svg>
+        <span>Add post after</span>
+      </button>
+    </div>
+
+    <div class="menu-group">
+      <button type="button" class="menu-action-item" data-action="duplicate-post" role="menuitem">
+        <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M7.667 4c-2.013 0-3.667 1.653-3.667 3.667v16.667c0 2.013 1.653 3.667 3.667 3.667h16.667c2.013 0 3.667-1.653 3.667-3.667v-16.667c0-2.013-1.653-3.667-3.667-3.667h-16.667zM7.667 6h16.667c0.932 0 1.667 0.735 1.667 1.667v16.667c0 0.932-0.735 1.667-1.667 1.667h-16.667c-0.932 0-1.667-0.735-1.667-1.667v-16.667c0-0.932 0.735-1.667 1.667-1.667zM15.984 9.319c-0.265 0.004-0.517 0.113-0.702 0.303s-0.286 0.446-0.282 0.711v4.667h-4.667c-0.133-0.002-0.264 0.023-0.387 0.072s-0.235 0.123-0.329 0.216-0.169 0.204-0.22 0.326c-0.051 0.122-0.077 0.253-0.077 0.386s0.026 0.264 0.077 0.386c0.051 0.122 0.126 0.233 0.22 0.326s0.206 0.166 0.329 0.216c0.123 0.049 0.255 0.074 0.387 0.072h4.667v4.667c-0.002 0.133 0.023 0.264 0.072 0.387s0.123 0.235 0.216 0.329 0.204 0.169 0.326 0.221c0.122 0.051 0.253 0.077 0.386 0.077s0.264-0.026 0.386-0.077c0.122-0.051 0.233-0.126 0.326-0.221s0.166-0.206 0.216-0.329c0.049-0.123 0.074-0.255 0.072-0.387v-4.667h4.667c0.133 0.002 0.264-0.023 0.387-0.072s0.235-0.123 0.329-0.216 0.169-0.204 0.221-0.326c0.051-0.122 0.077-0.253 0.077-0.386s-0.026-0.264-0.077-0.386c-0.051-0.122-0.126-0.233-0.221-0.326s-0.206-0.166-0.329-0.216c-0.123-0.049-0.255-0.074-0.387-0.072h-4.667v-4.667c0.002-0.134-0.023-0.267-0.073-0.391s-0.125-0.237-0.22-0.331c-0.095-0.095-0.207-0.169-0.331-0.219s-0.257-0.075-0.391-0.073z"/>
+        </svg>
+        <span>Duplicate post</span>
+      </button>
+      <div class="menu-divider"></div>
+      <button type="button" class="menu-action-item" data-action="copy-to-another" role="menuitem">
+        <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M11.333 5.667a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-12a3 3 0 0 0-3-3zm-1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-12a1 1 0 0 1-1-1z"/>
+          <path d="M5 12c0-1.306.835-2.417 2-2.829v12.163a3.667 3.667 0 0 0 3.667 3.667H22.83a3 3 0 0 1-2.829 2h-9.333a5.667 5.667 0 0 1-5.667-5.667z"/>
+        </svg>
+        <span>Copy to another padlet</span>
+      </button>
+      <div class="menu-divider"></div>
+      <button type="button" class="menu-action-item" data-action="transfer-to-another" role="menuitem">
+        <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M6 7a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-1.333a1 1 0 0 0-2 0V22a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v1.333a1 1 0 0 0 2 0V10a3 3 0 0 0-3-3z"/>
+          <path d="M11.52 16.991a.99.99 0 0 1-.853-.991 1 1 0 0 1 1-1h14.254l-2.956-2.96-.097-.112a1 1 0 0 1 1.51-1.302l4.663 4.667.097.112a1 1 0 0 1-.097 1.302l-4.663 4.667-.112.097a1 1 0 0 1-1.301-.097l-.097-.112a1 1 0 0 1 .097-1.302L25.921 17l-14.4-.009z"/>
+        </svg>
+        <span>Transfer to another padlet</span>
+      </button>
+    </div>
+
+    <div class="menu-group">
+      <button type="button" class="menu-action-item" data-action="toggle-pin" role="menuitem">
+        <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="m21.657 3.909 6.434 6.434c1.77 1.77 1.286 4.753-.953 5.872l-6.495 3.247a1 1 0 0 0-.498.568l-1.919 5.555a1.666 1.666 0 0 1-2.754.634l-4.139-4.139-5.919 5.919H4v-1.414l5.919-5.919-4.139-4.139a1.667 1.667 0 0 1 .634-2.754l5.555-1.919a1 1 0 0 0 .568-.498l3.247-6.495c1.119-2.239 4.103-2.723 5.872-.953zm5.02 7.849-6.434-6.434a1.667 1.667 0 0 0-2.669.433l-3.247 6.495a3 3 0 0 1-1.704 1.494l-5.051 1.745 8.939 8.939 1.745-5.051a3 3 0 0 1 1.494-1.704l6.495-3.247a1.666 1.666 0 0 0 .433-2.669z"/>
+        </svg>
+        <span id="pinActionLabel">Pin post</span>
+      </button>
+      <div class="menu-divider"></div>
+      <button type="button" class="menu-action-item menu-item-danger" data-action="delete-post" role="menuitem">
+        <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+          <path d="M16 2.667c-2.339 0-4.286 1.748-4.613 4H6.826a1 1 0 0 0-.32 0H4.334a1 1 0 0 0-.936.614 1 1 0 0 0 .936 1.386H5.76L7.438 26.02a3.68 3.68 0 0 0 3.65 3.314h9.824a3.68 3.68 0 0 0 3.65-3.314l1.68-17.353h1.426a1 1 0 0 0 .936-.614 1 1 0 0 0-.936-1.386h-2.171a1 1 0 0 0-.32 0h-4.563c-.327-2.252-2.274-4-4.613-4zm0 2a2.64 2.64 0 0 1 2.574 2h-5.148a2.64 2.64 0 0 1 2.574-2m-8.233 4h16.465l-1.661 17.16a1.655 1.655 0 0 1-1.659 1.507h-9.824a1.655 1.655 0 0 1-1.659-1.507zm5.884 3.319A1 1 0 0 0 12.667 13v10a1 1 0 0 0 .614.937A1 1 0 0 0 14.667 23V13a1 1 0 0 0-.293-.722q-.144-.143-.332-.219a.8.8 0 0 0-.391-.073m4.667 0A1 1 0 0 0 17.334 13v10a1 1 0 0 0 .614.937A1 1 0 0 0 19.334 23V13a1 1 0 0 0-.293-.722q-.143-.143-.332-.219a.8.8 0 0 0-.391-.073"/>
+        </svg>
+        <span>Delete post</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Post Detail / Expand Theater Modal (Padlet Authentic Theater View) -->
+  <div id="cardDetailModal" class="card-detail-modal-backdrop" hidden data-testid="surfacePanelPostExpanded" role="dialog" aria-modal="true" aria-label="Expanded post dialog">
+    <div class="card-detail-theater">
+      <!-- Media / Content Area (Left/Center) -->
+      <div class="detail-attachment-area">
+        <button type="button" id="closeDetailModalBtn" class="detail-close-btn" title="Close" aria-label="Close" data-testid="surfacePostExpandedViewCloseButton">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor" aria-hidden="true">
+            <path d="M4.478 25.112c-.625.625-.655 1.741.015 2.395.655.655 1.77.64 2.395.015l9.105-9.119 9.12 9.119c.64.64 1.741.64 2.395-.015.64-.669.655-1.755 0-2.395l-9.105-9.119 9.105-9.105c.655-.64.655-1.741 0-2.395-.669-.64-1.756-.655-2.395-.015l-9.12 9.119-9.105-9.119c-.625-.625-1.756-.655-2.395.015-.655.655-.64 1.77-.015 2.395l9.12 9.105z"/>
+          </svg>
+        </button>
+        <div class="detail-media-canvas" id="detailMediaCanvas">
+          <!-- Rendered in JS: large video, image, link, or presentation -->
+        </div>
+      </div>
+
+      <!-- Right Sidebar (Meta, Subject, Body, Reactions, Interactive Comments) -->
+      <div class="detail-sidebar" id="detailSidebar">
+        <div class="detail-sidebar-fold" id="detailSidebarFold"></div>
+        <div class="detail-sidebar-scroll">
+          <div class="detail-header-meta">
+            <p class="detail-board-title">Physics Audio Reflections: I see, I think, I wonder</p>
+            <p class="detail-section-title" id="detailSectionTitle">Instructions</p>
+          </div>
+          <h2 class="detail-post-subject" id="detailPostSubject">Student Instructions</h2>
+          <div class="detail-post-body" id="detailPostBody">
+            <!-- Full text/bullets rendered here -->
+          </div>
+          <div id="detailCustomFieldsBox" class="detail-custom-fields-box"></div>
+          
+          <div class="detail-divider"></div>
+
+          <!-- Reactions Row -->
+          <div class="detail-reactions-row">
+            <button type="button" class="detail-reaction-btn" id="detailReactionBtn" title="Add reaction" aria-label="Add reaction">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                <path d="M11.168 3c0.657 0 1.299 0.064 1.92 0.188-0.171 0.455-0.287 0.937-0.342 1.437-0.511-0.098-1.038-0.151-1.578-0.151-4.616 0-8.359 3.743-8.359 8.359s3.743 8.358 8.359 8.358c4.616 0 8.358-3.742 8.358-8.358 0-0.54-0.053-1.068-0.151-1.579 0.5-0.055 0.982-0.172 1.437-0.342 0.123 0.622 0.189 1.264 0.189 1.922-0 5.431-4.403 9.833-9.833 9.833s-9.833-4.402-9.833-9.833c0-5.431 4.402-9.833 9.833-9.833z"/>
+                <path d="M6.654 15.447c0.32-0.252 0.783-0.196 1.035 0.124 0.835 1.059 2.105 1.689 3.479 1.689 1.373-0 2.64-0.628 3.475-1.685 0.252-0.32 0.717-0.375 1.037-0.122s0.373 0.717 0.121 1.036c-1.112 1.407-2.804 2.246-4.633 2.246-1.831 0-3.525-0.841-4.637-2.251-0.252-0.32-0.197-0.784 0.122-1.036z"/>
+                <path d="M8.219 9.638c0.678 0 1.228 0.551 1.228 1.229s-0.55 1.228-1.228 1.228-1.228-0.55-1.228-1.228c0-0.678 0.549-1.229 1.228-1.229z"/>
+                <path d="M14.119 9.638c0.26 0 0.501 0.081 0.699 0.219 0.050 0.043 0.101 0.085 0.152 0.126 0.232 0.223 0.376 0.537 0.376 0.884-0 0.678-0.55 1.228-1.228 1.228s-1.229-0.55-1.229-1.228c0-0.678 0.551-1.229 1.229-1.229z"/>
+                <path d="M18.667 0.333c-2.761 0-5 2.239-5 5s2.239 5 5 5c2.761 0 5-2.239 5-5s-2.239-5-5-5zM18.667 1.697c0.251 0 0.455 0.204 0.455 0.455v2.727h2.727c0.251 0 0.454 0.204 0.454 0.455s-0.204 0.455-0.454 0.455h-2.727v2.727c0 0.251-0.204 0.455-0.455 0.455s-0.455-0.204-0.455-0.455v-2.727h-2.727c-0.251 0-0.455-0.204-0.455-0.455s0.204-0.455 0.455-0.455h2.727v-2.727c0-0.251 0.204-0.455 0.455-0.455z"/>
+              </svg>
+              <span id="detailReactionCount">3</span>
+            </button>
+          </div>
+
+          <!-- Interactive Comments Area -->
+          <div class="detail-comments-container">
+            <div class="detail-comments-title">Comments</div>
+            <div class="detail-comments-list" id="detailCommentsList">
+              <!-- Dynamically populated -->
+            </div>
+            <form id="detailCommentForm" class="detail-comment-form">
+              <input type="text" id="detailCommentInput" class="detail-comment-input" placeholder="Add comment..." autocomplete="off" />
+              <button type="submit" class="detail-comment-submit" title="Send comment">
+                <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor">
+                  <path d="M3.63 2.668a1 1 0 0 0-.803.456 1 1 0 0 0-.087.919L7.588 16 2.74 27.957a1.01 1.01 0 0 0 .247 1.111 1 1 0 0 0 1.126.161L28.78 16.896a1 1 0 0 0 .552-.895 1.01 1.01 0 0 0-.552-.895L4.113 2.773a1 1 0 0 0-.483-.104zm1.958 3.078L26.097 16 5.588 26.254 9.341 17h8.992a1 1 0 0 0 .937-.614q.078-.185.077-.386a.8.8 0 0 0-.077-.386 1 1 0 0 0-.55-.542 1 1 0 0 0-.387-.072H9.341z"/>
+                </svg>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Bar (Far Right Strip) -->
+      <div class="detail-nav-strip">
+        <div class="detail-post-counter" aria-live="polite">
+          <span class="detail-current-num" id="detailCurrentNum">1</span>
+          <div class="detail-counter-line"></div>
+          <span class="detail-total-num" id="detailTotalNum">8</span>
+        </div>
+        <button type="button" id="detailNextBtn" class="detail-nav-btn" title="Next post" aria-label="Next">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor">
+            <path d="M11.391 3.391a1.333 1.333 0 0 1 1.886 0l11.667 11.667a1.334 1.334 0 0 1 0 1.886L13.277 28.611a1.333 1.333 0 1 1-1.886-1.886l10.724-10.724L11.391 5.277a1.333 1.333 0 0 1 0-1.886"/>
+          </svg>
+        </button>
+        <button type="button" id="detailPrevBtn" class="detail-nav-btn" title="Previous post" aria-label="Previous">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor">
+            <path d="M20.609 28.609a1.333 1.333 0 0 1-1.886 0L7.056 16.942a1.334 1.334 0 0 1 0-1.886L18.723 3.389a1.333 1.333 0 1 1 1.886 1.886L9.885 15.999l10.724 10.724a1.333 1.333 0 0 1 0 1.886"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
