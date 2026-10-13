@@ -1095,7 +1095,9 @@ class PadlesShelfApp {
     this.dockedTabsTrack.innerHTML = '';
 
     const totalDrafts = this.state.drafts.length;
-    this.dockBulkActionWrapper.hidden = totalDrafts === 0;
+    if (this.dockBulkActionWrapper) {
+      this.dockBulkActionWrapper.hidden = totalDrafts < 2;
+    }
 
     if (totalDrafts === 0) {
       if (this.composerCardWrapper) {
