@@ -266,6 +266,49 @@ class PadlesShelfApp {
     this.avCountdownInterval = null;
     this.avIsMirrored = true;
 
+    // Drawing Whiteboard Modal Elements
+    this.drawModal = document.getElementById('drawModal');
+    this.drawModalCloseBtn = document.getElementById('drawModalCloseBtn');
+    this.drawSaveBtn = document.getElementById('drawSaveBtn');
+    this.drawStageContainer = document.getElementById('drawStageContainer');
+    this.drawCanvas = document.getElementById('drawCanvas');
+    this.drawToolbar = document.getElementById('drawToolbar');
+    this.drawUndoBtn = document.getElementById('drawUndoBtn');
+    this.drawRedoBtn = document.getElementById('drawRedoBtn');
+    this.drawBgToggleBtn = document.getElementById('drawBgToggleBtn');
+    this.drawClearBtn = document.getElementById('drawClearBtn');
+    this.drawColorPalette = document.getElementById('drawColorPalette');
+
+    this.drawCurrentTool = 'pen';
+    this.drawStrokeSize = 3;
+    this.drawStrokeColor = '#000000';
+    this.drawIsDarkBg = false;
+    this.drawUndoStack = [];
+    this.drawRedoStack = [];
+    this.isDrawing = false;
+    this.drawLastX = 0;
+    this.drawLastY = 0;
+
+    // Interactive Poll Modal Elements
+    this.pollModal = document.getElementById('pollModal');
+    this.pollModalCloseBtn = document.getElementById('pollModalCloseBtn');
+    this.pollSaveBtn = document.getElementById('pollSaveBtn');
+    this.pollQuestionInput = document.getElementById('pollQuestionInput');
+    this.pollOptionsList = document.getElementById('pollOptionsList');
+    this.pollAddOptionBtn = document.getElementById('pollAddOptionBtn');
+    this.pollMultipleChoiceToggle = document.getElementById('pollMultipleChoiceToggle');
+
+    // Location Map Picker Modal Elements
+    this.locationModal = document.getElementById('locationModal');
+    this.locationModalCloseBtn = document.getElementById('locationModalCloseBtn');
+    this.locationSaveBtn = document.getElementById('locationSaveBtn');
+    this.locationSearchInput = document.getElementById('locationSearchInput');
+    this.locationResultsDropdown = document.getElementById('locationResultsDropdown');
+    this.locationMapFrame = document.getElementById('locationMapFrame');
+    this.locationPinLabel = document.getElementById('locationPinLabel');
+    this.selectedLocation = null;
+    this.locationSearchTimeout = null;
+
     // Active Composer / Draft State & Edit Mode State
     this.activeDraftId = null;
     this.editingCardId = null;
@@ -293,6 +336,9 @@ class PadlesShelfApp {
     this.initScheduleModal();
     this.initAllToolsModal();
     this.initAvRecorderModal();
+    this.initDrawModal();
+    this.initPollModal();
+    this.initLocationModal();
     this.initCustomFieldBuilder();
     this.initCloudBackendUI();
     this.initSlideshow();
@@ -667,24 +713,73 @@ class PadlesShelfApp {
     `;
 
     let attachmentHtml = '';
-    if (card.attachment && card.attachment.thumbnailUrl) {
-      if (card.attachment.category === 'iamascientist.info' || card.type === 'link') {
+    const att = card.attachment;
+    if (att) {
+      if (att.type === 'poll') {
+        const votedOptions = JSON.parse(localStorage.getItem(`padles_voted_${card.id}`) || '[]');
+        const totalVotes = att.totalVotes || 0;
+        let optionsHtml = '';
+        (att.options || []).forEach(opt => {
+          const isVoted = votedOptions.includes(opt.id);
+          const pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+          optionsHtml += `
+            <button type="button" class="card-poll-option-btn ${isVoted ? 'has-voted' : ''}" data-poll-card="${card.id}" data-opt-id="${opt.id}">
+              <div class="card-poll-bar-fill" style="width: ${pct}%"></div>
+              <span class="card-poll-option-text">${this.escapeHtml(opt.text)}</span>
+              <span class="card-poll-option-pct">${pct}% (${opt.votes || 0})</span>
+            </button>
+          `;
+        });
         attachmentHtml = `
-          <div class="media-attachment-link">
-            <img src="${card.attachment.thumbnailUrl}" class="link-thumb" alt="${this.escapeHtml(card.attachment.caption || '')}" />
-            <div class="youtube-badge">${this.escapeHtml(card.attachment.category || 'link')}</div>
+          <div class="card-poll-container">
+            <h4 class="card-poll-question">${this.escapeHtml(att.question || 'Poll')}</h4>
+            <div class="card-poll-options">${optionsHtml}</div>
+            <div class="card-poll-footer">${totalVotes} ${totalVotes === 1 ? 'vote' : 'votes'}${att.allowMultiple ? ' • Multiple choices allowed' : ''}</div>
           </div>
         `;
-      } else {
+      } else if (att.type === 'audio') {
         attachmentHtml = `
-          <div class="media-attachment-video">
-            <img src="${card.attachment.thumbnailUrl}" class="video-thumb" alt="${this.escapeHtml(card.attachment.caption || '')}" />
-            <div class="play-overlay-btn" title="Play">
-              <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor"><path d="M7 23.54V8.46c0-2.017 2.152-3.304 3.929-2.349l14.033 7.54c1.873 1.006 1.873 3.692 0 4.698l-14.033 7.54C9.152 26.844 7 25.557 7 23.54"/></svg>
+          <div class="card-audio-container">
+            <audio src="${this.escapeHtml(att.url)}" controls preload="metadata"></audio>
+          </div>
+        `;
+      } else if (att.type === 'location') {
+        const embedUrl = att.embedUrl || (att.latitude && att.longitude ? `https://www.openstreetmap.org/export/embed.html?bbox=${att.longitude - 0.01}%2C${att.latitude - 0.01}%2C${att.longitude + 0.01}%2C${att.latitude + 0.01}&layer=mapnik&marker=${att.latitude}%2C${att.longitude}` : '');
+        attachmentHtml = `
+          <div class="card-location-container">
+            ${embedUrl ? `<div class="card-location-map-wrap"><iframe src="${this.escapeHtml(embedUrl)}" loading="lazy"></iframe></div>` : ''}
+            <div class="card-location-info">
+              <span class="card-location-title">${this.escapeHtml(att.title || 'Location')}</span>
+              ${att.mapUrl ? `<a href="${this.escapeHtml(att.mapUrl)}" target="_blank" rel="noopener noreferrer" class="card-location-link">Open Map ↗</a>` : ''}
             </div>
-            <div class="youtube-badge">${this.escapeHtml(card.attachment.provider || 'YouTube')}</div>
           </div>
         `;
+      } else if (att.thumbnailUrl || att.url) {
+        const thumb = att.thumbnailUrl || att.url;
+        if (att.category === 'iamascientist.info' || card.type === 'link') {
+          attachmentHtml = `
+            <div class="media-attachment-link">
+              <img src="${this.escapeHtml(thumb)}" class="link-thumb" alt="${this.escapeHtml(att.caption || '')}" />
+              <div class="youtube-badge">${this.escapeHtml(att.category || 'link')}</div>
+            </div>
+          `;
+        } else if (att.type === 'video' || att.provider === 'YouTube' || att.category === 'Video Recording' || att.category === 'Screen Recording') {
+          attachmentHtml = `
+            <div class="media-attachment-video">
+              <img src="${this.escapeHtml(thumb)}" class="video-thumb" alt="${this.escapeHtml(att.caption || '')}" />
+              <div class="play-overlay-btn" title="Play">
+                <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor"><path d="M7 23.54V8.46c0-2.017 2.152-3.304 3.929-2.349l14.033 7.54c1.873 1.006 1.873 3.692 0 4.698l-14.033 7.54C9.152 26.844 7 25.557 7 23.54"/></svg>
+              </div>
+              <div class="youtube-badge">${this.escapeHtml(att.provider || att.category || 'Video')}</div>
+            </div>
+          `;
+        } else {
+          attachmentHtml = `
+            <div class="media-attachment-image">
+              <img src="${this.escapeHtml(thumb)}" class="link-thumb" style="width: 100%; max-height: 280px; object-fit: cover; border-radius: 8px;" alt="${this.escapeHtml(att.caption || '')}" />
+            </div>
+          `;
+        }
       }
     }
 
@@ -826,6 +921,18 @@ class PadlesShelfApp {
         this.openEmojiPicker(addReactBtn, card.id);
       });
     }
+
+    // Poll option voting clicks
+    el.querySelectorAll('.card-poll-option-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const cardId = btn.dataset.pollCard;
+        const optId = btn.dataset.optId;
+        if (cardId && optId) {
+          this.voteOnPoll(cardId, optId);
+        }
+      });
+    });
 
     // In Padles, left clicking a card does nothing (detail view opened via context menu / actions)
     // Right clicking a card opens post actions context menu at cursor position
@@ -2518,28 +2625,90 @@ class PadlesShelfApp {
 
     if (this.detailMediaCanvas) {
       this.detailMediaCanvas.innerHTML = '';
-      if (card.type === 'video' && card.attachment) {
-        this.detailMediaCanvas.innerHTML = `
-          <div style="display:flex;flex-direction:column;align-items:center;gap:16px;max-width:85%;">
-            <img src="${card.attachment.thumbnailUrl}" style="border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,0.7);max-height:65vh;" alt="${this.escapeHtml(card.attachment.caption)}" />
-            <a href="${card.attachment.videoUrl || 'https://youtube.com'}" target="_blank" class="detail-reaction-btn" style="background:#ff0000;color:#fff;text-decoration:none;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
-              Watch on YouTube
-            </a>
-          </div>
-        `;
-      } else if (card.type === 'link' && card.attachment) {
-        this.detailMediaCanvas.innerHTML = `
-          <div class="detail-text-presentation">
-            <img src="${card.attachment.thumbnailUrl}" style="width:100%;border-radius:12px;margin-bottom:16px;" alt="${this.escapeHtml(card.attachment.title)}" />
-            <h3>${this.escapeHtml(card.attachment.title)}</h3>
-            <p style="color:rgba(255,255,255,0.7);margin-top:8px;">${this.escapeHtml(card.attachment.domain)}</p>
-          </div>
-        `;
-      } else if (card.attachment && card.attachment.thumbnailUrl) {
-        this.detailMediaCanvas.innerHTML = `
-          <img src="${card.attachment.thumbnailUrl}" alt="Media attachment" />
-        `;
+      if (card.attachment) {
+        const att = card.attachment;
+        if (att.type === 'poll') {
+          const votedOptions = JSON.parse(localStorage.getItem(`padles_voted_${card.id}`) || '[]');
+          const totalVotes = att.totalVotes || 0;
+          let optionsHtml = '';
+          (att.options || []).forEach(opt => {
+            const isVoted = votedOptions.includes(opt.id);
+            const pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+            optionsHtml += `
+              <button type="button" class="card-poll-option-btn ${isVoted ? 'has-voted' : ''}" data-poll-card="${card.id}" data-opt-id="${opt.id}" style="padding:12px 16px; font-size:14px; margin-bottom:8px;">
+                <div class="card-poll-bar-fill" style="width: ${pct}%"></div>
+                <span class="card-poll-option-text">${this.escapeHtml(opt.text)}</span>
+                <span class="card-poll-option-pct">${pct}% (${opt.votes || 0})</span>
+              </button>
+            `;
+          });
+          this.detailMediaCanvas.innerHTML = `
+            <div style="width:100%; max-width:520px; background:#ffffff; border-radius:18px; padding:24px; box-shadow:0 16px 40px rgba(0,0,0,0.5); color:#111111;">
+              <h2 style="font-size:1.35rem; font-weight:700; margin-bottom:16px; color:#111111;">${this.escapeHtml(att.question || 'Poll')}</h2>
+              <div class="card-poll-options">${optionsHtml}</div>
+              <div style="font-size:13px; color:#6b7280; margin-top:10px; text-align:right;">
+                ${totalVotes} ${totalVotes === 1 ? 'vote' : 'votes'}${att.allowMultiple ? ' • Multiple choices allowed' : ''}
+              </div>
+            </div>
+          `;
+          this.detailMediaCanvas.querySelectorAll('.card-poll-option-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const cardId = btn.dataset.pollCard;
+              const optId = btn.dataset.optId;
+              if (cardId && optId) this.voteOnPoll(cardId, optId);
+            });
+          });
+        } else if (att.type === 'audio') {
+          this.detailMediaCanvas.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; gap:20px; width:90%; max-width:520px; background:rgba(255,255,255,0.08); backdrop-filter:blur(16px); padding:36px 24px; border-radius:24px;">
+              <div style="width:80px; height:80px; border-radius:50%; background:rgba(222,49,99,0.25); color:#ff4081; display:flex; align-items:center; justify-content:center;">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+              <h3 style="color:#ffffff; font-size:18px; margin:0;">${this.escapeHtml(att.title || 'Audio Reflection')}</h3>
+              <audio src="${this.escapeHtml(att.url)}" controls autoplay style="width:100%; max-width:440px;"></audio>
+            </div>
+          `;
+        } else if (att.type === 'location') {
+          const embedUrl = att.embedUrl || (att.latitude && att.longitude ? `https://www.openstreetmap.org/export/embed.html?bbox=${att.longitude - 0.01}%2C${att.latitude - 0.01}%2C${att.longitude + 0.01}%2C${att.latitude + 0.01}&layer=mapnik&marker=${att.latitude}%2C${att.longitude}` : '');
+          this.detailMediaCanvas.innerHTML = `
+            <div style="width:90%; max-width:720px; height:60vh; background:#ffffff; border-radius:20px; overflow:hidden; box-shadow:0 16px 40px rgba(0,0,0,0.5); display:flex; flex-direction:column;">
+              ${embedUrl ? `<iframe src="${this.escapeHtml(embedUrl)}" style="flex:1; width:100%; border:none;"></iframe>` : ''}
+              <div style="padding:14px 20px; background:#ffffff; display:flex; align-items:center; justify-content:space-between;">
+                <span style="color:#111111; font-weight:600; font-size:14px;">${this.escapeHtml(att.title || 'Location')}</span>
+                ${att.mapUrl ? `<a href="${this.escapeHtml(att.mapUrl)}" target="_blank" rel="noopener noreferrer" style="color:#de3163; font-weight:600; text-decoration:none; font-size:13px;">Open on OpenStreetMap ↗</a>` : ''}
+              </div>
+            </div>
+          `;
+        } else if (att.type === 'video' || att.provider === 'Video Recorder' || att.provider === 'Screen Recorder' || att.category === 'Video Recording' || att.category === 'Screen Recording') {
+          if (att.url && !att.videoUrl) {
+            this.detailMediaCanvas.innerHTML = `
+              <video src="${this.escapeHtml(att.url)}" controls autoplay playsinline style="max-height:68vh; max-width:90%; border-radius:16px; box-shadow:0 16px 40px rgba(0,0,0,0.7);"></video>
+            `;
+          } else {
+            this.detailMediaCanvas.innerHTML = `
+              <div style="display:flex;flex-direction:column;align-items:center;gap:16px;max-width:85%;">
+                <img src="${this.escapeHtml(att.thumbnailUrl || att.url)}" style="border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,0.7);max-height:65vh;" alt="${this.escapeHtml(att.caption || '')}" />
+                <a href="${att.videoUrl || 'https://youtube.com'}" target="_blank" class="detail-reaction-btn" style="background:#ff0000;color:#fff;text-decoration:none;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+                  Watch on YouTube
+                </a>
+              </div>
+            `;
+          }
+        } else if (card.type === 'link') {
+          this.detailMediaCanvas.innerHTML = `
+            <div class="detail-text-presentation">
+              <img src="${this.escapeHtml(att.thumbnailUrl || att.url)}" style="width:100%;border-radius:12px;margin-bottom:16px;" alt="${this.escapeHtml(att.title || '')}" />
+              <h3>${this.escapeHtml(att.title || '')}</h3>
+              <p style="color:rgba(255,255,255,0.7);margin-top:8px;">${this.escapeHtml(att.domain || '')}</p>
+            </div>
+          `;
+        } else if (att.thumbnailUrl || att.url) {
+          this.detailMediaCanvas.innerHTML = `
+            <img src="${this.escapeHtml(att.url || att.thumbnailUrl)}" style="max-height:70vh; max-width:90%; border-radius:16px; object-fit:contain; box-shadow:0 16px 40px rgba(0,0,0,0.6);" alt="Media attachment" />
+          `;
+        }
       } else {
         let bodyHtml = '';
         if (card.content) {
@@ -2972,26 +3141,10 @@ class PadlesShelfApp {
         this.openSearchModal('all');
         break;
       case 'draw':
-        this.composerState.attachment = {
-          type: 'drawing',
-          provider: 'Canvas Draw',
-          title: 'Freehand Sketch Drawing',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600',
-          url: '#'
-        };
-        this.updateAttachmentPreviewUI();
-        this.showToast('Drawing canvas attached!');
+        this.openDrawModal();
         break;
       case 'poll':
-        this.composerState.attachment = {
-          type: 'poll',
-          provider: 'Padles Poll',
-          title: 'Interactive Poll: What do you see, think, and wonder?',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=600',
-          url: '#'
-        };
-        this.updateAttachmentPreviewUI();
-        this.showToast('Interactive Poll created!');
+        this.openPollModal();
         break;
       case 'spotify':
         this.composerState.attachment = {
@@ -3005,15 +3158,7 @@ class PadlesShelfApp {
         this.showToast('Spotify track attached!');
         break;
       case 'location':
-        this.composerState.attachment = {
-          type: 'location',
-          provider: 'Maps',
-          title: 'MIT Physics Lab, Cambridge, MA',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=600',
-          url: '#'
-        };
-        this.updateAttachmentPreviewUI();
-        this.showToast('Location pin attached!');
+        this.openLocationModal();
         break;
       case 'gdrive':
       case 'onedrive':
@@ -3817,6 +3962,695 @@ class PadlesShelfApp {
   }
 
   /* ========================================================================
+     Drawing Whiteboard Modal (Padlet Parity)
+     ======================================================================== */
+
+  initDrawModal() {
+    if (!this.drawModal) return;
+
+    if (this.drawModalCloseBtn) {
+      this.drawModalCloseBtn.addEventListener('click', () => this.closeDrawModal());
+    }
+
+    this.drawModal.addEventListener('click', (e) => {
+      if (e.target === this.drawModal) {
+        this.closeDrawModal();
+      }
+    });
+
+    // Tool selector: Pen, Highlighter, Eraser
+    if (this.drawToolbar) {
+      this.drawToolbar.querySelectorAll('.draw-tool-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.drawToolbar.querySelectorAll('.draw-tool-btn').forEach(b => b.classList.remove('is-active'));
+          btn.classList.add('is-active');
+          this.drawCurrentTool = btn.dataset.tool || 'pen';
+        });
+      });
+
+      // Stroke size selector
+      this.drawToolbar.querySelectorAll('.draw-size-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.drawToolbar.querySelectorAll('.draw-size-btn').forEach(b => b.classList.remove('is-active'));
+          btn.classList.add('is-active');
+          this.drawStrokeSize = parseInt(btn.dataset.size || '3', 10);
+        });
+      });
+
+      // Swatches
+      this.drawToolbar.querySelectorAll('.draw-color-swatch').forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.drawToolbar.querySelectorAll('.draw-color-swatch').forEach(b => b.classList.remove('is-active'));
+          btn.classList.add('is-active');
+          this.drawStrokeColor = btn.dataset.color || '#000000';
+          if (this.drawCurrentTool === 'eraser') {
+            const penBtn = this.drawToolbar.querySelector('.draw-tool-btn[data-tool="pen"]');
+            if (penBtn) penBtn.click();
+          }
+        });
+      });
+    }
+
+    // Action buttons
+    if (this.drawUndoBtn) this.drawUndoBtn.addEventListener('click', () => this.undoDraw());
+    if (this.drawRedoBtn) this.drawRedoBtn.addEventListener('click', () => this.redoDraw());
+    if (this.drawClearBtn) this.drawClearBtn.addEventListener('click', () => this.clearDrawCanvas());
+    if (this.drawBgToggleBtn) this.drawBgToggleBtn.addEventListener('click', () => this.toggleDrawBackground());
+    if (this.drawSaveBtn) this.drawSaveBtn.addEventListener('click', () => this.saveDrawMedia());
+
+    // Canvas drawing interaction via Pointer Events
+    if (this.drawCanvas) {
+      this.drawCanvas.addEventListener('pointerdown', (e) => this.handleDrawPointerDown(e));
+      this.drawCanvas.addEventListener('pointermove', (e) => this.handleDrawPointerMove(e));
+      this.drawCanvas.addEventListener('pointerup', () => this.handleDrawPointerUp());
+      this.drawCanvas.addEventListener('pointercancel', () => this.handleDrawPointerUp());
+    }
+
+    // Window resize observer for canvas
+    window.addEventListener('resize', () => {
+      if (this.drawModal && !this.drawModal.hidden) {
+        this.resizeDrawCanvas(false);
+      }
+    });
+  }
+
+  openDrawModal() {
+    this.closeAllPopovers();
+    if (!this.drawModal) return;
+
+    this.drawModal.hidden = false;
+    setTimeout(() => {
+      this.resizeDrawCanvas(true);
+    }, 50);
+  }
+
+  closeDrawModal() {
+    if (this.drawModal) {
+      this.drawModal.hidden = true;
+    }
+  }
+
+  resizeDrawCanvas(isInit = false) {
+    if (!this.drawCanvas || !this.drawStageContainer) return;
+
+    const width = this.drawStageContainer.clientWidth || 800;
+    const height = this.drawStageContainer.clientHeight || 540;
+
+    let previousData = null;
+    if (!isInit && this.drawCanvas.width > 0 && this.drawCanvas.height > 0) {
+      try {
+        const ctx = this.drawCanvas.getContext('2d');
+        previousData = ctx.getImageData(0, 0, this.drawCanvas.width, this.drawCanvas.height);
+      } catch (e) {}
+    }
+
+    this.drawCanvas.width = width;
+    this.drawCanvas.height = height;
+
+    const ctx = this.drawCanvas.getContext('2d');
+    if (previousData) {
+      ctx.putImageData(previousData, 0, 0);
+    } else if (isInit) {
+      this.clearDrawCanvas(true);
+      this.drawUndoStack = [];
+      this.drawRedoStack = [];
+      this.updateDrawUndoRedoButtons();
+    }
+  }
+
+  pushDrawUndoState() {
+    if (!this.drawCanvas) return;
+    try {
+      const ctx = this.drawCanvas.getContext('2d');
+      const data = ctx.getImageData(0, 0, this.drawCanvas.width, this.drawCanvas.height);
+      this.drawUndoStack.push(data);
+      if (this.drawUndoStack.length > 30) this.drawUndoStack.shift();
+      this.drawRedoStack = [];
+      this.updateDrawUndoRedoButtons();
+    } catch (e) {}
+  }
+
+  undoDraw() {
+    if (this.drawUndoStack.length === 0 || !this.drawCanvas) return;
+    const ctx = this.drawCanvas.getContext('2d');
+    const current = ctx.getImageData(0, 0, this.drawCanvas.width, this.drawCanvas.height);
+    this.drawRedoStack.push(current);
+
+    const prev = this.drawUndoStack.pop();
+    ctx.putImageData(prev, 0, 0);
+    this.updateDrawUndoRedoButtons();
+  }
+
+  redoDraw() {
+    if (this.drawRedoStack.length === 0 || !this.drawCanvas) return;
+    const ctx = this.drawCanvas.getContext('2d');
+    const current = ctx.getImageData(0, 0, this.drawCanvas.width, this.drawCanvas.height);
+    this.drawUndoStack.push(current);
+
+    const next = this.drawRedoStack.pop();
+    ctx.putImageData(next, 0, 0);
+    this.updateDrawUndoRedoButtons();
+  }
+
+  updateDrawUndoRedoButtons() {
+    if (this.drawUndoBtn) this.drawUndoBtn.disabled = this.drawUndoStack.length === 0;
+    if (this.drawRedoBtn) this.drawRedoBtn.disabled = this.drawRedoStack.length === 0;
+  }
+
+  clearDrawCanvas(skipPush = false) {
+    if (!this.drawCanvas) return;
+    if (!skipPush) this.pushDrawUndoState();
+    const ctx = this.drawCanvas.getContext('2d');
+    ctx.clearRect(0, 0, this.drawCanvas.width, this.drawCanvas.height);
+    if (!skipPush) this.updateDrawUndoRedoButtons();
+  }
+
+  toggleDrawBackground() {
+    this.drawIsDarkBg = !this.drawIsDarkBg;
+    if (this.drawStageContainer) {
+      this.drawStageContainer.classList.toggle('is-dark-bg', this.drawIsDarkBg);
+    }
+  }
+
+  handleDrawPointerDown(e) {
+    if (!this.drawCanvas) return;
+    this.drawCanvas.setPointerCapture(e.pointerId);
+    const rect = this.drawCanvas.getBoundingClientRect();
+    this.drawLastX = e.clientX - rect.left;
+    this.drawLastY = e.clientY - rect.top;
+    this.isDrawing = true;
+    this.pushDrawUndoState();
+
+    const ctx = this.drawCanvas.getContext('2d');
+    ctx.beginPath();
+    ctx.arc(this.drawLastX, this.drawLastY, this.drawStrokeSize / 2, 0, Math.PI * 2);
+    if (this.drawCurrentTool === 'eraser') {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fill();
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = this.drawCurrentTool === 'highlighter' ? this.hexToRgba(this.drawStrokeColor, 0.4) : this.drawStrokeColor;
+      ctx.fill();
+    }
+    ctx.beginPath();
+    ctx.moveTo(this.drawLastX, this.drawLastY);
+  }
+
+  handleDrawPointerMove(e) {
+    if (!this.isDrawing || !this.drawCanvas) return;
+    const rect = this.drawCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const ctx = this.drawCanvas.getContext('2d');
+
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    if (this.drawCurrentTool === 'eraser') {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineWidth = this.drawStrokeSize * 2.8;
+      ctx.strokeStyle = 'rgba(0,0,0,1)';
+    } else if (this.drawCurrentTool === 'highlighter') {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.lineWidth = this.drawStrokeSize * 2.5;
+      ctx.strokeStyle = this.hexToRgba(this.drawStrokeColor, 0.35);
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.lineWidth = this.drawStrokeSize;
+      ctx.strokeStyle = this.drawStrokeColor;
+    }
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    this.drawLastX = x;
+    this.drawLastY = y;
+  }
+
+  handleDrawPointerUp() {
+    this.isDrawing = false;
+    if (this.drawCanvas) {
+      const ctx = this.drawCanvas.getContext('2d');
+      ctx.beginPath();
+    }
+  }
+
+  hexToRgba(hex, alpha = 1) {
+    let c = hex.replace('#', '');
+    if (c.length === 3) c = c.split('').map(x => x + x).join('');
+    const num = parseInt(c, 16);
+    return `rgba(${(num >> 16) & 255}, ${(num >> 8) & 255}, ${num & 255}, ${alpha})`;
+  }
+
+  async saveDrawMedia() {
+    if (!this.drawCanvas) return;
+
+    if (this.drawSaveBtn) {
+      this.drawSaveBtn.disabled = true;
+      this.drawSaveBtn.textContent = 'Saving...';
+    }
+    this.showToast('Saving drawing...');
+
+    try {
+      // Create offscreen canvas with solid background (white or dark)
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = this.drawCanvas.width;
+      exportCanvas.height = this.drawCanvas.height;
+      const ctx = exportCanvas.getContext('2d');
+
+      ctx.fillStyle = this.drawIsDarkBg ? '#1e2022' : '#ffffff';
+      ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      ctx.drawImage(this.drawCanvas, 0, 0);
+
+      const blob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/png'));
+      if (!blob) throw new Error('Could not export canvas to blob');
+
+      const filename = `drawing_${Date.now()}.png`;
+      let uploaded = null;
+
+      if (window.padlesR2) {
+        uploaded = await window.padlesR2.uploadMedia(blob, {
+          type: 'drawing',
+          filename: filename,
+          boardId: this.activeBoardId || 'board-default-physics'
+        });
+      } else {
+        const localUrl = URL.createObjectURL(blob);
+        uploaded = {
+          url: localUrl,
+          thumbnailUrl: localUrl,
+          storageId: 'att_' + Date.now()
+        };
+      }
+
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const attachment = {
+        type: 'drawing',
+        category: 'Drawing',
+        provider: 'Padles Whiteboard',
+        title: `Whiteboard Sketch (${timeStr})`,
+        url: uploaded.url,
+        storageId: uploaded.storageId,
+        thumbnailUrl: uploaded.thumbnailUrl || uploaded.url,
+        size: blob.size,
+        mimeType: 'image/png'
+      };
+
+      if (!this.activeDraftId && !this.editingCardId) {
+        this.openComposer(this.state.sections[0]?.id);
+      }
+
+      this.composerState.attachment = attachment;
+      if (this.activeDraftId) {
+        const draft = this.state.drafts.find(d => d.id === this.activeDraftId);
+        if (draft) draft.attachment = attachment;
+      }
+      if (this.editingCardId) {
+        const card = this.findCardById(this.editingCardId);
+        if (card) {
+          card.attachment = attachment;
+          card.type = 'drawing';
+        }
+      }
+
+      this.updateAttachmentPreviewUI();
+      this.syncActiveDraftFromInputs();
+      this.saveState();
+      this.closeDrawModal();
+      this.showToast('Drawing attached!');
+    } catch (err) {
+      console.error('[Draw] Save failed:', err);
+      this.showToast('Failed to save drawing');
+    } finally {
+      if (this.drawSaveBtn) {
+        this.drawSaveBtn.disabled = false;
+        this.drawSaveBtn.textContent = 'Save & Attach';
+      }
+    }
+  }
+
+  /* ========================================================================
+     Interactive Poll Modal (Padlet Parity)
+     ======================================================================== */
+
+  initPollModal() {
+    if (!this.pollModal) return;
+
+    if (this.pollModalCloseBtn) {
+      this.pollModalCloseBtn.addEventListener('click', () => this.closePollModal());
+    }
+
+    this.pollModal.addEventListener('click', (e) => {
+      if (e.target === this.pollModal) {
+        this.closePollModal();
+      }
+    });
+
+    if (this.pollAddOptionBtn) {
+      this.pollAddOptionBtn.addEventListener('click', () => this.appendPollOptionRow());
+    }
+
+    if (this.pollSaveBtn) {
+      this.pollSaveBtn.addEventListener('click', () => this.savePollModal());
+    }
+  }
+
+  openPollModal() {
+    this.closeAllPopovers();
+    if (!this.pollModal) return;
+
+    if (this.pollQuestionInput) this.pollQuestionInput.value = '';
+    if (this.pollMultipleChoiceToggle) this.pollMultipleChoiceToggle.checked = false;
+    if (this.pollOptionsList) {
+      this.pollOptionsList.innerHTML = '';
+      this.appendPollOptionRow('Yes');
+      this.appendPollOptionRow('No');
+    }
+
+    this.pollModal.hidden = false;
+    setTimeout(() => this.pollQuestionInput?.focus(), 50);
+  }
+
+  closePollModal() {
+    if (this.pollModal) {
+      this.pollModal.hidden = true;
+    }
+  }
+
+  appendPollOptionRow(initialText = '') {
+    if (!this.pollOptionsList) return;
+    const count = this.pollOptionsList.querySelectorAll('.poll-option-row').length + 1;
+    if (count > 10) {
+      this.showToast('Maximum 10 poll options allowed');
+      return;
+    }
+
+    const row = document.createElement('div');
+    row.className = 'poll-option-row';
+    row.innerHTML = `
+      <input type="text" class="poll-input" placeholder="Option ${count}" value="${this.escapeHtml(initialText)}" maxlength="100" />
+      <button type="button" class="poll-option-remove-btn" title="Remove option">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    `;
+
+    const rmBtn = row.querySelector('.poll-option-remove-btn');
+    rmBtn.addEventListener('click', () => {
+      if (this.pollOptionsList.querySelectorAll('.poll-option-row').length <= 2) {
+        this.showToast('Polls require at least 2 options');
+        return;
+      }
+      row.remove();
+    });
+
+    this.pollOptionsList.appendChild(row);
+  }
+
+  savePollModal() {
+    const question = (this.pollQuestionInput?.value || '').trim();
+    if (!question) {
+      this.showToast('Please enter a poll question');
+      this.pollQuestionInput?.focus();
+      return;
+    }
+
+    const optionInputs = this.pollOptionsList?.querySelectorAll('input.poll-input') || [];
+    const validOptions = [];
+    optionInputs.forEach(inp => {
+      const val = inp.value.trim();
+      if (val) validOptions.push(val);
+    });
+
+    if (validOptions.length < 2) {
+      this.showToast('Please provide at least 2 options for your poll');
+      return;
+    }
+
+    const options = validOptions.map((text, idx) => ({
+      id: `opt_${Date.now()}_${idx}`,
+      text: text,
+      votes: 0
+    }));
+
+    const allowMultiple = this.pollMultipleChoiceToggle?.checked ?? false;
+
+    const attachment = {
+      type: 'poll',
+      provider: 'Padles Poll',
+      category: 'Poll',
+      title: question,
+      question: question,
+      allowMultiple: allowMultiple,
+      totalVotes: 0,
+      options: options
+    };
+
+    if (!this.activeDraftId && !this.editingCardId) {
+      this.openComposer(this.state.sections[0]?.id);
+    }
+
+    this.composerState.attachment = attachment;
+    if (this.activeDraftId) {
+      const draft = this.state.drafts.find(d => d.id === this.activeDraftId);
+      if (draft) draft.attachment = attachment;
+    }
+    if (this.editingCardId) {
+      const card = this.findCardById(this.editingCardId);
+      if (card) {
+        card.attachment = attachment;
+        card.type = 'poll';
+      }
+    }
+
+    this.updateAttachmentPreviewUI();
+    this.syncActiveDraftFromInputs();
+    this.saveState();
+    this.closePollModal();
+    this.showToast('Poll created and attached!');
+  }
+
+  voteOnPoll(cardId, optionId) {
+    const card = this.findCardById(cardId);
+    if (!card || !card.attachment || card.attachment.type !== 'poll') return;
+
+    const poll = card.attachment;
+    const storageKey = `padles_voted_${cardId}`;
+    let votedList = [];
+    try {
+      votedList = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    } catch (e) {
+      votedList = [];
+    }
+
+    if (!poll.allowMultiple) {
+      if (votedList.includes(optionId)) {
+        // Toggle off vote
+        votedList = [];
+        const opt = poll.options.find(o => o.id === optionId);
+        if (opt && opt.votes > 0) opt.votes--;
+      } else {
+        // Remove previous vote if any
+        votedList.forEach(prevId => {
+          const prev = poll.options.find(o => o.id === prevId);
+          if (prev && prev.votes > 0) prev.votes--;
+        });
+        votedList = [optionId];
+        const opt = poll.options.find(o => o.id === optionId);
+        if (opt) opt.votes = (opt.votes || 0) + 1;
+      }
+    } else {
+      if (votedList.includes(optionId)) {
+        votedList = votedList.filter(id => id !== optionId);
+        const opt = poll.options.find(o => o.id === optionId);
+        if (opt && opt.votes > 0) opt.votes--;
+      } else {
+        votedList.push(optionId);
+        const opt = poll.options.find(o => o.id === optionId);
+        if (opt) opt.votes = (opt.votes || 0) + 1;
+      }
+    }
+
+    poll.totalVotes = poll.options.reduce((sum, o) => sum + (o.votes || 0), 0);
+    localStorage.setItem(storageKey, JSON.stringify(votedList));
+    this.saveState();
+    this.renderBoard();
+
+    if (this.activeDetailCardId === cardId) {
+      this.openCardDetailModal(cardId);
+    }
+  }
+
+  /* ========================================================================
+     Location Map Picker Modal (Padlet Parity)
+     ======================================================================== */
+
+  initLocationModal() {
+    if (!this.locationModal) return;
+
+    if (this.locationModalCloseBtn) {
+      this.locationModalCloseBtn.addEventListener('click', () => this.closeLocationModal());
+    }
+
+    this.locationModal.addEventListener('click', (e) => {
+      if (e.target === this.locationModal) {
+        this.closeLocationModal();
+      }
+    });
+
+    if (this.locationSearchInput) {
+      this.locationSearchInput.addEventListener('input', (e) => {
+        const q = e.target.value.trim();
+        clearTimeout(this.locationSearchTimeout);
+        this.locationSearchTimeout = setTimeout(() => {
+          this.handleLocationSearch(q);
+        }, 400);
+      });
+
+      this.locationSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const firstResult = this.locationResultsDropdown?.querySelector('.location-result-item');
+          if (firstResult) firstResult.click();
+        }
+      });
+    }
+
+    if (this.locationSaveBtn) {
+      this.locationSaveBtn.addEventListener('click', () => this.saveLocationMedia());
+    }
+  }
+
+  openLocationModal() {
+    this.closeAllPopovers();
+    if (!this.locationModal) return;
+
+    if (this.locationSearchInput) this.locationSearchInput.value = '';
+    if (this.locationResultsDropdown) {
+      this.locationResultsDropdown.innerHTML = '';
+      this.locationResultsDropdown.hidden = true;
+    }
+
+    // Default to MIT, Cambridge MA (Physics Audio Reflections)
+    this.setLocation({
+      title: 'Massachusetts Institute of Technology, Cambridge, MA',
+      lat: 42.3601,
+      lon: -71.0942
+    });
+
+    this.locationModal.hidden = false;
+    setTimeout(() => this.locationSearchInput?.focus(), 50);
+  }
+
+  closeLocationModal() {
+    if (this.locationModal) {
+      this.locationModal.hidden = true;
+    }
+  }
+
+  async handleLocationSearch(query) {
+    if (!query || query.length < 3) {
+      if (this.locationResultsDropdown) this.locationResultsDropdown.hidden = true;
+      return;
+    }
+
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(query)}`;
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const items = await res.json();
+
+      if (!this.locationResultsDropdown) return;
+      this.locationResultsDropdown.innerHTML = '';
+
+      if (!items || items.length === 0) {
+        this.locationResultsDropdown.innerHTML = '<div style="padding:12px;color:#6b7280;font-size:13px;text-align:center;">No locations found</div>';
+        this.locationResultsDropdown.hidden = false;
+        return;
+      }
+
+      items.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'location-result-item';
+        btn.textContent = item.display_name;
+        btn.addEventListener('click', () => {
+          this.setLocation({
+            title: item.display_name,
+            lat: parseFloat(item.lat),
+            lon: parseFloat(item.lon)
+          });
+          this.locationResultsDropdown.hidden = true;
+          if (this.locationSearchInput) this.locationSearchInput.value = item.display_name;
+        });
+        this.locationResultsDropdown.appendChild(btn);
+      });
+
+      this.locationResultsDropdown.hidden = false;
+    } catch (err) {
+      console.warn('[Location] Geocoding request failed:', err);
+    }
+  }
+
+  setLocation(loc) {
+    this.selectedLocation = loc;
+    if (this.locationPinLabel) {
+      this.locationPinLabel.textContent = loc.title;
+    }
+    if (this.locationMapFrame) {
+      const delta = 0.008;
+      const bbox = `${loc.lon - delta}%2C${loc.lat - delta}%2C${loc.lon + delta}%2C${loc.lat + delta}`;
+      this.locationMapFrame.src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${loc.lat}%2C${loc.lon}`;
+    }
+    if (this.locationSaveBtn) {
+      this.locationSaveBtn.disabled = false;
+    }
+  }
+
+  saveLocationMedia() {
+    if (!this.selectedLocation) return;
+    const loc = this.selectedLocation;
+
+    const delta = 0.008;
+    const bbox = `${loc.lon - delta}%2C${loc.lat - delta}%2C${loc.lon + delta}%2C${loc.lat + delta}`;
+    const embedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${loc.lat}%2C${loc.lon}`;
+    const mapUrl = `https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lon}#map=16/${loc.lat}/${loc.lon}`;
+
+    const attachment = {
+      type: 'location',
+      provider: 'OpenStreetMap',
+      category: 'Location',
+      title: loc.title,
+      latitude: loc.lat,
+      longitude: loc.lon,
+      mapUrl: mapUrl,
+      embedUrl: embedUrl
+    };
+
+    if (!this.activeDraftId && !this.editingCardId) {
+      this.openComposer(this.state.sections[0]?.id);
+    }
+
+    this.composerState.attachment = attachment;
+    if (this.activeDraftId) {
+      const draft = this.state.drafts.find(d => d.id === this.activeDraftId);
+      if (draft) draft.attachment = attachment;
+    }
+    if (this.editingCardId) {
+      const card = this.findCardById(this.editingCardId);
+      if (card) {
+        card.attachment = attachment;
+        card.type = 'location';
+      }
+    }
+
+    this.updateAttachmentPreviewUI();
+    this.syncActiveDraftFromInputs();
+    this.saveState();
+    this.closeLocationModal();
+    this.showToast('Location attached!');
+  }
+
+  /* ========================================================================
      Custom Field Schema Builder (Blueprint Section 6.2)
      ======================================================================== */
 
@@ -4413,6 +5247,18 @@ class PadlesShelfApp {
       if (e.key === 'Escape') {
         if (this.avRecorderModal && !this.avRecorderModal.hidden) {
           this.closeAvRecorderModal();
+          return;
+        }
+        if (this.drawModal && !this.drawModal.hidden) {
+          this.closeDrawModal();
+          return;
+        }
+        if (this.pollModal && !this.pollModal.hidden) {
+          this.closePollModal();
+          return;
+        }
+        if (this.locationModal && !this.locationModal.hidden) {
+          this.closeLocationModal();
           return;
         }
         if (this.editingCardId) {

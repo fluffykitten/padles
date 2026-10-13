@@ -3904,6 +3904,642 @@ body.dark-mode .bulk-menu-tail,
 }
 
 /* ==========================================================================
+   Drawing Whiteboard Canvas Modal (Padlet Parity)
+   ========================================================================== */
+
+.draw-modal-dialog {
+  background: #ffffff;
+  border-radius: 24px;
+  width: 920px;
+  max-width: 95vw;
+  height: 680px;
+  max-height: 90vh;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  animation: composerPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.draw-modal-header {
+  height: 64px;
+  border-bottom: 1px solid #f1f3f4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: #ffffff;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.draw-dialog-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0;
+}
+
+.draw-stage-container {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #ffffff;
+  transition: background-color 0.2s ease;
+  cursor: crosshair;
+}
+
+.draw-stage-container.is-dark-bg {
+  background: #1e2022;
+}
+
+.draw-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+
+.draw-floating-toolbar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  z-index: 20;
+}
+
+.draw-toolbar-sep {
+  width: 1px;
+  height: 24px;
+  background: #e5e7eb;
+  margin: 0 4px;
+}
+
+.draw-tool-group,
+.draw-stroke-group,
+.draw-color-palette,
+.draw-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.draw-tool-btn,
+.draw-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.draw-tool-btn:hover,
+.draw-icon-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #111111;
+}
+
+.draw-tool-btn.is-active {
+  background: #fdf2f8;
+  color: #de3163;
+  border-color: #fbcfe8;
+}
+
+.draw-icon-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.draw-icon-btn.is-danger:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.draw-size-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.draw-size-btn:hover {
+  background: #f3f4f6;
+}
+
+.draw-size-btn.is-active {
+  background: #f1f3f4;
+  border-color: #d1d5db;
+}
+
+.draw-size-dot {
+  background: #111111;
+  border-radius: 50%;
+  display: block;
+}
+
+.draw-size-dot.is-s { width: 4px; height: 4px; }
+.draw-size-dot.is-m { width: 7px; height: 7px; }
+.draw-size-dot.is-l { width: 12px; height: 12px; }
+.draw-size-dot.is-xl { width: 18px; height: 18px; }
+
+.draw-color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.12s ease;
+}
+
+.draw-color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.draw-color-swatch.is-active {
+  transform: scale(1.25);
+  box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #111111;
+}
+
+/* ==========================================================================
+   Interactive Poll Creator Modal (Padlet Parity)
+   ========================================================================== */
+
+.poll-modal-dialog {
+  background: #ffffff;
+  border-radius: 24px;
+  width: 500px;
+  max-width: 92vw;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: composerPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.poll-modal-header {
+  height: 64px;
+  border-bottom: 1px solid #f1f3f4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: #ffffff;
+}
+
+.poll-dialog-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0;
+}
+
+.poll-modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.poll-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.poll-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.poll-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  font-family: inherit;
+  font-size: 14px;
+  color: #111111;
+  outline: none;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.poll-input:focus {
+  background: #ffffff;
+  border-color: #de3163;
+  box-shadow: 0 0 0 3px rgba(222, 49, 99, 0.12);
+}
+
+.poll-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.poll-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.poll-option-row .poll-input {
+  flex: 1;
+}
+
+.poll-option-remove-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.poll-option-remove-btn:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.poll-add-option-btn {
+  background: transparent;
+  border: 1px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 10px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.poll-add-option-btn:hover {
+  border-color: #de3163;
+  color: #de3163;
+  background: #fdf2f8;
+}
+
+.poll-settings-group {
+  border-top: 1px solid #f1f3f4;
+  padding-top: 16px;
+}
+
+.poll-switch-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: #374151;
+  cursor: pointer;
+  user-select: none;
+}
+
+.poll-switch-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #de3163;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   Location Map Picker Modal (Padlet Parity)
+   ========================================================================== */
+
+.location-modal-dialog {
+  background: #ffffff;
+  border-radius: 24px;
+  width: 760px;
+  max-width: 94vw;
+  height: 600px;
+  max-height: 88vh;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: composerPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.location-modal-header {
+  height: 64px;
+  border-bottom: 1px solid #f1f3f4;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.location-search-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f1f3f4;
+  border-radius: 9999px;
+  padding: 8px 16px;
+}
+
+.location-search-icon {
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.location-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: #111111;
+  outline: none;
+}
+
+.location-modal-body {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #e5e7eb;
+}
+
+.location-results-dropdown {
+  position: absolute;
+  top: 8px;
+  left: 20px;
+  right: 20px;
+  max-height: 220px;
+  overflow-y: auto;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16);
+  z-index: 30;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.location-result-item {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-family: inherit;
+  font-size: 13.5px;
+  color: #111111;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  line-height: 1.4;
+}
+
+.location-result-item:hover {
+  background: #f3f4f6;
+}
+
+.location-map-stage {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.location-map-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.location-pin-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.location-pin-marker {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  animation: pinBounce 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pinBounce {
+  0% { transform: translateY(-20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.location-pin-label {
+  margin-top: 6px;
+  background: rgba(17, 24, 39, 0.88);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Interactive Poll Card Body on Shelf */
+.card-poll-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #f1f3f4;
+  margin-top: 8px;
+}
+
+.card-poll-question {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0;
+}
+
+.card-poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-poll-option-btn {
+  width: 100%;
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1f2937;
+  cursor: pointer;
+  text-align: left;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: border-color 0.15s ease;
+}
+
+.card-poll-option-btn:hover {
+  border-color: #de3163;
+}
+
+.card-poll-option-btn.has-voted {
+  border-color: #de3163;
+  font-weight: 600;
+}
+
+.card-poll-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(222, 49, 99, 0.12);
+  border-radius: 7px;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.card-poll-option-text {
+  position: relative;
+  z-index: 2;
+}
+
+.card-poll-option-pct {
+  position: relative;
+  z-index: 2;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.card-poll-footer {
+  font-size: 11.5px;
+  color: #9ca3af;
+  text-align: right;
+  margin-top: 2px;
+}
+
+/* Audio Player Card on Shelf */
+.card-audio-container {
+  padding: 10px 12px;
+  background: #fdf2f8;
+  border-radius: 12px;
+  border: 1px solid #fce7f3;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-audio-container audio {
+  width: 100%;
+  height: 38px;
+}
+
+/* Location Card on Shelf */
+.card-location-container {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  margin-top: 8px;
+  background: #ffffff;
+}
+
+.card-location-map-wrap {
+  width: 100%;
+  height: 140px;
+  position: relative;
+  background: #e2e8f0;
+}
+
+.card-location-map-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none;
+}
+
+.card-location-info {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.card-location-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111111;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-location-link {
+  font-size: 12px;
+  color: #de3163;
+  text-decoration: none;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.card-location-link:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
    Custom Field Schema Builder (Blueprint Section 6.2)
    ========================================================================== */
 

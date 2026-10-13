@@ -756,6 +756,152 @@
     </div>
   </div>
 
+  <!-- Drawing Whiteboard Canvas Modal (Padlet Parity) -->
+  <div id="drawModal" class="submodal-backdrop" hidden>
+    <div class="draw-modal-dialog">
+      <!-- Draw Header -->
+      <div class="draw-modal-header">
+        <button type="button" id="drawModalCloseBtn" class="av-header-btn" title="Close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <h3 class="draw-dialog-title">Draw</h3>
+        <button type="button" id="drawSaveBtn" class="av-btn-save">Save & Attach</button>
+      </div>
+
+      <!-- Canvas Stage -->
+      <div class="draw-stage-container" id="drawStageContainer">
+        <canvas id="drawCanvas" class="draw-canvas"></canvas>
+      </div>
+
+      <!-- Draw Floating Toolbar -->
+      <div class="draw-floating-toolbar" id="drawToolbar">
+        <!-- Tools: Pen, Highlighter, Eraser -->
+        <div class="draw-tool-group">
+          <button type="button" class="draw-tool-btn is-active" data-tool="pen" title="Pen">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+          </button>
+          <button type="button" class="draw-tool-btn" data-tool="highlighter" title="Highlighter">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h3l6-6"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>
+          </button>
+          <button type="button" class="draw-tool-btn" data-tool="eraser" title="Eraser">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+          </button>
+        </div>
+
+        <div class="draw-toolbar-sep"></div>
+
+        <!-- Stroke Widths -->
+        <div class="draw-stroke-group">
+          <button type="button" class="draw-size-btn is-active" data-size="3" title="Fine"><span class="draw-size-dot is-s"></span></button>
+          <button type="button" class="draw-size-btn" data-size="6" title="Medium"><span class="draw-size-dot is-m"></span></button>
+          <button type="button" class="draw-size-btn" data-size="14" title="Thick"><span class="draw-size-dot is-l"></span></button>
+          <button type="button" class="draw-size-btn" data-size="28" title="Extra Thick"><span class="draw-size-dot is-xl"></span></button>
+        </div>
+
+        <div class="draw-toolbar-sep"></div>
+
+        <!-- 10 Color Swatches -->
+        <div class="draw-color-palette" id="drawColorPalette">
+          <button type="button" class="draw-color-swatch is-active" data-color="#000000" style="background:#000000" title="Black"></button>
+          <button type="button" class="draw-color-swatch" data-color="#ffffff" style="background:#ffffff; border:1px solid #d1d5db" title="White"></button>
+          <button type="button" class="draw-color-swatch" data-color="#ef4444" style="background:#ef4444" title="Red"></button>
+          <button type="button" class="draw-color-swatch" data-color="#f97316" style="background:#f97316" title="Orange"></button>
+          <button type="button" class="draw-color-swatch" data-color="#eab308" style="background:#eab308" title="Yellow"></button>
+          <button type="button" class="draw-color-swatch" data-color="#22c55e" style="background:#22c55e" title="Green"></button>
+          <button type="button" class="draw-color-swatch" data-color="#06b6d4" style="background:#06b6d4" title="Cyan"></button>
+          <button type="button" class="draw-color-swatch" data-color="#3b82f6" style="background:#3b82f6" title="Blue"></button>
+          <button type="button" class="draw-color-swatch" data-color="#a855f7" style="background:#a855f7" title="Purple"></button>
+          <button type="button" class="draw-color-swatch" data-color="#ec4899" style="background:#ec4899" title="Pink"></button>
+        </div>
+
+        <div class="draw-toolbar-sep"></div>
+
+        <!-- Actions: Undo, Redo, Background toggle, Clear -->
+        <div class="draw-actions-group">
+          <button type="button" id="drawUndoBtn" class="draw-icon-btn" title="Undo (Ctrl+Z)" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+          </button>
+          <button type="button" id="drawRedoBtn" class="draw-icon-btn" title="Redo (Ctrl+Y)" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+          </button>
+          <button type="button" id="drawBgToggleBtn" class="draw-icon-btn" title="Toggle Board Background (White / Dark)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20z"/></svg>
+          </button>
+          <button type="button" id="drawClearBtn" class="draw-icon-btn is-danger" title="Clear Canvas">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Poll Creator Modal (Padlet Parity) -->
+  <div id="pollModal" class="submodal-backdrop" hidden>
+    <div class="poll-modal-dialog">
+      <div class="poll-modal-header">
+        <button type="button" id="pollModalCloseBtn" class="av-header-btn" title="Close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <h3 class="poll-dialog-title">Create a poll</h3>
+        <button type="button" id="pollSaveBtn" class="av-btn-save">Attach Poll</button>
+      </div>
+
+      <div class="poll-modal-body">
+        <div class="poll-field-group">
+          <label class="poll-label" for="pollQuestionInput">Question</label>
+          <input type="text" id="pollQuestionInput" class="poll-input" placeholder="Ask a question..." maxlength="200" />
+        </div>
+
+        <div class="poll-field-group">
+          <label class="poll-label">Options</label>
+          <div class="poll-options-list" id="pollOptionsList">
+            <!-- Dynamic option rows -->
+          </div>
+          <button type="button" id="pollAddOptionBtn" class="poll-add-option-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add option
+          </button>
+        </div>
+
+        <div class="poll-settings-group">
+          <label class="poll-switch-label">
+            <input type="checkbox" id="pollMultipleChoiceToggle" />
+            <span class="poll-switch-text">Allow voters to select multiple choices</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Location Map Picker Modal (Padlet Parity) -->
+  <div id="locationModal" class="submodal-backdrop" hidden>
+    <div class="location-modal-dialog">
+      <div class="location-modal-header">
+        <button type="button" id="locationModalCloseBtn" class="av-header-btn" title="Close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div class="location-search-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="location-search-icon"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="locationSearchInput" class="location-search-input" placeholder="Search for a place, address, or coordinates..." />
+        </div>
+        <button type="button" id="locationSaveBtn" class="av-btn-save" disabled>Attach Pin</button>
+      </div>
+
+      <div class="location-modal-body">
+        <div class="location-results-dropdown" id="locationResultsDropdown" hidden></div>
+        <div class="location-map-stage" id="locationMapStage">
+          <iframe id="locationMapFrame" class="location-map-frame" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
+          <div class="location-pin-overlay" id="locationPinOverlay">
+            <div class="location-pin-marker">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="#de3163" stroke="#ffffff" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="#ffffff"/></svg>
+            </div>
+            <div class="location-pin-label" id="locationPinLabel">Select a location</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Custom Field Schema Builder Sub-View (Blueprint Section 6.2) -->
   <div id="customFieldBuilderModal" class="submodal-backdrop" hidden>
     <div class="custom-field-dialog">
