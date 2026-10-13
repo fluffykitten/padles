@@ -1202,6 +1202,8 @@ class PadlesShelfApp {
   }
 
   createNewDraft(targetSectionId = null) {
+    if (!this.state.drafts) this.state.drafts = [];
+
     // If we were editing a card, cancel edit mode
     if (this.editingCardId) {
       this.cancelEditPost();
@@ -1627,6 +1629,7 @@ class PadlesShelfApp {
       this.saveEditedCard();
       return;
     }
+    if (!this.state.drafts) this.state.drafts = [];
     this.syncActiveDraftFromInputs();
     const draft = this.state.drafts.find(d => d.id === this.activeDraftId);
     if (!draft) return;
@@ -1638,6 +1641,7 @@ class PadlesShelfApp {
     const newCard = {
       id: 'card-' + Date.now(),
       title: title || (draft.attachment ? draft.attachment.title : 'Note'),
+      body: body || '',
       pinned: false,
       color: draft.color || 'cyan',
       reactions: 0,
@@ -7726,7 +7730,8 @@ class PadlesShelfApp {
       }
 
       // Success!
-      this.showToast(`Welcome back, ${this.backend.currentUser.name}!`);
+      const displayName = this.backend?.currentUser?.name || fullName || email.split('@')[0];
+      this.showToast(`Welcome back, ${displayName}!`);
       if (target === 'modal') {
         this.closeAuthModal();
       } else {
@@ -8143,7 +8148,8 @@ class PadlesShelfApp {
       },
       sections: [
         { id: `sec-${Date.now()}`, title: 'Section 1', cards: [] }
-      ]
+      ],
+      drafts: []
     };
   }
 
@@ -8197,6 +8203,7 @@ class PadlesShelfApp {
     }
 
     this.state = loadedState;
+    if (!this.state.drafts) this.state.drafts = [];
 
     // Apply Wallpaper Theme
     const wallpaper = this.state.board?.wallpaper || 'aurora';
@@ -8486,4 +8493,5 @@ class PadlesShelfApp {
 // Start app
 document.addEventListener('DOMContentLoaded', () => {
   window.app = new PadlesShelfApp();
+  window.padlesShelfApp = window.app;
 });
