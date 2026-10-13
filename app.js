@@ -332,6 +332,7 @@ class PadlesShelfApp {
     this.dashboardEmptyDesc = document.getElementById('dashboardEmptyDesc');
     this.dashboardEmptyMakeBtn = document.getElementById('dashboardEmptyMakeBtn');
     this.topbarLogoLink = document.querySelector('.padles-logo-link');
+    this.boardTitle = document.getElementById('boardTitle');
     this.boardContainer = document.getElementById('boardContainer');
     this.surfaceHeaderBlock = document.querySelector('.surface-header-block');
     this.floatingPostContainer = document.getElementById('new-post-button-container');
@@ -340,6 +341,17 @@ class PadlesShelfApp {
     this.dashboardSearchQuery = '';
     this.dashboardSort = 'last_viewed';
     this.currentBoardId = 'board-default-physics';
+
+    // Make a Padlet Creation Modal (Phase 5)
+    this.makePadletModal = document.getElementById('makePadletModal');
+    this.closeMakePadletModalBtn = document.getElementById('closeMakePadletModalBtn');
+    this.cancelMakePadletBtn = document.getElementById('cancelMakePadletBtn');
+    this.submitMakePadletBtn = document.getElementById('submitMakePadletBtn');
+    this.makePadletTitleInput = document.getElementById('makePadletTitleInput');
+    this.formatChoiceCards = document.querySelectorAll('.format-choice-card');
+    this.wallpaperSwatchBtns = document.querySelectorAll('.wallpaper-swatch-btn');
+    this.selectedCreationFormat = 'shelf';
+    this.selectedCreationWallpaper = 'aurora';
 
     // Section Context Menu (Blueprint Section 2.2)
     this.sectionContextMenu = document.getElementById('sectionContextMenu');
@@ -849,7 +861,7 @@ class PadlesShelfApp {
       this.setupDropZone(cardsStack, section.id);
 
       // Render cards in this section
-      section.cards.forEach(card => {
+      (section.cards || []).forEach(card => {
         const cardEl = this.renderCardElement(card, section.id);
         cardsStack.appendChild(cardEl);
       });
@@ -7820,25 +7832,62 @@ class PadlesShelfApp {
       });
     }
 
-    // 7. Make a padlet buttons
-    const handleMakePadlet = async () => {
-      const title = prompt('Enter a title for your new padlet:', 'My Awesome Board');
-      if (title && title.trim()) {
-        const newBoard = await this.backend.createBoard({
-          title: title.trim(),
-          format: 'shelf',
-          wallpaper: 'aurora'
-        });
-        this.showToast(`Created "${newBoard.title}"!`);
-        this.openBoard(newBoard.id);
-      }
-    };
-
+    // 7. Make a padlet buttons -> Opens Authentic Creation Modal
     if (this.sidebarMakePadletBtn) {
-      this.sidebarMakePadletBtn.addEventListener('click', handleMakePadlet);
+      this.sidebarMakePadletBtn.addEventListener('click', () => this.openMakePadletModal());
     }
     if (this.dashboardEmptyMakeBtn) {
-      this.dashboardEmptyMakeBtn.addEventListener('click', handleMakePadlet);
+      this.dashboardEmptyMakeBtn.addEventListener('click', () => this.openMakePadletModal());
+    }
+
+    // Modal format choice cards selection
+    if (this.formatChoiceCards) {
+      this.formatChoiceCards.forEach(card => {
+        card.addEventListener('click', () => {
+          this.formatChoiceCards.forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+          this.selectedCreationFormat = card.getAttribute('data-format') || 'shelf';
+        });
+      });
+    }
+
+    // Modal wallpaper swatches selection
+    if (this.wallpaperSwatchBtns) {
+      this.wallpaperSwatchBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          this.wallpaperSwatchBtns.forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          this.selectedCreationWallpaper = btn.getAttribute('data-wallpaper') || 'aurora';
+        });
+      });
+    }
+
+    // Modal Close & Cancel
+    if (this.closeMakePadletModalBtn) {
+      this.closeMakePadletModalBtn.addEventListener('click', () => this.closeMakePadletModal());
+    }
+    if (this.cancelMakePadletBtn) {
+      this.cancelMakePadletBtn.addEventListener('click', () => this.closeMakePadletModal());
+    }
+    if (this.makePadletModal) {
+      this.makePadletModal.addEventListener('click', (e) => {
+        if (e.target === this.makePadletModal) this.closeMakePadletModal();
+      });
+    }
+
+    // Modal Submit Creation
+    if (this.submitMakePadletBtn) {
+      this.submitMakePadletBtn.addEventListener('click', async () => {
+        const title = this.makePadletTitleInput?.value.trim() || 'My Brilliant Padlet';
+        const newBoard = await this.backend.createBoard({
+          title,
+          format: this.selectedCreationFormat || 'shelf',
+          wallpaper: this.selectedCreationWallpaper || 'aurora'
+        });
+        this.closeMakePadletModal();
+        this.openBoard(newBoard.id);
+        this.showToast(`Created "${newBoard.title}"!`);
+      });
     }
 
     // 8. Join & Gallery buttons
@@ -7857,13 +7906,245 @@ class PadlesShelfApp {
       });
     }
 
-    // 9. Check URL on page load for ?view=dashboard
+    // 9. Check URL on page load for ?view=dashboard or ?board=<id>
     const urlParams = new URLSearchParams(window.location.search);
     const viewParam = urlParams.get('view');
     const tabParam = urlParams.get('tab') || 'recents';
     if (viewParam === 'dashboard') {
       this.showDashboard(tabParam);
+    } else {
+      const boardParam = urlParams.get('board');
+      if (boardParam && boardParam !== 'board-default-physics') {
+        this.openBoard(boardParam);
+      }
     }
+  }
+
+  openMakePadletModal() {
+    if (!this.makePadletModal) return;
+    this.makePadletModal.hidden = false;
+    this.selectedCreationFormat = 'shelf';
+    this.selectedCreationWallpaper = 'aurora';
+
+    if (this.formatChoiceCards) {
+      this.formatChoiceCards.forEach(c => {
+        c.classList.toggle('selected', c.getAttribute('data-format') === 'shelf');
+      });
+    }
+    if (this.wallpaperSwatchBtns) {
+      this.wallpaperSwatchBtns.forEach(b => {
+        b.classList.toggle('selected', b.getAttribute('data-wallpaper') === 'aurora');
+      });
+    }
+    if (this.makePadletTitleInput) {
+      this.makePadletTitleInput.value = 'My Brilliant Padlet';
+      setTimeout(() => {
+        this.makePadletTitleInput.focus();
+        this.makePadletTitleInput.select();
+      }, 50);
+    }
+  }
+
+  closeMakePadletModal() {
+    if (this.makePadletModal) this.makePadletModal.hidden = true;
+  }
+
+  getInitialBoardState(boardId) {
+    if (boardId === 'board-burrito-map') {
+      return {
+        board: {
+          title: 'San Francisco Burrito Map',
+          description: 'The quest for the ultimate mission-style burrito, carnitas, and salsas across SF.',
+          wallpaper: 'sunset'
+        },
+        sections: [
+          {
+            id: 'sec-mission',
+            title: 'Mission District',
+            cards: [
+              {
+                id: 'card-burrito-1',
+                subject: 'La Taqueria: The Legendary Dorado Style',
+                title: 'La Taqueria: The Legendary Dorado Style',
+                body: '<p>No rice, all flavor. Ordering "dorado style" gets the tortilla crisped to golden perfection on the flat top.</p>',
+                color: 'default',
+                pinned: false,
+                reactions: 12,
+                hasReacted: false,
+                attachment: {
+                  type: 'image',
+                  url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80',
+                  title: 'Golden Dorado Burrito'
+                }
+              },
+              {
+                id: 'card-burrito-2',
+                subject: 'El Farolito: Midnight Carne Asada King',
+                title: 'El Farolito: Midnight Carne Asada King',
+                body: '<p>Massive portions, juicy steak, and open late until 2 AM. The quintessential SF post-concert sanctuary.</p>',
+                color: 'blue',
+                pinned: false,
+                reactions: 24,
+                hasReacted: false,
+                attachment: null
+              }
+            ]
+          },
+          {
+            id: 'sec-haight',
+            title: 'Haight-Ashbury',
+            cards: [
+              {
+                id: 'card-burrito-3',
+                subject: 'Street Taco: Crispy Pork Carnitas',
+                title: 'Street Taco: Crispy Pork Carnitas',
+                body: '<p>Fresh handmade corn tortillas and slow-braised carnitas with pickled red onions.</p>',
+                color: 'default',
+                pinned: false,
+                reactions: 8,
+                hasReacted: false,
+                attachment: null
+              }
+            ]
+          },
+          {
+            id: 'sec-northbeach',
+            title: 'North Beach & Chinatown',
+            cards: []
+          },
+          {
+            id: 'sec-soma',
+            title: 'SoMa & Financial District',
+            cards: []
+          }
+        ]
+      };
+    }
+
+    if (boardId === 'board-travel-itinerary') {
+      return {
+        board: {
+          title: 'Travel Itinerary: Tokyo & Kyoto',
+          description: '10-day adventure across Tokyo skyline, Mount Fuji, Kyoto shrines, and Osaka street food.',
+          wallpaper: 'oceanic'
+        },
+        sections: [
+          {
+            id: 'sec-tokyo',
+            title: 'Tokyo: Shinjuku & Shibuya',
+            cards: [
+              {
+                id: 'card-tokyo-1',
+                subject: 'Day 1: Shibuya Crossing & Meiji Shrine',
+                title: 'Day 1: Shibuya Crossing & Meiji Shrine',
+                body: '<p>Morning walk through the serene cedar forest of Meiji Jingu, followed by afternoon coffee overlooking the Shibuya scramble.</p>',
+                color: 'blue',
+                pinned: false,
+                reactions: 15,
+                hasReacted: false,
+                attachment: null
+              }
+            ]
+          },
+          {
+            id: 'sec-kyoto',
+            title: 'Kyoto: Arashiyama & Fushimi Inari',
+            cards: [
+              {
+                id: 'card-kyoto-1',
+                subject: 'Day 4: Early Morning Torii Gates',
+                title: 'Day 4: Early Morning Torii Gates',
+                body: '<p>Beat the crowd at Fushimi Inari by arriving at 6:30 AM. 10,000 vermilion torii gates winding up sacred Mount Inari.</p>',
+                color: 'default',
+                pinned: false,
+                reactions: 19,
+                hasReacted: false,
+                attachment: null
+              }
+            ]
+          },
+          {
+            id: 'sec-osaka',
+            title: 'Osaka: Dotonbori Feast',
+            cards: []
+          },
+          {
+            id: 'sec-packing',
+            title: 'Packing & Rail Passes',
+            cards: []
+          }
+        ]
+      };
+    }
+
+    if (boardId === 'board-growth-brainstorm') {
+      return {
+        board: {
+          title: 'Growth Brainstorming Session',
+          description: 'Experiments, user retention loops, viral mechanisms, and quick wins.',
+          wallpaper: 'charcoal'
+        },
+        sections: [
+          {
+            id: 'sec-ideas',
+            title: 'Ideation & Hypotheses',
+            cards: [
+              {
+                id: 'card-growth-1',
+                subject: '1-Click Board Templates Sharing',
+                title: '1-Click Board Templates Sharing',
+                body: '<p>Allow teachers and creators to export an entire board structure with 1-click clone link.</p>',
+                color: 'default',
+                pinned: false,
+                reactions: 7,
+                hasReacted: false,
+                attachment: null
+              }
+            ]
+          },
+          {
+            id: 'sec-testing',
+            title: 'In Progress Testing',
+            cards: []
+          },
+          {
+            id: 'sec-validated',
+            title: 'Validated Winners',
+            cards: [
+              {
+                id: 'card-growth-2',
+                subject: 'Instant Guest Post Composer',
+                title: 'Instant Guest Post Composer',
+                body: '<p>Lowered friction for student contributions resulted in 3.4x higher post creation velocity.</p>',
+                color: 'default',
+                pinned: false,
+                reactions: 22,
+                hasReacted: false,
+                attachment: null
+              }
+            ]
+          },
+          {
+            id: 'sec-lessons',
+            title: 'Lessons & Killed',
+            cards: []
+          }
+        ]
+      };
+    }
+
+    const boards = this.backend.getLocalBoards();
+    const boardMeta = boards.find(b => b.id === boardId);
+    return {
+      board: {
+        title: boardMeta?.title || 'New Padlet',
+        description: '',
+        wallpaper: boardMeta?.wallpaper || 'aurora'
+      },
+      sections: [
+        { id: `sec-${Date.now()}`, title: 'Section 1', cards: [] }
+      ]
+    };
   }
 
   updateDashboardUser(user) {
@@ -7892,15 +8173,55 @@ class PadlesShelfApp {
     if (this.boardContainer) this.boardContainer.style.display = '';
     if (this.floatingPostContainer) this.floatingPostContainer.style.display = '';
 
-    this.currentBoardId = boardId;
-    const boards = this.backend.getLocalBoards();
-    const targetBoard = boards.find(b => b.id === boardId);
-    if (targetBoard && this.boardTitle) {
-      this.boardTitle.textContent = targetBoard.title;
+    // Save previous active board
+    if (this.currentBoardId && this.state) {
+      try {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.state));
+      } catch (_) {}
     }
 
-    history.pushState(null, '', boardId === 'board-default-physics' ? '/' : '?board=' + boardId);
-    this.showToast('Loaded ' + (targetBoard ? targetBoard.title : 'board'));
+    this.currentBoardId = boardId;
+    this.storageKey = boardId === 'board-default-physics' ? 'padles_board_exact_v1' : (`padles_board_${boardId}`);
+
+    let loadedState = null;
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) loadedState = JSON.parse(stored);
+    } catch (_) {}
+
+    if (!loadedState) {
+      loadedState = this.getInitialBoardState(boardId);
+      try {
+        localStorage.setItem(this.storageKey, JSON.stringify(loadedState));
+      } catch (_) {}
+    }
+
+    this.state = loadedState;
+
+    // Apply Wallpaper Theme
+    const wallpaper = this.state.board?.wallpaper || 'aurora';
+    document.body.classList.remove('aurora-theme', 'oceanic-theme', 'sunset-theme', 'charcoal-theme');
+    if (wallpaper === 'oceanic') {
+      document.body.classList.add('oceanic-theme');
+    } else if (wallpaper === 'sunset') {
+      document.body.classList.add('sunset-theme');
+    } else if (wallpaper === 'charcoal') {
+      document.body.classList.add('charcoal-theme');
+    } else {
+      document.body.classList.add('aurora-theme');
+    }
+
+    // Update Title and Re-render Board
+    if (this.boardTitle && this.state.board?.title) {
+      this.boardTitle.textContent = this.state.board.title;
+    }
+    document.title = `${this.state.board?.title || 'Board'} — Padles`;
+    this.renderBoard();
+
+    // Update URL
+    const url = boardId === 'board-default-physics' ? '/' : `?board=${boardId}`;
+    history.pushState(null, '', url);
+    this.showToast(`Loaded "${this.state.board?.title || 'Board'}"`);
   }
 
   setDashboardTab(tab) {
@@ -8044,6 +8365,14 @@ class PadlesShelfApp {
           <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M18.667 4H9.333C7.86 4 6.667 5.193 6.667 6.667v14.666h2.666V6.667h9.334zm4 5.333h-9.334c-1.473 0-2.666 1.194-2.666 2.667V28c0 1.473 1.193 2.667 2.666 2.667h9.334c1.473 0 2.666-1.194 2.666-2.667V12c0-1.473-1.193-2.667-2.666-2.667m0 18.667h-9.334V12h9.334z"/></svg>
           <span>Copy link</span>
         </button>
+        <button type="button" class="dashboard-card-menu-item" data-action="rename">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="m23.111 2 6.889 6.889-18.222 18.222H4.889V20.222zM21.222 7.667 8.889 20v3.222H12.11l12.333-12.333z"/></svg>
+          <span>Rename padlet</span>
+        </button>
+        <button type="button" class="dashboard-card-menu-item" data-action="duplicate">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M4 6.667C4 5.193 5.193 4 6.667 4h12c1.473 0 2.666 1.193 2.666 2.667v12c0 1.473-1.193 2.666-2.666 2.666h-12C5.193 21.333 4 20.14 4 18.667zm2.667 0v12h12v-12zM10.667 24V25.333c0 1.474 1.193 2.667 2.666 2.667h12c1.474 0 2.667-1.193 2.667-2.667v-12c0-1.473-1.193-2.666-2.667-2.666H24v2.666h1.333v12h-12V24z"/></svg>
+          <span>Remake / Duplicate</span>
+        </button>
         <button type="button" class="dashboard-card-menu-item" data-action="bookmark">
           <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M7.333 4C6.23 4 5.333 4.897 5.333 6v22.667a1.333 1.333 0 0 0 2.06 1.116L16 23.774l8.607 6.009a1.333 1.333 0 0 0 2.06-1.116V6c0-1.103-.897-2-2-2z"/></svg>
           <span>${board.is_bookmarked ? 'Remove bookmark' : 'Bookmark'}</span>
@@ -8058,7 +8387,7 @@ class PadlesShelfApp {
           <span>Restore padlet</span>
         </button>
         <button type="button" class="dashboard-card-menu-item danger" data-action="delete">
-          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M12 2.667a1.333 1.333 0 0 0-1.333 1.333V6H4a1.333 1.333 0 0 0 0 2.667h1.439l1.642 18.067A3.333 3.333 0 0 0 10.395 30h11.21a3.333 3.333 0 0 0 3.314-3.266L26.561 8.667H28a1.333 1.333 0 1 0 0-2.667h-6.667V4A1.333 1.333 0 0 0 20 2.667z"/></svg>
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M12 2.667a1.333 1.333 0 0 0-1.333 1.333V6H4a1.333 1.333 0 0 0 0 2.667h1.439l1.642 18.067A3.333 3.333 0 0 0 10.395 30h11.21a3.333 3.333 0 0 0 3.314-3.266L26.561 8.667H28a1.333 1.333 0 1 0 0-2.667h-6.667V4A1.333 1.333 0 0 0 20 2.667zM8.114 8.667h15.772l-1.616 17.777a.667.667 0 0 1-.675.623h-11.21a.667.667 0 0 1-.675-.623z"/></svg>
           <span>Delete permanently</span>
         </button>
       `}
@@ -8078,6 +8407,24 @@ class PadlesShelfApp {
           const url = `${window.location.origin}/?board=${board.id}`;
           navigator.clipboard.writeText(url);
           this.showToast('Board link copied to clipboard!');
+        } else if (action === 'rename') {
+          const newTitle = prompt('Rename padlet:', board.title);
+          if (newTitle && newTitle.trim() && newTitle.trim() !== board.title) {
+            await this.backend.updateBoardTitle(board.id, newTitle.trim());
+            if (this.currentBoardId === board.id) {
+              if (this.state && this.state.board) this.state.board.title = newTitle.trim();
+              if (this.boardTitle) this.boardTitle.textContent = newTitle.trim();
+              document.title = `${newTitle.trim()} — Padles`;
+            }
+            this.showToast(`Renamed to "${newTitle.trim()}"`);
+            this.renderDashboardBoards();
+          }
+        } else if (action === 'duplicate') {
+          const duplicated = await this.backend.duplicateBoard(board.id);
+          if (duplicated) {
+            this.showToast(`Created "${duplicated.title}"`);
+            this.renderDashboardBoards();
+          }
         } else if (action === 'bookmark') {
           const isBookmarked = await this.backend.toggleBookmark(board.id);
           this.showToast(isBookmarked ? 'Added to Bookmarks' : 'Removed from Bookmarks');

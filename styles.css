@@ -9033,4 +9033,364 @@ body.theme-corkboard {
   background: rgba(239, 68, 68, 0.12);
 }
 
+/* ========================================================================
+   Wallpaper Themes
+   ======================================================================== */
+
+body.oceanic-theme {
+  background-color: #032541;
+  background-image: linear-gradient(135deg, rgba(2, 32, 60, 0.95) 0%, rgba(6, 64, 110, 0.9) 50%, rgba(1, 19, 38, 0.98) 100%), radial-gradient(circle at 80% 20%, rgba(57, 146, 222, 0.3) 0%, transparent 60%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+body.sunset-theme {
+  background-color: #3d1028;
+  background-image: linear-gradient(135deg, rgba(61, 16, 40, 0.95) 0%, rgba(112, 38, 50, 0.9) 50%, rgba(32, 8, 22, 0.98) 100%), radial-gradient(circle at 75% 25%, rgba(255, 131, 62, 0.25) 0%, transparent 60%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+body.charcoal-theme {
+  background-color: #121316;
+  background-image: linear-gradient(135deg, rgba(18, 19, 22, 0.98) 0%, rgba(31, 33, 40, 0.95) 50%, rgba(13, 14, 16, 1) 100%), radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* ========================================================================
+   Padles Make a Padlet Creation Modal (1:1 Parity)
+   ======================================================================== */
+
+#makePadletModal {
+  z-index: 100000;
+}
+
+.make-padlet-dialog {
+  width: 720px;
+  max-width: 92vw;
+  max-height: 88vh;
+  background: rgb(24, 24, 27);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: #ffffff;
+  overflow-y: auto;
+  box-sizing: border-box;
+  animation: modalPop 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: "Inter var", Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.make-padlet-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.make-padlet-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.make-padlet-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin: 0;
+  color: #ffffff;
+}
+
+.make-padlet-subtitle {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.make-padlet-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.make-padlet-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.make-padlet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.make-padlet-formats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.format-choice-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  color: #ffffff;
+  font-family: inherit;
+}
+
+.format-choice-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+.format-choice-card.selected {
+  background: rgba(255, 64, 129, 0.08);
+  border-color: #ff4081;
+  box-shadow: 0 0 0 1px #ff4081;
+}
+
+.format-choice-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.format-icon-shelf {
+  background: rgba(57, 146, 222, 0.16);
+  color: rgb(57, 146, 222);
+}
+
+.format-icon-wall {
+  background: rgba(148, 102, 232, 0.16);
+  color: rgb(148, 102, 232);
+}
+
+.format-icon-grid {
+  background: rgba(61, 199, 49, 0.16);
+  color: rgb(61, 199, 49);
+}
+
+.format-icon-stream {
+  background: rgba(255, 131, 62, 0.16);
+  color: rgb(255, 131, 62);
+}
+
+.format-choice-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.format-choice-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.format-choice-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.format-choice-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(57, 146, 222, 0.2);
+  color: rgb(57, 146, 222);
+  padding: 2px 6px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+.format-choice-desc {
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0;
+}
+
+.make-padlet-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.make-padlet-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.make-padlet-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.make-padlet-text-input {
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  padding: 0 14px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.make-padlet-text-input:focus {
+  border-color: #fec006;
+  box-shadow: 0 0 0 1px #fec006;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.wallpaper-swatches-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wallpaper-swatch-btn {
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: #ffffff;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.wallpaper-swatch-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.wallpaper-swatch-btn.selected {
+  border-color: #ff4081;
+  background: rgba(255, 64, 129, 0.12);
+}
+
+.wallpaper-swatch-circle {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.swatch-aurora {
+  background: linear-gradient(135deg, #014e62, #00b4d8);
+}
+
+.swatch-oceanic {
+  background: linear-gradient(135deg, #032541, #3992de);
+}
+
+.swatch-sunset {
+  background: linear-gradient(135deg, #702632, #ff833e);
+}
+
+.swatch-charcoal {
+  background: linear-gradient(135deg, #18181b, #303236);
+}
+
+.wallpaper-swatch-name {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.make-padlet-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.make-padlet-cancel-btn {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 14px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.make-padlet-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.make-padlet-submit-btn {
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 14px;
+  background: #ff4081;
+  border: none;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 14px rgba(255, 64, 129, 0.4);
+}
+
+.make-padlet-submit-btn:hover {
+  background: #e63974;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(255, 64, 129, 0.5);
+}
+
 

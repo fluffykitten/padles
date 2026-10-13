@@ -1114,6 +1114,55 @@ class PadlesSupabaseService {
     this.saveLocalBoards(boards);
     return true;
   }
+
+  async updateBoardTitle(boardId, newTitle) {
+    const boards = this.getLocalBoards();
+    const target = boards.find(b => b.id === boardId);
+    if (target) {
+      target.title = newTitle;
+      target.updated_at = new Date().toISOString();
+      this.saveLocalBoards(boards);
+      if (this.client && this.isConnected) {
+        try {
+          await this.client.from('boards').update({ title: newTitle }).eq('id', boardId);
+        } catch (_) {}
+      }
+      return target;
+    }
+    return null;
+  }
+
+  async duplicateBoard(boardId) {
+    const boards = this.getLocalBoards();
+    const source = boards.find(b => b.id === boardId);
+    if (!source) return null;
+
+    const newId = 'board-' + Date.now();
+    const newBoard = {
+      ...source,
+      id: newId,
+      title: `Remake of ${source.title}`,
+      updated_at: new Date().toISOString(),
+      is_bookmarked: false,
+      is_trashed: false,
+      trashed_at: null
+    };
+
+    boards.unshift(newBoard);
+    this.saveLocalBoards(boards);
+
+    try {
+      const sourceKey = boardId === 'board-default-physics' ? 'padles_board_exact_v1' : `padles_board_${boardId}`;
+      const savedData = localStorage.getItem(sourceKey);
+      if (savedData) {
+        const parsed = JSON.parse(savedData);
+        parsed.board = { ...parsed.board, id: newId, title: newBoard.title };
+        localStorage.setItem(`padles_board_${newId}`, JSON.stringify(parsed));
+      }
+    } catch (_) {}
+
+    return newBoard;
+  }
 }
 
 

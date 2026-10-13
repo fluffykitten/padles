@@ -2587,6 +2587,139 @@
     </main>
   </div>
 
+  <!-- ========================================================================
+       Make a Padlet Creation Modal (1:1 Format Selector & Wallpaper Setup)
+       ======================================================================== -->
+  <div id="makePadletModal" class="submodal-backdrop" hidden>
+    <div class="make-padlet-dialog" role="dialog" aria-modal="true" aria-labelledby="makePadletModalTitle">
+      <!-- Header -->
+      <div class="make-padlet-header">
+        <div class="make-padlet-header-text">
+          <h2 id="makePadletModalTitle" class="make-padlet-title">Make a padlet</h2>
+          <p class="make-padlet-subtitle">Select a format to start from scratch</p>
+        </div>
+        <button type="button" id="closeMakePadletModalBtn" class="make-padlet-close-btn" title="Close" aria-label="Close">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor">
+            <path d="M4.478 25.112c-.625.625-.655 1.741.015 2.395.655.655 1.77.64 2.395.015l9.105-9.119 9.12 9.119c.64.64 1.741.64 2.395-.015.64-.669.655-1.755 0-2.395l-9.105-9.119 9.105-9.105c.655-.64.655-1.741 0-2.395-.669-.64-1.756-.655-2.395-.015l-9.12 9.119-9.105-9.119c-.625-.625-1.756-.655-2.395.015-.655.655-.64 1.77-.015 2.395l9.12 9.105z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="make-padlet-body">
+        <!-- Formats Grid -->
+        <div class="make-padlet-formats-grid">
+          <!-- Shelf -->
+          <button type="button" class="format-choice-card selected" data-format="shelf">
+            <div class="format-choice-icon format-icon-shelf">
+              <svg viewBox="0 0 32 32" width="24" height="24" fill="currentColor">
+                <rect x="4" y="6" width="6" height="20" rx="2" />
+                <rect x="13" y="6" width="6" height="20" rx="2" />
+                <rect x="22" y="6" width="6" height="20" rx="2" />
+              </svg>
+            </div>
+            <div class="format-choice-info">
+              <div class="format-choice-header">
+                <span class="format-choice-title">Shelf</span>
+                <span class="format-choice-badge">Popular</span>
+              </div>
+              <p class="format-choice-desc">Series of columns with sections. Great for reflections & workflows.</p>
+            </div>
+          </button>
+
+          <!-- Wall -->
+          <button type="button" class="format-choice-card" data-format="wall">
+            <div class="format-choice-icon format-icon-wall">
+              <svg viewBox="0 0 32 32" width="24" height="24" fill="currentColor">
+                <rect x="4" y="6" width="10" height="8" rx="2" />
+                <rect x="18" y="6" width="10" height="12" rx="2" />
+                <rect x="4" y="18" width="10" height="8" rx="2" />
+                <rect x="18" y="22" width="10" height="4" rx="2" />
+              </svg>
+            </div>
+            <div class="format-choice-info">
+              <div class="format-choice-header">
+                <span class="format-choice-title">Wall</span>
+              </div>
+              <p class="format-choice-desc">Pack content into an adaptable brick-like layout.</p>
+            </div>
+          </button>
+
+          <!-- Grid -->
+          <button type="button" class="format-choice-card" data-format="grid">
+            <div class="format-choice-icon format-icon-grid">
+              <svg viewBox="0 0 32 32" width="24" height="24" fill="currentColor">
+                <rect x="4" y="6" width="10" height="8" rx="2" />
+                <rect x="18" y="6" width="10" height="8" rx="2" />
+                <rect x="4" y="18" width="10" height="8" rx="2" />
+                <rect x="18" y="18" width="10" height="8" rx="2" />
+              </svg>
+            </div>
+            <div class="format-choice-info">
+              <div class="format-choice-header">
+                <span class="format-choice-title">Grid</span>
+              </div>
+              <p class="format-choice-desc">Arrange content in orderly rows and boxes.</p>
+            </div>
+          </button>
+
+          <!-- Stream -->
+          <button type="button" class="format-choice-card" data-format="stream">
+            <div class="format-choice-icon format-icon-stream">
+              <svg viewBox="0 0 32 32" width="24" height="24" fill="currentColor">
+                <rect x="6" y="6" width="20" height="5" rx="2" />
+                <rect x="6" y="14" width="20" height="5" rx="2" />
+                <rect x="6" y="22" width="20" height="5" rx="2" />
+              </svg>
+            </div>
+            <div class="format-choice-info">
+              <div class="format-choice-header">
+                <span class="format-choice-title">Stream</span>
+              </div>
+              <p class="format-choice-desc">Streamline content in an easy-to-read top-to-bottom feed.</p>
+            </div>
+          </button>
+        </div>
+
+        <!-- Options: Title & Wallpaper -->
+        <div class="make-padlet-options">
+          <div class="make-padlet-input-group">
+            <label for="makePadletTitleInput" class="make-padlet-label">Title</label>
+            <input type="text" id="makePadletTitleInput" class="make-padlet-text-input" placeholder="My Brilliant Padlet" value="My Brilliant Padlet" autocomplete="off" />
+          </div>
+
+          <div class="make-padlet-input-group">
+            <label class="make-padlet-label">Wallpaper</label>
+            <div class="wallpaper-swatches-group">
+              <button type="button" class="wallpaper-swatch-btn selected" data-wallpaper="aurora" title="Aurora (Teal/Dark)">
+                <span class="wallpaper-swatch-circle swatch-aurora"></span>
+                <span class="wallpaper-swatch-name">Aurora</span>
+              </button>
+              <button type="button" class="wallpaper-swatch-btn" data-wallpaper="oceanic" title="Oceanic (Blue)">
+                <span class="wallpaper-swatch-circle swatch-oceanic"></span>
+                <span class="wallpaper-swatch-name">Oceanic</span>
+              </button>
+              <button type="button" class="wallpaper-swatch-btn" data-wallpaper="sunset" title="Sunset (Warm)">
+                <span class="wallpaper-swatch-circle swatch-sunset"></span>
+                <span class="wallpaper-swatch-name">Sunset</span>
+              </button>
+              <button type="button" class="wallpaper-swatch-btn" data-wallpaper="charcoal" title="Midnight Charcoal">
+                <span class="wallpaper-swatch-circle swatch-charcoal"></span>
+                <span class="wallpaper-swatch-name">Charcoal</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="make-padlet-footer">
+        <button type="button" id="cancelMakePadletBtn" class="make-padlet-cancel-btn">Cancel</button>
+        <button type="button" id="submitMakePadletBtn" class="make-padlet-submit-btn">Create padlet</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
 
   <!-- Storage & Backend Infrastructure -->
