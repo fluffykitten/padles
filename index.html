@@ -787,6 +787,36 @@
     </div>
   </div>
 
+  <!-- Authentic Padlet Emoji Picker Popover (336px x 377px) -->
+  <div id="emojiPickerPopover" class="emoji-picker-popover" hidden data-testid="emojiPicker" role="dialog" aria-label="Emoji reaction picker">
+    <div class="emoji-picker-header">
+      <div class="emoji-search-bar">
+        <svg class="emoji-search-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" id="emojiSearchInput" class="emoji-search-input" placeholder="Search" autocomplete="off" />
+        <button type="button" id="emojiSearchClearBtn" class="emoji-search-clear-btn" hidden aria-label="Clear search">&times;</button>
+      </div>
+    </div>
+    
+    <div class="emoji-picker-content" id="emojiPickerContent">
+      <!-- Dynamic categorized emoji grids rendered here -->
+    </div>
+
+    <!-- Category Tabs Bar (8 Authentic Padlet Categories) -->
+    <div class="emoji-category-tabs" id="emojiCategoryTabs" role="tablist">
+      <button type="button" class="emoji-cat-tab is-active" data-cat="people" data-testid="peopleButton" title="Smileys & People" aria-label="Smileys & People">😀</button>
+      <button type="button" class="emoji-cat-tab" data-cat="nature" data-testid="natureButton" title="Animals & Nature" aria-label="Animals & Nature">🐻</button>
+      <button type="button" class="emoji-cat-tab" data-cat="food" data-testid="foodButton" title="Food & Drinks" aria-label="Food & Drinks">🍔</button>
+      <button type="button" class="emoji-cat-tab" data-cat="activity" data-testid="activityButton" title="Activities" aria-label="Activities">⚽</button>
+      <button type="button" class="emoji-cat-tab" data-cat="travel" data-testid="travelButton" title="Travel & Places" aria-label="Travel & Places">🚀</button>
+      <button type="button" class="emoji-cat-tab" data-cat="objects" data-testid="objectsButton" title="Objects" aria-label="Objects">💡</button>
+      <button type="button" class="emoji-cat-tab" data-cat="symbols" data-testid="symbolsButton" title="Symbols" aria-label="Symbols">❤️</button>
+      <button type="button" class="emoji-cat-tab" data-cat="flags" data-testid="flagsButton" title="Flags" aria-label="Flags">🚩</button>
+    </div>
+  </div>
+
+
   <!-- Post Detail / Expand Theater Modal (Padles Authentic Theater View) -->
   <div id="cardDetailModal" class="card-detail-modal-backdrop" hidden data-testid="surfacePanelPostExpanded" role="dialog" aria-modal="true" aria-label="Expanded post dialog">
     <div class="card-detail-theater">

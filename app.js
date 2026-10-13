@@ -205,6 +205,7 @@ class PadlesShelfApp {
     this.initPaletteSwatches();
     this.initSectionContextMenu();
     this.initCardContextMenu();
+    this.initEmojiPicker();
     this.initCardDetailModal();
     this.initScheduleModal();
     this.initAllToolsModal();
@@ -608,21 +609,54 @@ class PadlesShelfApp {
       customFieldsHtml += '</div>';
     }
 
+    // Render post emoji reactions pills + Add reaction button
+    const emojiReactions = card.emojiReactions || {};
+    let reactionPillsHtml = '';
+    const emojiEntries = Object.entries(emojiReactions);
+
+    emojiEntries.forEach(([emoji, info]) => {
+      if (info && info.count > 0) {
+        const hex = emoji.codePointAt(0).toString(16);
+        reactionPillsHtml += `
+          <button type="button" class="reaction-pill ${info.userReacted ? 'is-reacted' : ''}" data-emoji="${this.escapeHtml(emoji)}" data-testid="surfacePostReactionEmojiAccumulatedReactionsButton-${hex}" aria-label="Reaction ${emoji} count ${info.count}">
+            <span class="reaction-pill-emoji">${emoji}</span>
+            <span class="reaction-pill-count">${info.count}</span>
+          </button>
+        `;
+      }
+    });
+
+    // If card.reactions > 0 but emojiReactions is empty (legacy data)
+    if (emojiEntries.length === 0 && card.reactions > 0) {
+      reactionPillsHtml += `
+        <button type="button" class="reaction-pill ${card.hasReacted ? 'is-reacted' : ''}" data-emoji="❤️" data-testid="surfacePostReactionEmojiAccumulatedReactionsButton-2764" aria-label="Reaction ❤️ count ${card.reactions}">
+          <span class="reaction-pill-emoji">❤️</span>
+          <span class="reaction-pill-count">${card.reactions}</span>
+        </button>
+      `;
+    }
+
+    const addReactionSvg = `
+      <svg viewBox="0 0 24 24" height="18" width="18" fill="currentColor">
+        <path d="M11.168 3c0.657 0 1.299 0.064 1.92 0.188-0.171 0.455-0.287 0.937-0.342 1.437-0.511-0.098-1.038-0.151-1.578-0.151-4.616 0-8.359 3.743-8.359 8.359s3.743 8.358 8.359 8.358c4.616 0 8.358-3.742 8.358-8.358 0-0.54-0.053-1.068-0.151-1.579 0.5-0.055 0.982-0.172 1.437-0.342 0.123 0.622 0.189 1.264 0.189 1.922-0 5.431-4.403 9.833-9.833 9.833s-9.833-4.402-9.833-9.833c0-5.431 4.402-9.833 9.833-9.833z"/>
+        <path d="M6.654 15.447c0.32-0.252 0.783-0.196 1.035 0.124 0.835 1.059 2.105 1.689 3.479 1.689 1.373-0 2.64-0.628 3.475-1.685 0.252-0.32 0.717-0.375 1.037-0.122s0.373 0.717 0.121 1.036c-1.112 1.407-2.804 2.246-4.633 2.246-1.831 0-3.525-0.841-4.637-2.251-0.252-0.32-0.197-0.784 0.122-1.036z"/>
+        <path d="M8.219 9.638c0.678 0 1.228 0.551 1.228 1.229s-0.55 1.228-1.228 1.228-1.228-0.55-1.228-1.228c0-0.678 0.549-1.229 1.228-1.229z"/>
+        <path d="M14.119 9.638c0.26 0 0.501 0.081 0.699 0.219 0.050 0.043 0.101 0.085 0.152 0.126 0.232 0.223 0.376 0.537 0.376 0.884-0 0.678-0.55 1.228-1.228 1.228s-1.229-0.55-1.229-1.228c0-0.678 0.551-1.229 1.229-1.229z"/>
+        <path d="M19.163 7.111c0.61 0.85 1.089 1.8 1.404 2.823-0.452 0.181-0.936 0.298-1.441 0.34-0.155-0.481-0.351-0.944-0.586-1.383 0.026 0.010 0.051 0.023 0.078 0.029l0.092 0.009c0.251-0 0.453-0.204 0.453-0.454v-1.363z"/>
+        <path d="M17.981 5.746c0.093 0.090 0.185 0.18 0.275 0.273v2.383c-0.673-1.074-1.583-1.983-2.658-2.656h2.383z"/>
+        <path d="M14.067 3.434c1.023 0.315 1.972 0.795 2.823 1.405h-1.362l-0.091 0.008c-0.207 0.042-0.363 0.226-0.363 0.445 0 0.059 0.011 0.115 0.031 0.167-0.437-0.234-0.898-0.429-1.378-0.583 0.042-0.506 0.159-0.99 0.34-1.441z"/>
+        <path d="M18.667 0.333c-2.761 0-5 2.239-5 5s2.239 5 5 5c2.761 0 5-2.239 5-5s-2.239-5-5-5zM18.667 1.697c0.251 0 0.455 0.204 0.455 0.455v2.727h2.727c0.251 0 0.454 0.204 0.454 0.455s-0.204 0.455-0.454 0.455h-2.727v2.727c0 0.251-0.204 0.455-0.455 0.455s-0.455-0.204-0.455-0.455v-2.727h-2.727c-0.251 0-0.455-0.204-0.455-0.455s0.204-0.455 0.455-0.455h2.727v-2.727c0-0.251 0.204-0.455 0.455-0.455z"/>
+      </svg>
+    `;
+
     const bottomBarHtml = `
       <div class="card-bottom-bar">
-        <button class="reaction-btn ${card.hasReacted ? 'has-reacted' : ''}" title="Add reaction" aria-label="Add reaction">
-          <svg viewBox="0 0 24 24" height="18" width="18" fill="currentColor">
-            <path d="M11.168 3c0.657 0 1.299 0.064 1.92 0.188-0.171 0.455-0.287 0.937-0.342 1.437-0.511-0.098-1.038-0.151-1.578-0.151-4.616 0-8.359 3.743-8.359 8.359s3.743 8.358 8.359 8.358c4.616 0 8.358-3.742 8.358-8.358 0-0.54-0.053-1.068-0.151-1.579 0.5-0.055 0.982-0.172 1.437-0.342 0.123 0.622 0.189 1.264 0.189 1.922-0 5.431-4.403 9.833-9.833 9.833s-9.833-4.402-9.833-9.833c0-5.431 4.402-9.833 9.833-9.833z"/>
-            <path d="M6.654 15.447c0.32-0.252 0.783-0.196 1.035 0.124 0.835 1.059 2.105 1.689 3.479 1.689 1.373-0 2.64-0.628 3.475-1.685 0.252-0.32 0.717-0.375 1.037-0.122s0.373 0.717 0.121 1.036c-1.112 1.407-2.804 2.246-4.633 2.246-1.831 0-3.525-0.841-4.637-2.251-0.252-0.32-0.197-0.784 0.122-1.036z"/>
-            <path d="M8.219 9.638c0.678 0 1.228 0.551 1.228 1.229s-0.55 1.228-1.228 1.228-1.228-0.55-1.228-1.228c0-0.678 0.549-1.229 1.228-1.229z"/>
-            <path d="M14.119 9.638c0.26 0 0.501 0.081 0.699 0.219 0.050 0.043 0.101 0.085 0.152 0.126 0.232 0.223 0.376 0.537 0.376 0.884-0 0.678-0.55 1.228-1.228 1.228s-1.229-0.55-1.229-1.228c0-0.678 0.551-1.229 1.229-1.229z"/>
-            <path d="M19.163 7.111c0.61 0.85 1.089 1.8 1.404 2.823-0.452 0.181-0.936 0.298-1.441 0.34-0.155-0.481-0.351-0.944-0.586-1.383 0.026 0.010 0.051 0.023 0.078 0.029l0.092 0.009c0.251-0 0.453-0.204 0.453-0.454v-1.363z"/>
-            <path d="M17.981 5.746c0.093 0.090 0.185 0.18 0.275 0.273v2.383c-0.673-1.074-1.583-1.983-2.658-2.656h2.383z"/>
-            <path d="M14.067 3.434c1.023 0.315 1.972 0.795 2.823 1.405h-1.362l-0.091 0.008c-0.207 0.042-0.363 0.226-0.363 0.445 0 0.059 0.011 0.115 0.031 0.167-0.437-0.234-0.898-0.429-1.378-0.583 0.042-0.506 0.159-0.99 0.34-1.441z"/>
-            <path d="M18.667 0.333c-2.761 0-5 2.239-5 5s2.239 5 5 5c2.761 0 5-2.239 5-5s-2.239-5-5-5zM18.667 1.697c0.251 0 0.455 0.204 0.455 0.455v2.727h2.727c0.251 0 0.454 0.204 0.454 0.455s-0.204 0.455-0.454 0.455h-2.727v2.727c0 0.251-0.204 0.455-0.455 0.455s-0.455-0.204-0.455-0.455v-2.727h-2.727c-0.251 0-0.455-0.204-0.455-0.455s0.204-0.455 0.455-0.455h2.727v-2.727c0-0.251 0.204-0.455 0.455-0.455z"/>
-          </svg>
-          ${card.reactions > 0 ? `<span>${card.reactions}</span>` : ''}
-        </button>
+        <div class="card-reactions-group" data-testid="surfacePostReactionEmoji">
+          ${reactionPillsHtml}
+          <button type="button" class="reaction-btn reaction-add-btn" title="Add reaction" aria-label="Add reaction" data-testid="surfacePostReactionEmojiAddReactionButton">
+            ${addReactionSvg}
+          </button>
+        </div>
       </div>
     `;
 
@@ -656,28 +690,23 @@ class PadlesShelfApp {
       });
     }
 
-    // Reaction click handler
-    const reactBtn = el.querySelector('.reaction-btn');
-    reactBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      card.hasReacted = !card.hasReacted;
-      card.reactions = (card.reactions || 0) + (card.hasReacted ? 1 : -1);
-      reactBtn.classList.toggle('has-reacted', card.hasReacted);
-      const span = reactBtn.querySelector('span');
-      if (card.reactions > 0) {
-        if (!span) {
-          const s = document.createElement('span');
-          s.textContent = card.reactions;
-          reactBtn.appendChild(s);
-        } else {
-          span.textContent = card.reactions;
-        }
-      } else if (span) {
-        span.remove();
-      }
-      this.saveState();
-      this.showToast(card.hasReacted ? 'Reaction added' : 'Reaction removed');
+    // Reaction pill clicks (toggles specific emoji reaction)
+    el.querySelectorAll('.reaction-pill').forEach(pill => {
+      pill.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const emoji = pill.dataset.emoji;
+        if (emoji) this.toggleCardEmojiReaction(card.id, emoji);
+      });
     });
+
+    // Add reaction button click (opens 336px x 377px authentic Padlet emoji picker)
+    const addReactBtn = el.querySelector('.reaction-add-btn');
+    if (addReactBtn) {
+      addReactBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openEmojiPicker(addReactBtn, card.id);
+      });
+    }
 
     // In Padles, left clicking a card does nothing (detail view opened via context menu / actions)
     // Right clicking a card opens post actions context menu at cursor position
@@ -856,7 +885,7 @@ class PadlesShelfApp {
   adjustBodyTextareaHeight() {
     if (!this.bodyInput) return;
     this.bodyInput.style.height = 'auto';
-    const newHeight = Math.max(160, Math.min(420, this.bodyInput.scrollHeight));
+    const newHeight = Math.max(38, this.bodyInput.scrollHeight);
     this.bodyInput.style.height = `${newHeight}px`;
   }
 
@@ -1434,6 +1463,511 @@ class PadlesShelfApp {
     if (this.colorPaletteDropdown) this.colorPaletteDropdown.hidden = true;
     if (this.sectionContextMenu) this.sectionContextMenu.hidden = true;
     if (this.cardContextMenu) this.cardContextMenu.hidden = true;
+    this.closeEmojiPicker();
+  }
+
+  /* ========================================================================
+     Padlet-Authentic 336px x 377px Emoji Picker Popover (8 Categories & Reactions)
+     ======================================================================== */
+
+  initEmojiPicker() {
+    this.emojiPickerPopover = document.getElementById('emojiPickerPopover');
+    this.emojiSearchInput = document.getElementById('emojiSearchInput');
+    this.emojiSearchClearBtn = document.getElementById('emojiSearchClearBtn');
+    this.emojiPickerContent = document.getElementById('emojiPickerContent');
+    this.emojiCategoryTabs = document.getElementById('emojiCategoryTabs');
+
+    if (!this.emojiPickerPopover) return;
+
+    this.emojiKeywords = {
+      '😀': 'grinning face happy smile laugh',
+      '😃': 'smiling face big eyes happy joy',
+      '😄': 'smiling face open mouth laughing',
+      '😁': 'beaming face teeth smile grin',
+      '😆': 'grinning squinting laughing lol',
+      '😅': 'sweat smile nervous relief',
+      '😂': 'tears joy laughing haha funny lol',
+      '🤣': 'rofl rolling floor laughing lol',
+      '😊': 'smiling blush warm kind happy',
+      '😇': 'halo angel innocent blessed',
+      '🙂': 'slightly smiling smile fine okay',
+      '🙃': 'upside down silly sarcasm irony',
+      '😉': 'winking wink flirt playful',
+      '😌': 'relieved calm peaceful relaxed',
+      '😍': 'heart eyes in love adore crush',
+      '🥰': 'smiling hearts loved affectionate',
+      '😘': 'blow kiss kissing love romantic',
+      '😗': 'kissing kiss whistle',
+      '😙': 'kissing smiling eyes kiss blush',
+      '😚': 'kissing closed eyes blush kiss',
+      '😋': 'yum delicious tasty licking food',
+      '😛': 'tongue playful cheeky silly',
+      '😝': 'squinting tongue lol funny tease',
+      '😜': 'winking tongue crazy wink wacky',
+      '🤪': 'zany face wild crazy goofy',
+      '🤨': 'raised eyebrow skeptic doubt suspicious',
+      '🧐': 'monocle classy curious inspect study',
+      '🤓': 'nerd geek glasses smart study',
+      '😎': 'sunglasses cool stylish shades awesome',
+      '🥸': 'disguise mustache glasses undercover incognito',
+      '🤩': 'star struck excited amazed awesome',
+      '🥳': 'partying party celebration happy birthday celebrate',
+      '😏': 'smirk smirking smug flirt suggestive',
+      '😒': 'unamused annoyed displeased unimpressed',
+      '😞': 'disappointed sad down upset regret',
+      '😔': 'pensive thoughtful sad mournful',
+      '😟': 'worried concerned anxious nervous',
+      '😕': 'confused puzzled hesitant unsure',
+      '🙁': 'slightly frowning sad frown',
+      '☹️': 'frowning sad sorrow unhappy',
+      '😣': 'persevering struggle upset pain',
+      '😖': 'confounded upset distressed irritated',
+      '😫': 'tired weary exhausted stressed',
+      '😩': 'weary crying upset tired despair',
+      '🥺': 'pleading begging cute puppy eyes please',
+      '😢': 'crying tear sad upset grief',
+      '😭': 'loudly crying sob bawling tears upset',
+      '😤': 'triumph steam angry determined pride',
+      '😠': 'angry mad annoyed furious irritated',
+      '😡': 'pouting rage furious mad red',
+      '🤬': 'cursing swearing angry symbols mad',
+      '🤯': 'exploding head mind blown shocked amazed',
+      '😳': 'flushed embarrassed surprised blush wide eyes',
+      '🥵': 'hot face sweat heat summer warm',
+      '🥶': 'cold face freezing ice winter frost',
+      '😱': 'screaming fear scream terrified scared shock',
+      '😨': 'fearful scared worried anxious afraid',
+      '😰': 'anxious sweat scared worried blue',
+      '😥': 'sad relieved whew phew close call',
+      '😓': 'downcast sweat discouraged overwhelmed',
+      '🤗': 'hugging hug warm embrace welcome open',
+      '🤔': 'thinking ponder wonder consider hmm question',
+      '🫣': 'peeking eye scared curious hiding peek',
+      '🤭': 'hand mouth giggle oops chuckle shy',
+      '🫢': 'open eyes hand mouth gasp shocked surprised',
+      '🫡': 'saluting salute respect yes sir honor',
+      '🤫': 'shushing quiet secret whisper silence shh',
+      '🫠': 'melting melt hot sarcasm dissolving',
+      '🤥': 'lying liar pinocchio nose deception',
+      '😶': 'no mouth silent blank speechless mute',
+      '🫥': 'dotted face invisible disappearing unseen fade',
+      '😐': 'neutral poker straight face deadpan fine',
+      '🫤': 'diagonal mouth skeptical unsure confused meh',
+      '😑': 'expressionless blank emotionless flat done',
+      '🫨': 'shaking vibrating shock earthquake tremble',
+      '😬': 'grimacing awkward yikes tense nervous',
+      '🙄': 'rolling eyes annoyed Whatever bored sarcasm',
+      '😯': 'hushed surprised gasp astonishment',
+      '😦': 'frowning open mouth stunned surprise',
+      '😧': 'anguished shocked alarmed hurt',
+      '😮': 'open mouth wow oh surprise gasp',
+      '😲': 'astonished shocked amazed stunned',
+      '🥱': 'yawning yawn tired sleepy boring bedtime',
+      '😴': 'sleeping sleep zzz tired goodnight bedtime',
+      '🤤': 'drooling drool hungry delicious desire craving',
+      '😪': 'sleepy tired snot bubble resting dozing',
+      '😵': 'dizzy knocked out stunned dead unconscious',
+      '😵‍💫': 'spiral eyes dizzy disoriented hypnotized confused',
+      '🤐': 'zipper mouth secret quiet silent locked',
+      '🥴': 'woozy drunk tipsy dizzy confused dazed',
+      '🤢': 'nauseated sick gross disgust ill green',
+      '🤮': 'vomiting vomit puke throw up barf sick',
+      '🤧': 'sneezing sneeze tissue cold sick allergy',
+      '😷': 'medical mask sick covid illness virus doctor',
+      '🤒': 'thermometer sick fever temperature ill',
+      '🤕': 'bandage head hurt injured pain wound',
+      '🤑': 'money face rich cash wealthy dollar profit',
+      '🤠': 'cowboy hat western yeehaw ranch sheriff',
+      '😈': 'devil purple horns evil mischievous smirk',
+      '👿': 'angry devil demon upset bad furious',
+      '👹': 'ogre oni monster japanese mask folklore',
+      '👺': 'goblin tengu red mask long nose japanese',
+      '🤡': 'clown circus funny scary party joke',
+      '💩': 'poop pile poo brown stinky funny smiling',
+      '👻': 'ghost spooky halloween spirit boo phantom',
+      '💀': 'skull dead skeleton dying lol dead funny',
+      '☠️': 'skull crossbones poison danger death pirate',
+      '👽': 'alien ufo extraterrestrial martian sci fi space',
+      '👾': 'alien monster video game 8bit pixel retro arcade',
+      '🤖': 'robot android sci fi tech machine cyber',
+      '🎃': 'jack o lantern pumpkin halloween fall spooky autumn',
+      '😺': 'grinning cat smiling kitty meow feline pet',
+      '😸': 'grinning cat smiling eyes meow joyful kitty',
+      '😹': 'cat tears joy laughing kitty lol funny',
+      '😻': 'heart eyes cat love kitten crush feline',
+      '😼': 'cat wry smile smirk kitty cheeky sly',
+      '😽': 'kissing cat kiss kitty feline sweet',
+      '🙀': 'weary cat scream scared shock frightened horror',
+      '😿': 'crying cat sad tear kitten unhappy weep',
+      '😾': 'pouting cat grumpy mad angry upset feline',
+      '👋': 'wave waving hello goodbye bye hi greeting',
+      '🤚': 'raised back hand stop talk to hand pause',
+      '🖐️': 'hand splayed five fingers stop high five',
+      '✋': 'raised hand stop halt high five question answer',
+      '🖖': 'vulcan salute spock star trek live long prosper',
+      '👌': 'ok okay hand perfect excellent correct nice',
+      '🤌': 'pinched fingers italian chef kiss what do you mean',
+      '🤏': 'pinching hand small little tiny bit amount',
+      '✌️': 'victory hand peace two signs deuces v sign',
+      '🤞': 'crossed fingers good luck hope wish promise',
+      '🫰': 'finger heart love kpop korean heart snap',
+      '🤟': 'love you hand gesture sign language ily rock',
+      '🤘': 'sign horns rock on metal concert party music',
+      '🤙': 'call me hang loose shaka surfing phone chill',
+      '👈': 'point left pointer finger left direction west',
+      '👉': 'point right pointer finger right direction east',
+      '👆': 'point up pointing finger top up north look',
+      '🖕': 'middle finger rude insult offensive gesture',
+      '👇': 'point down pointing finger bottom down south',
+      '☝️': 'index pointing up finger one attention listen point',
+      '🫵': 'pointing index viewer you point target choice',
+      '👍': 'thumbs up good like approve yes agree great positive',
+      '👎': 'thumbs down bad dislike disapprove no negative poor',
+      '✊': 'raised fist solidarity power protest punch strength',
+      '👊': 'oncoming fist bump bro punch fight hit impact',
+      '🤛': 'left facing fist bump punch greeting hit',
+      '🤜': 'right facing fist bump punch greeting hit',
+      '👏': 'clapping hands applause bravo praise good job celebrate',
+      '🙌': 'raising hands celebrate praise hooray yay hallelujah',
+      '🫶': 'heart hands love care affection support kindness',
+      '👐': 'open hands hug welcome jazz hands honest care',
+      '🤲': 'palms up together pray prayer ask blessing hold',
+      '🤝': 'handshake agreement deal partnership greeting meet shaking',
+      '🙏': 'folded hands pray thank you please gratitude namaste hope',
+      '❤️': 'red heart love passion romance affection favorite like',
+      '🧡': 'orange heart care friendship warm energy love',
+      '💛': 'yellow heart friendship happy bright kindness joy',
+      '💚': 'green heart nature health envy eco friendly luck',
+      '💙': 'blue heart trust peace loyalty calm harmony cold',
+      '💜': 'purple heart royalty luxury compassion affection kpop',
+      '🖤': 'black heart dark gothic sorrow grief edgy style',
+      '🤍': 'white heart pure peace angel innocence clean calm',
+      '🤎': 'brown heart chocolate warmth earth cocoa skin',
+      '💔': 'broken heart breakup sad hurt heartbreak divorce grief',
+      '❤️‍🔥': 'heart on fire passionate love burning desire intense',
+      '❤️‍🩹': 'mending heart healing recovery better bandage heal',
+      '❣️': 'heart exclamation love punctuation point emphasis',
+      '💕': 'two hearts love sweet floating pink romance couple',
+      '💞': 'revolving hearts love affection revolving swirling spin',
+      '💓': 'beating heart pulse heartbeat alive excite vibration',
+      '💗': 'growing heart expanding love flutter affection triple',
+      '💖': 'sparkling heart shiny love glitter magical sweet',
+      '💘': 'heart with arrow cupid romance love crush Valentine',
+      '💝': 'heart with ribbon gift present wrapped love surprise',
+      '💟': 'heart decoration square badge purple motif sign',
+      '✨': 'sparkles stars magic shiny clean glitter twinkle bright',
+      '⭐': 'star gold favorite rating celestial yellow space review',
+      '🌟': 'glowing star shine bright sparkle special award achievement',
+      '🔥': 'fire flame hot lit viral burn trend heat passion',
+      '💥': 'collision explosion bang boom crash hit impact blast',
+      '💯': 'hundred points 100 perfect score keep it real complete',
+      '🎉': 'party popper celebration congrats celebrate congrats tada',
+      '🎊': 'confetti ball celebration party festival joy fun',
+      '💡': 'light bulb idea inspiration smart solution electric bright',
+      '🚀': 'rocket ship launch space fast speed startup boost crypto moon',
+      '🏆': 'trophy winner first place gold champion achievement award prize',
+      '🎯': 'bullseye direct hit target goal focus aim accurate darts',
+      '👀': 'eyes looking see watch peep curious look examine inspect',
+      '🌈': 'rainbow pride colorful weather hope nature sky spectrum',
+      '☀️': 'sun sunny summer bright warm daylight weather morning',
+      '⚡': 'high voltage lightning bolt zap shock thunder power fast energy',
+      '☕': 'coffee hot drink tea morning breakfast cafe espresso mug',
+      '🍕': 'pizza slice pepperoni cheese italian food snack lunch fast food',
+      '🍔': 'hamburger burger fast food beef cheeseburger snack meal',
+      '🐶': 'dog puppy pet canine animal cute best friend barking',
+      '🐱': 'cat kitten feline pet animal cute meow purr kitty'
+    };
+
+    this.emojiCategories = [
+      {
+        id: 'people',
+        name: 'Smileys & People',
+        emojis: [
+          '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰',
+          '😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳',
+          '😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤',
+          '😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🫣','🤭',
+          '🫢','🫡','🤫','🫠','🤥','😶','🫥','😐','🫤','😑','🫨','😬','🙄','😯','😦','😧',
+          '😮','😲','🥱','😴','🤤','😪','😵','😵‍💫','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕',
+          '🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','☠️','👽','👾','🤖','🎃','😺',
+          '😸','😹','😻','😼','😽','🙀','😿','😾','👋','🤚','🖐️','✋','🖖','👌','🤌','🤏',
+          '✌️','🤞','🫰','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','🫵','👍','👎','✊',
+          '👊','🤛','🤜','👏','🙌','🫶','👐','🤲','🤝','🙏'
+        ]
+      },
+      {
+        id: 'nature',
+        name: 'Animals & Nature',
+        emojis: [
+          '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵',
+          '🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗',
+          '🐴','🦄','🐝','🪱','🐛','🦋','🐌','🐞','🐜','🪰','🪲','🪳','🦟','🦗','🕷️','🕸️',
+          '🦂','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳',
+          '🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🦧','🐘','🦛','🦏','🐪','🐫','🦒','🦘',
+          '🌲','🌳','🌴','🌱','🌿','☘️','🍀','🪴','🎋','🍃','🍂','🍁','🍄','🌾','💐','🌷',
+          '🌹','🥀','🌺','🌸','🌼','🌻','🌞','🌝','⭐','🌟','✨','⚡','💥','🔥','🌈','☀️',
+          '🌤️','⛅','☁️','🌧️','⛈️','🌩️','🌨️','❄️','⛄','💨','💧','🫧','🌊'
+        ]
+      },
+      {
+        id: 'food',
+        name: 'Food & Drinks',
+        emojis: [
+          '🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥',
+          '🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐',
+          '🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔',
+          '🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟',
+          '🍤','🍙','🍚','🍘','🍥','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭',
+          '🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','☕','🍵','🧃','🥤','🧋','🍺','🍻',
+          '🥂','🍷','🍸','🍹','🍾','🧊'
+        ]
+      },
+      {
+        id: 'activity',
+        name: 'Activities',
+        emojis: [
+          '⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🎱','🏓','🏸','🏒','🏏','🥅','⛳','🪁',
+          '🏹','🎣','🤿','🥊','🥋','🛹','🛼','⛸️','🎿','⛷️','🏂','🏋️','🤸','⛹️','🤺','🤾',
+          '🏌️','🏇','🧘','🏄','🏊','🤽','🚣','🧗','🚴','🏆','🥇','🥈','🥉','🏅','🎖️','🎫',
+          '🎟️','🎪','🎭','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🎷','🎺','🎸','🎻','🎲','♟️',
+          '🎯','🎳','🎮','🎰','🧩'
+        ]
+      },
+      {
+        id: 'travel',
+        name: 'Travel & Places',
+        emojis: [
+          '🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🚚','🚛','🚜','🛴','🚲','🛵',
+          '🏍️','🚨','🚔','🚍','🚘','🚠','🚃','🚋','🚂','🚆','🚇','🚊','🚁','✈️','🛫','🛬',
+          '🚀','🛸','⛵','🚤','🛳️','⛴️','🚢','⚓','⛽','🚧','🚥','🚦','🗿','🗽','🗼','🏰',
+          '🏟️','🎡','🎢','🏖️','🏝️','🌋','⛰️','🏔️','🏕️','⛺','🏠','🏡','🏢','🏬',
+          '🏥','🏦','🏨','🏪','🏫','🏛️','⛪','🕌','⛩️'
+        ]
+      },
+      {
+        id: 'objects',
+        name: 'Objects',
+        emojis: [
+          '⌚','📱','📲','💻','⌨️','🖥️','🖨️','🖱️','🕹️','💾','💿','📀','📷','📸','📹','🎥',
+          '📽️','📞','☎️','📟','📠','📺','📻','🎙️','⏰','🕰️','⌛','⏳','📡','🔋','🔌','💡',
+          '🔦','🕯️','💸','💵','💴','💶','💷','🪙','💰','💳','💎','⚖️','🪜','🧰','🔧','🔨',
+          '⚒️','🛠️','⛏️','🔩','⚙️','🧱','⛓️','🧲','🔫','💣','🧨','🔪','🗡️','⚔️','🛡️','🔮',
+          '📿','💈','⚗️','🔭','🔬','🩹','🩺','💊','💉','🧬','🧹','🧺','🧻','🚽','🚿','🛁',
+          '🧼','🪥','🪒','🧽','🧴','🔑','🗝️','🚪','🪑','🛏️','🧸','🖼️','🛍️','🛒','🎁','🎈',
+          '🎀','🎉','🎊','✉️','📩','📨','📧','💌','📦','🏷️','📜','📃','📄','📑','🧾','📊',
+          '📈','📉','📋','📁','📂','🗂️','📰','📓','📕','📗','📘','📙','📚','📖','🔖','🔗',
+          '📎','🖇️','📐','📏','📌','📍','✂️','🖊️','🖋️','✒️','🖌️','🖍️','📝','✏️','🔍','🔎',
+          '🔒','🔓'
+        ]
+      },
+      {
+        id: 'symbols',
+        name: 'Symbols',
+        emojis: [
+          '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓',
+          '💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','☦️','🛐',
+          '♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓','🆔','⚛️','☢️','☣️','📴',
+          '📳','🈶','🈚','🆚','💮','🉐','㊙️','㊗️','🈴','🈵','🈹','🈲','🅰️','🅱️','🆎','🅾️',
+          '🆘','❌','⭕','🛑','⛔','📛','🚫','💯','💢','♨️','❗️','❕','❓','❔','‼️','⁉️',
+          '⚠️','🚸','🔱','⚜️','🔰','♻️','✅','❇️','✳️','❎','🌐','💠','🌀','💤','🏧','🚾',
+          '♿','🅿️','🈳','🈂️','🛂','🛃','🛄','🛅','🚹','🚺','🚼','🚻','🚮','🎦','📶','🈁',
+          '🆖','🆗','🆙','🆒','🆕','🆓','0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣',
+          '🔟','🔢','#️⃣','*️⃣','▶️','⏸️','⏯️','⏹️','⏺️','⏭️','⏮️','⏩','⏪','⏫','⏬','◀️',
+          '🔼','🔽','➡️','⬅️','⬆️','⬇️','↗️','↘️','↙️','↖️','↕️','↔️','🔄','↪️','↩️','⤴️',
+          '⤵️','🔀','🔁','🔂','🎵','🎶','➕','➖','➗','✖️','🟰','♾️','💲','💱','™️','©️',
+          '®️','✔️','☑️','🔘','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🟤','🔺','🔻','🔸',
+          '🔹','🔶','🔷','▫️','▪️','◽','◾','◻️','◼️','🟥','🟧','🟨','🟩','🟦','🟪','⬛',
+          '⬜','🟫','🔈','🔇','🔉','🔊','🔔','🔕','📣','📢','💬','💭','🗯️','♠️','♣️','♥️',
+          '♦️','🃏'
+        ]
+      },
+      {
+        id: 'flags',
+        name: 'Flags',
+        emojis: [
+          '🚩','🎌','🏁','🏴','🏳️','🏳️‍🌈','🏳️‍⚧️','🏴‍☠️','🇦🇺','🇧🇷','🇨🇦','🇨🇳','🇩🇪','🇪🇸','🇫🇷','🇬🇧',
+          '🇮🇳','🇮🇩','🇮🇹','🇯🇵','🇰🇷','🇲🇽','🇳🇱','🇵🇭','🇷🇺','🇸🇦','🇸🇬','🇺🇸','🇻🇳','🇿🇦'
+        ]
+      }
+    ];
+
+    this.renderEmojiPickerGrid('');
+
+    // Tab buttons
+    this.emojiCategoryTabs.querySelectorAll('.emoji-cat-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const catId = tab.dataset.cat;
+        this.selectEmojiCategory(catId);
+      });
+    });
+
+    // Search filter
+    this.emojiSearchInput.addEventListener('input', () => {
+      const q = this.emojiSearchInput.value.trim().toLowerCase();
+      this.emojiSearchClearBtn.hidden = !q;
+      this.renderEmojiPickerGrid(q);
+    });
+
+    // Clear search
+    this.emojiSearchClearBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.emojiSearchInput.value = '';
+      this.emojiSearchClearBtn.hidden = true;
+      this.renderEmojiPickerGrid('');
+    });
+
+    // Prevent clicks inside picker from bubbling
+    this.emojiPickerPopover.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  }
+
+  renderEmojiPickerGrid(filterText = '') {
+    if (!this.emojiPickerContent) return;
+    let html = '';
+    const q = filterText.toLowerCase();
+
+    this.emojiCategories.forEach(cat => {
+      let filtered = cat.emojis;
+      if (q) {
+        filtered = cat.emojis.filter(em => {
+          const kw = this.emojiKeywords && this.emojiKeywords[em] ? this.emojiKeywords[em] : '';
+          return cat.name.toLowerCase().includes(q) || kw.toLowerCase().includes(q) || em === q;
+        });
+      }
+
+      if (filtered.length > 0) {
+        html += `<div class="emoji-category-section" id="emojiSec_${cat.id}">`;
+        html += `<div class="emoji-category-title">${this.escapeHtml(cat.name)}</div>`;
+        html += `<div class="emoji-grid">`;
+        filtered.forEach(em => {
+          const hex = em.codePointAt(0).toString(16);
+          html += `<button type="button" class="emoji-item-btn" data-emoji="${this.escapeHtml(em)}" data-testid="emoji-icon-${hex}" aria-label="Emoji ${em}">${em}</button>`;
+        });
+        html += `</div></div>`;
+      }
+    });
+
+    if (!html) {
+      html = `<div style="text-align: center; color: #9ca3af; padding: 40px 16px; font-size: 13px;">No emojis found</div>`;
+    }
+
+    this.emojiPickerContent.innerHTML = html;
+
+    // Attach click listeners to all emoji buttons
+    this.emojiPickerContent.querySelectorAll('.emoji-item-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const em = btn.dataset.emoji;
+        if (em && this.activeEmojiCardId) {
+          this.toggleCardEmojiReaction(this.activeEmojiCardId, em);
+          this.closeEmojiPicker();
+        }
+      });
+    });
+  }
+
+  selectEmojiCategory(catId) {
+    if (!this.emojiCategoryTabs) return;
+    this.emojiCategoryTabs.querySelectorAll('.emoji-cat-tab').forEach(t => {
+      t.classList.toggle('is-active', t.dataset.cat === catId);
+    });
+    const sec = document.getElementById(`emojiSec_${catId}`);
+    if (sec && this.emojiPickerContent) {
+      sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  openEmojiPicker(anchorElement, cardId) {
+    if (!this.emojiPickerPopover) return;
+    this.closeAllPopovers();
+
+    this.activeEmojiCardId = cardId;
+    if (this.emojiSearchInput) {
+      this.emojiSearchInput.value = '';
+    }
+    if (this.emojiSearchClearBtn) {
+      this.emojiSearchClearBtn.hidden = true;
+    }
+    this.renderEmojiPickerGrid('');
+
+    // Position popover intelligently relative to anchorElement
+    const rect = anchorElement.getBoundingClientRect();
+    const popoverWidth = 336;
+    const popoverHeight = 377;
+    const margin = 8;
+
+    let left = rect.left;
+    if (left + popoverWidth > window.innerWidth - margin) {
+      left = window.innerWidth - popoverWidth - margin;
+    }
+    if (left < margin) left = margin;
+
+    let top = rect.bottom + 6;
+    if (top + popoverHeight > window.innerHeight - margin) {
+      top = rect.top - popoverHeight - 6;
+    }
+    if (top < margin) top = margin;
+
+    this.emojiPickerPopover.style.left = `${Math.round(left)}px`;
+    this.emojiPickerPopover.style.top = `${Math.round(top)}px`;
+    this.emojiPickerPopover.hidden = false;
+  }
+
+  closeEmojiPicker() {
+    if (this.emojiPickerPopover) {
+      this.emojiPickerPopover.hidden = true;
+      this.activeEmojiCardId = null;
+    }
+  }
+
+  toggleCardEmojiReaction(cardId, emoji) {
+    const card = this.findCardById(cardId);
+    if (!card) return;
+
+    if (!card.emojiReactions || typeof card.emojiReactions !== 'object') {
+      card.emojiReactions = {};
+      if (card.reactions > 0) {
+        card.emojiReactions['❤️'] = { count: card.reactions, userReacted: !!card.hasReacted };
+      }
+    }
+
+    if (card.emojiReactions[emoji]) {
+      if (card.emojiReactions[emoji].userReacted) {
+        card.emojiReactions[emoji].count -= 1;
+        card.emojiReactions[emoji].userReacted = false;
+        if (card.emojiReactions[emoji].count <= 0) {
+          delete card.emojiReactions[emoji];
+        }
+      } else {
+        card.emojiReactions[emoji].count += 1;
+        card.emojiReactions[emoji].userReacted = true;
+      }
+    } else {
+      card.emojiReactions[emoji] = { count: 1, userReacted: true };
+    }
+
+    // Update aggregate reactions count & user reacted state
+    const allCounts = Object.values(card.emojiReactions).map(r => r.count || 0);
+    card.reactions = allCounts.reduce((a, b) => a + b, 0);
+    card.hasReacted = Object.values(card.emojiReactions).some(r => r.userReacted);
+
+    this.saveState();
+    this.renderBoard();
+    if (this.cardDetailModal && !this.cardDetailModal.hidden && this.activeDetailCardId === cardId) {
+      if (this.detailReactionBtn) {
+        this.detailReactionBtn.classList.toggle('has-reacted', !!card.hasReacted);
+      }
+      if (this.detailReactionCount) {
+        this.detailReactionCount.textContent = card.reactions > 0 ? card.reactions : '+';
+      }
+    }
+    this.showToast('Reaction updated');
+
+    if (this.backend && this.backend.addReaction) {
+      this.backend.addReaction(card.id);
+    }
   }
 
   /* ========================================================================
@@ -1809,22 +2343,11 @@ class PadlesShelfApp {
     });
 
     if (this.detailReactionBtn) {
-      this.detailReactionBtn.addEventListener('click', () => {
+      this.detailReactionBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const card = this.findCardById(this.activeDetailCardId);
         if (!card) return;
-        card.hasReacted = !card.hasReacted;
-        card.reactions = (card.reactions || 0) + (card.hasReacted ? 1 : -1);
-        this.detailReactionBtn.classList.toggle('has-reacted', card.hasReacted);
-        if (this.detailReactionCount) {
-          this.detailReactionCount.textContent = card.reactions > 0 ? card.reactions : '+';
-        }
-        this.saveState();
-        this.renderBoard();
-        this.showToast(card.hasReacted ? 'Reaction added' : 'Reaction removed');
-
-        if (this.backend && this.backend.isConnected && card.hasReacted) {
-          this.backend.addReaction(card.id);
-        }
+        this.openEmojiPicker(this.detailReactionBtn, card.id);
       });
     }
 
@@ -2983,6 +3506,10 @@ class PadlesShelfApp {
     this.bodyInput.addEventListener('input', () => {
       this.updatePublishButtonState();
       this.adjustBodyTextareaHeight();
+      const scrollArea = document.querySelector('.composer-scroll-area');
+      if (scrollArea && scrollArea.scrollHeight > scrollArea.clientHeight) {
+        scrollArea.scrollTop = scrollArea.scrollHeight;
+      }
     });
 
     // Publish click
@@ -3076,6 +3603,11 @@ class PadlesShelfApp {
           this.closeCardContextMenu();
         }
       }
+      if (this.emojiPickerPopover && !this.emojiPickerPopover.hidden) {
+        if (!this.emojiPickerPopover.contains(e.target) && !e.target.closest('.reaction-add-btn') && !e.target.closest('.reaction-pill')) {
+          this.closeEmojiPicker();
+        }
+      }
     });
 
     // Dismiss context menu on right click outside
@@ -3092,6 +3624,7 @@ class PadlesShelfApp {
       if (e.key === 'Escape') {
         this.closeSectionContextMenu();
         this.closeCardContextMenu();
+        this.closeEmojiPicker();
         this.closeCardDetailModal();
         this.closeScheduleModal();
         this.closeAllToolsModal();
