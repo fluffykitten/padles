@@ -1,123 +1,205 @@
-# PADLES: 100% PADLET CLONE PARITY MANDATES & REA WORKFLOW
+# PADLES — Agent Operating Manual
 
 > [!IMPORTANT]
-> **STRICT PROJECT MANDATE FOR ALL AGENTS ON ANY MACHINE**
-> This project (`Padles`) is a strict, **100% pixel-perfect clone** of the live Padlet reference board (`https://padlet.com/ezzarscarlet/physics-audio-reflections-i-see-i-think-i-wonder-s0248vnouoewo8lw6wn6`).
-> **DO NOT modify or iterate features based on guesswork, approximations, or assumptions.** All UI components, modals, menus, colors, dimensions, and interactions must be validated against the live reference board using **Reverse Engineering & CDP (Chrome DevTools Protocol)**.
+> **Padles** is a pixel-faithful clone of the live Padlet board at
+> [`padlet.com/ezzarscarlet/physics-audio-reflections-…`](https://padlet.com/ezzarscarlet/physics-audio-reflections-i-see-i-think-i-wonder-s0248vnouoewo8lw6wn6).
+> All UI must be validated against that live board using REA / CDP — never guess.
 
 ---
 
-## 1. Absolute Behavioral Rules & Zero-Guessing Policy
+## 1. Project Architecture
 
-1. **Zero Guesswork & Zero Hallucinated Designs**
-   - **Never guess colors, themes, or layouts.** In previous sessions, an agent hallucinated a dark theme (`#1f2125`) for the Edit Post modal, claiming it was "pixel perfect", which was false and rejected by the user. Real Padlet uses clean `#ffffff` surfaces with `#de3163` Padlet Pink accents.
-   - You MUST NOT guess CSS rules, colors, layout dimensions, paddings, margins, border radii, typography metrics, or SVG icon paths.
-   - You MUST NOT use generic placeholders or approximate components (e.g., generic toggle switches, standard HTML dialogs).
-   - Every CSS property, font size, border radius, padding, and box-shadow must come directly from computed styles extracted from live Padlet.
+### Tech Stack
+- **Single-page app** — no framework, no build step, no bundler.
+- **3 core files**: `index.html` (~136 KB), `styles.css` (~143 KB), `app.js` (~234 KB).
+- **Font**: Google Fonts `Inter` (loaded via `<link>` in index.html).
+- **Backend**: Optional Supabase via `supabase-service.js` + `supabase-config.js`. Falls back to `localStorage` when offline or unconfigured. Schema: `supabase/schema.sql`.
+- **No npm / no node_modules**: The only `npx` usage is the dev server (`npx -y serve . -p 8080`).
 
-2. **Reverse Engineering Anything (REA) as Ground Truth**
-   - Live Padlet running in Microsoft Edge with remote debugging (`--remote-debugging-port=9222`) or through REA MCP tools (`inspect_web_page`, `observe_web_execution`, `list_browser_targets`) is the **single source of truth**.
-   - Whenever building, fixing, or checking a component, query `http://127.0.0.1:9222/json` to connect to the live Padlet tab and extract actual `getComputedStyle()` metrics, bounding client rects, exact SVG markup, and DOM tree structures directly from Padlet's live DOM.
+### Code Organization (`app.js`)
+- **One class**: `PadlesShelfApp` — instantiated once at the bottom of the file.
+- **Constructor** caches all DOM element references via `document.getElementById(...)`.
+- **`init()`** calls setup methods: `renderBoard()`, `initCardContextMenu()`, `initEmojiPicker()`, `initSlideshow()`, etc.
+- **State**: `this.state` (board data — sections, cards, settings) persisted to `localStorage` key `padles_board_exact_v1`. Draft state in `this.composerState`. Edit state in `this.editingCardId`.
+- **Rendering**: innerHTML template literals (not `document.createElement`). Board re-renders via `renderBoard()` → `renderSections()` → `renderCards()`.
+- **Events**: Mix of direct listeners (set in `attachEventListeners()`) and event delegation on container elements.
 
-3. **100% Clone Fidelity Checklist**
-   - **Typography**: Exact font families (`Inter var`, `Inter`), weights, sizes, line heights, and letter spacings.
-   - **Colors**: Exact RGB/RGBA hex color codes and alpha transparencies.
-   - **Geometry**: Matching container heights, widths, scroll gutters (`color-scheme: dark`), padding, and margins.
-   - **Physics & States**: Authentic micro-interactions, focus outlines (e.g. Canary `#fec006`), toggle transitions (`translateX(16px)`), subpanel slides, and keyboard bindings (<kbd>Escape</kbd>).
-
-4. **Mandatory Automated Proof & Visual Screenshot Verification**
-   - **Never claim parity or completion without proof.** You are strictly forbidden from reporting "pixel-perfect" or "task complete" without first capturing screenshot artifacts of the local app (`Page.captureScreenshot`), viewing them via `view_file`, and verifying side-by-side with live Padlet reference screenshots.
-   - Before completing any cloning or UI feature task, write and execute an automated CDP verification script comparing Padlet vs. Padles.
-   - Diff tolerance: **0 strict diffs**.
-   - If diffs exist, adjust CSS tokens or DOM structure until 0 diffs remain.
-   - Execute interactive scenario testing and visual side-by-side screenshot verification.
-
-5. **Preserve Documentation & Parity Core**
-   - Maintain documentation integrity and preserve working features.
-   - Do not break the multiple drafts docking system, drag-and-drop, or Supabase backend sync.
-
----
-
-## 2. Verified Ground-Truth Design System Tokens
-
-Extracted and verified from live Padlet:
-
-### A. Board & Wallpaper
-- **Wallpaper**: Aurora star galaxy wallpaper (`linear-gradient(135deg, #012b32 0%, #034857 50%, #001f24 100%)` with aurora radial gradients).
-- **Sections Layout**: 5 columns centered horizontally via `first:ms-auto; last:me-auto;`. Column width: `272px` (`256px` inner). Gap: `16px`.
-
-### B. Section Folders (Tabs)
-- **Shape**: Skewed folder tab (`rgb(1, 78, 98)` / `#014e62`), skewed right wing `skew-x-[10deg]`.
-- **Add Post Button**: Rounded pill button under header with `+` icon (`background: rgba(0, 0, 0, 0.24)`, `backdrop-filter: blur(4px)`).
-
-### C. Cards
-- **Oceanic Blue Palette**:
-  - Outer article: `background: #9addfb; border-radius: 12px;`
-  - Inner content: `background: #bbeaff; border-radius: 12px; color: #111111;`
-- **Default White Palette**:
-  - Outer article: `background: #f5f6f7; border-radius: 12px;`
-  - Inner content: `background: #ffffff; border-radius: 12px; color: #111111;`
-- **Pinned Banner**: Top banner with `Pinned` text and thumbtack icon.
-- **Card Context Menu Trigger**: 3-dots vertical button on the top right of each card.
-
-### D. Card Context Menu (3-Dots Dropdown)
-- **Container**: `width: 256px; background: #ffffff; border-radius: 20px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18); padding: 8px; z-index: 1800;`
-- **Menu Items**:
-  1. Open post (post_expand icon)
-  2. Open post in new tab (post_open icon)
-  3. Copy link to post (post_copy_link icon)
-  4. Start slideshow from this post (play_outline icon)
-  5. 6 Pastel Color Swatches row (White with checkmark, Red, Orange/Yellow, Green, Blue, Purple)
-  6. Edit post (pencil_outline icon)
-  7. Add post before (post_add_left icon)
-  8. Add post after (post_add_right icon)
-  9. Duplicate post / Copy to another / Transfer
-  10. Pin / Unpin post
-  11. Delete post (`color: #ef4444; hover: #fef2f2;` with trash icon)
-
-### E. Post Composer & Centered Edit Modal
-- **Docked Composer** (New Post via `+ Post`):
-  - Width: `380px`, docked bottom-right.
-  - Header: Close `(X)`, Expand `(↗)`, Minimize `(—)` on left; Submit button on right.
-  - Submit button inactive: `#f1f3f4` background, `#9ca3af` text, `border-radius: 16px`, height `40px`.
-  - Submit button active: `#de3163` Padlet Pink, `#ffffff` text.
-  - Title: Placeholder `"Your name"`, 16px font-semibold.
-  - Striped Attachment Multi-Tool: 6 pinstriped columns (Upload, Camera, AI Art, Link, Search, All tools), `border: 1px dashed #e2e2e2; border-radius: 16px; height: 165px;`. Below: `"Add an image, video, audio, link, or file."`.
-  - Body: Placeholder `"Write something beautiful..."` / `"Write something fantastic..."`.
-  - Bottom Pills: `"White ▾"`, `"§ Instructions ▾"`.
-- **Expanded / Edit Post Modal** (Clicking "Edit post" or Expand):
-  - Position: Fixed centered dialog with dark backdrop.
-  - Width: `540px !important; max-width: min(540px, calc(100vw - 32px));`
-  - Background: `#ffffff !important; border-radius: 24px !important; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25) !important;`
-  - Header: Single close button `(X)` on top-left (`40px x 40px`, `#f1f3f4`), Single `Update` button on top-right (`#de3163`, `#ffffff`, `height: 40px`, `border-radius: 16px`).
-  - Swaps empty 6-tool picker with actual media attachment card preview if card has an attachment.
+### File Map
+```
+padles/
+├── index.html                 # All markup, modal shells, inline SVG icons
+├── styles.css                 # All styles (no CSS modules, no preprocessor)
+├── app.js                     # All logic (PadlesShelfApp class)
+├── supabase-config.js         # Supabase URL + anon key loader
+├── supabase-service.js        # Supabase CRUD & realtime sync
+├── supabase/schema.sql        # PostgreSQL DDL for boards/sections/posts/comments/reactions
+├── start-edge-debug.bat       # Launch Edge with --remote-debugging-port=9222
+├── .env.local                 # SUPABASE_URL, SUPABASE_ANON_KEY (gitignored)
+├── docs/
+│   ├── padles_tools_revamp_plan.md     # Roadmap for AV Studio, Draw, Poll, Location, All Tools
+│   ├── architecture_comparison_and_migration_plan.md
+│   ├── rea_and_edge_setup_guide.md
+│   └── screenshots/
+└── .agents/skills/            # Antigravity skills for REA verification
+```
 
 ---
 
-## 3. Remote Debugging & REA Setup on a New PC
+## 2. Feature Status
 
-When working on a new machine:
+| Feature | Status | Notes |
+|---|---|---|
+| Board layout & aurora wallpaper | ✅ Done | 5-column shelf, centered columns, gradient + radial aurora overlays |
+| Section folder tabs | ✅ Done | Skewed tab shape, `#014e62`, `+ Post` pill button |
+| Cards (6 color palettes) | ✅ Done | White, Red, Yellow, Green, Blue, Purple swatches. Pinned banner. |
+| Card context menu (3-dots) | ✅ Done | 11 items: open, new tab, copy link, slideshow, colors, edit, add before/after, duplicate, pin, delete |
+| Docked post composer | ✅ Done | 380px bottom-right, multi-draft dock, minimize/expand, 6-tool attachment bar |
+| Expanded / edit post modal | ✅ Done | 540px centered, `#ffffff` bg, `#de3163` Update button, dark backdrop |
+| Emoji reactions | ✅ Done | Reaction button on cards, count display |
+| Theater / expanded post view | ✅ Done | Detail modal with media canvas, comments thread, prev/next navigation |
+| Drag-and-drop reorder | ✅ Partial | Cards within sections. Cross-section drag not yet implemented. |
+| Top bar (share, settings, more) | ✅ Partial | Drawer shells exist. Full Padlet settings parity incomplete. |
+| Slideshow mode | ✅ Partial | Basic slideshow init exists. Full playback/controls need verification. |
+| Supabase cloud sync | ✅ Done | Real-time sync, cloud settings modal, push local → cloud |
+| **AV Studio** (Camera/Video/Audio/Screen) | 🔲 TODO | Stubs inject static images. Need real `getUserMedia` / `getDisplayMedia`. See `docs/padles_tools_revamp_plan.md` |
+| **Drawing whiteboard** | 🔲 TODO | Stub injects static card. Need canvas with strokes, colors, undo. |
+| **Interactive poll creator** | 🔲 TODO | Stub injects static poll. Need question/choice modal + voting UI. |
+| **Location map picker** | 🔲 TODO | Stub injects static text. Need Leaflet map + geocoding. |
+| **All Tools Hub (revamped)** | 🔲 TODO | Current modal doesn't match Padlet's 4 color-coded tile groups. |
+| **AI Art generator modal** | 🔲 TODO | Currently uses `window.prompt()`. Need in-app modal. |
+| **Link modal** | 🔲 TODO | Currently uses `window.prompt()`. Need in-app modal with URL preview. |
 
-1. **Launch Microsoft Edge in Remote Debugging Mode**:
-   Run the provided batch file or command:
+> The detailed implementation plan for all TODO tools is in [`docs/padles_tools_revamp_plan.md`](docs/padles_tools_revamp_plan.md).
+
+---
+
+## 3. Code Conventions
+
+Follow these patterns to keep the codebase consistent:
+
+1. **Single-class architecture** — All new features go inside `PadlesShelfApp`. Add an `initFeatureName()` method and call it from `init()`.
+2. **DOM references** — Cache elements in the constructor: `this.myElement = document.getElementById('myElement');`
+3. **Rendering** — Use innerHTML template literals. Build HTML strings, assign to `.innerHTML`. Don't use `document.createElement` chains.
+4. **CSS naming** — kebab-case class names (`.card-context-menu`, `.composer-header`, `.av-recorder-modal`). Use existing CSS custom properties from `styles.css :root` where possible.
+5. **No external dependencies** — No npm packages, no CDN libraries (except Google Fonts `Inter`). Use built-in browser APIs (`fetch`, `WebSocket`, `MediaRecorder`, `getUserMedia`, etc.).
+6. **Supabase isolation** — All Supabase calls go through `supabase-service.js`. Never import Supabase directly in `app.js`.
+7. **State persistence** — Call `this.saveState()` after any mutation to `this.state`. The method serializes to `localStorage` and optionally syncs to Supabase.
+8. **Modal pattern** — Modals use a container `div` with `display: none` by default. Show/hide by toggling a `.show` / `.active` class or setting `style.display`. Use `z-index` layering consistent with existing modals (cards: 1000s, menus: 1800, modals: 2000+, overlays: 9000+).
+
+---
+
+## 4. REA Verification Workflow
+
+### Ground Rules
+- **Never guess** CSS values, colors, layout metrics, or SVG icons. Extract from live Padlet.
+- **Never claim "pixel-perfect" or "done"** without screenshot proof.
+- The live Padlet board in Edge (port 9222) is the **single source of truth**.
+
+### Before You Build a Component
+1. Connect to `http://127.0.0.1:9222/json` to locate the live Padlet tab.
+2. Use CDP `Runtime.evaluate` or REA MCP tools (`inspect_web_page`, `observe_web_execution`) to extract:
+   - `getComputedStyle()` for the target element (font, colors, padding, radius, shadows)
+   - `getBoundingClientRect()` for exact dimensions
+   - Raw SVG `innerHTML` for icons
+   - DOM subtree structure for nesting and semantic roles
+
+### After You Build a Component
+1. Capture a screenshot of your implementation: `Page.bringToFront` → `Page.captureScreenshot`.
+2. Capture a screenshot of the same component on live Padlet.
+3. Compare visually. Fix discrepancies in colors, spacing, typography, and border radii.
+4. **Acceptable tolerance**: Dynamic content (usernames, timestamps, post counts, avatar images) will differ. Layout geometry, colors, and typography must match.
+
+### Setup on a New Machine
+1. **Launch Edge in debug mode**:
    ```cmd
    start-edge-debug.bat
    ```
-   Or directly in terminal:
+   Or:
    ```cmd
    "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="%LOCALAPPDATA%\Microsoft\Edge\User Data Debug" https://padlet.com/ezzarscarlet/physics-audio-reflections-i-see-i-think-i-wonder-s0248vnouoewo8lw6wn6 http://localhost:8080/index.html
    ```
+2. **Start dev server**: `npx -y serve . -p 8080`
+3. **Verify**: `http://127.0.0.1:9222/json` should list both tabs.
 
-2. **Run Local Dev Server**:
-   ```cmd
-   npx -y serve . -p 8080
-   ```
+### CDP Gotchas
+- Always call `Page.bringToFront` before `Page.captureScreenshot` — background tabs hang.
+- After `Page.reload`, close the WebSocket, wait 2 seconds, reconnect.
 
-3. **Verify Connection**:
-   Check `http://127.0.0.1:9222/json` to confirm both tabs are active:
-   - Target 1: `padlet.com/ezzarscarlet/...` (Live Ground Truth)
-   - Target 2: `http://localhost:8080/index.html` (Local App)
+---
 
-4. **CDP Stability Rules**:
-   - Always call `Page.bringToFront` before `Page.captureScreenshot`. Background Chromium tabs hang screenshots.
-   - When triggering `Page.reload`, close the WebSocket, wait 2 seconds, and connect afresh to avoid broken execution contexts.
+## 5. Verified Design Tokens
+
+These are extracted and verified from live Padlet. Use them as a reference, but **always re-verify against live Padlet** if something looks off.
+
+### Board & Wallpaper
+- **Gradient**: `linear-gradient(135deg, #012b32 0%, #034857 50%, #001f24 100%)` with aurora radial overlays.
+- **Columns**: 5 sections, `272px` wide (`256px` inner), `16px` gap, centered via `first:ms-auto; last:me-auto`.
+
+### Section Folder Tabs
+- **Tab background**: `#014e62`, right wing skewed `skew-x-[10deg]`.
+- **Add Post pill**: `background: rgba(0, 0, 0, 0.24)`, `backdrop-filter: blur(4px)`.
+
+### Cards
+| Palette | Outer bg | Inner bg | Text |
+|---|---|---|---|
+| White (default) | `#f5f6f7` | `#ffffff` | `#111111` |
+| Oceanic Blue | `#9addfb` | `#bbeaff` | `#111111` |
+- **Border radius**: `12px` on both outer and inner.
+- **Pinned banner**: Top bar with thumbtack icon + `Pinned` text.
+
+### Card Context Menu
+- `width: 256px; background: #ffffff; border-radius: 20px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18); padding: 8px;`
+- Delete item: `color: #ef4444; hover background: #fef2f2`.
+
+### Post Composer (Docked)
+- Width `380px`, docked bottom-right.
+- Submit inactive: `#f1f3f4` bg, `#9ca3af` text, `border-radius: 16px`, height `40px`.
+- Submit active: `#de3163` bg, `#ffffff` text.
+- Attachment tool bar: 6 pinstriped columns, `border: 1px dashed #e2e2e2; border-radius: 16px; height: 165px`.
+
+### Edit Post Modal (Expanded/Centered)
+- `width: 540px; max-width: min(540px, calc(100vw - 32px))`.
+- `background: #ffffff; border-radius: 24px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25)`.
+- Close button: `40px × 40px`, `#f1f3f4` bg, top-left.
+- Update button: `#de3163` bg, `#ffffff` text, `border-radius: 16px`, top-right.
+
+### Typography
+- Font stack: `"Inter var", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`.
+- Card titles: `16px`, `font-weight: 600`.
+- Card body: `14px`, `font-weight: 400`.
+
+---
+
+## 6. Known Pitfalls (Don't Repeat These)
+
+| Mistake | What Actually Happened | Correct Approach |
+|---|---|---|
+| Dark theme hallucination | Agent used `#1f2125` background for edit modal, claimed "pixel perfect" | Padlet modals are `#ffffff` with `#de3163` pink accents |
+| `window.prompt()` for links | Agent used browser-native prompt for URL input | Padlet uses in-app modals with URL preview cards |
+| Dummy media stubs | Camera/video/audio tools injected static stock photos | Must use real `getUserMedia` / `getDisplayMedia` with viewfinder |
+| Generic HTML `<dialog>` | Agent used native dialog element | Padlet uses custom div-based modals with specific border-radius and shadows |
+| Composer dark theme | Old blueprint spec listed `--composer-bg: #1e2022` | Live Padlet composer has `#ffffff` surface (was outdated/wrong) |
+| Claiming done without screenshots | Agent reported "pixel-perfect parity" with no visual proof | Always capture and compare screenshots before reporting |
+
+---
+
+## 7. Supabase Backend Reference
+
+- **Schema**: `supabase/schema.sql` — tables: `boards`, `sections`, `posts`, `comments`, `reactions`, `custom_fields`.
+- **Config**: `.env.local` contains `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
+- **Service layer**: `supabase-service.js` handles CRUD, real-time subscriptions, and presence.
+- **Offline-first**: The app always works with `localStorage`. Supabase sync is opt-in via the cloud settings modal.
+- **When to touch Supabase**: Only when adding new data model fields (update schema + service). For pure UI work, `localStorage` is sufficient.
+
+---
+
+## 8. Related Documentation
+
+| Doc | Purpose |
+|---|---|
+| [`docs/padles_tools_revamp_plan.md`](docs/padles_tools_revamp_plan.md) | Detailed implementation plan for AV Studio, Draw, Poll, Location, and All Tools Hub |
+| [`docs/architecture_comparison_and_migration_plan.md`](docs/architecture_comparison_and_migration_plan.md) | Supabase + Cloudflare R2 backend architecture |
+| [`docs/rea_and_edge_setup_guide.md`](docs/rea_and_edge_setup_guide.md) | Edge remote debugging setup guide |
+| [`.agents/skills/padlet-clone-verification/`](.agents/skills/padlet-clone-verification/SKILL.md) | Automated CDP verification scripts |
+| [`.agents/skills/strict-rea-clone/`](.agents/skills/strict-rea-clone/SKILL.md) | REA clone protocol (4-phase operational workflow) |
+| `docs/archive/` | Archived/stale specs (do not use as ground truth) |
