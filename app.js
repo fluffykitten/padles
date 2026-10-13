@@ -15,30 +15,61 @@ const PALETTES = [
   { id: 'purple', name: 'Purple', hex: '#a855f7', dot: '#a855f7', cardBg: '#f3e8ff', border: '#e9d5ff', textColor: '#581c87' }
 ];
 
-// 21 Built-In Media Tools (Blueprint Section 5.1)
-const ALL_TOOLS = [
-  { id: 'padles', name: 'Padles', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
-  { id: 'arcade', name: 'Padles Arcade', isNew: true, icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m8-2h.01m3 0h.01"/></svg>' },
-  { id: 'upload', name: 'Upload', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' },
-  { id: 'link', name: 'Link', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' },
-  { id: 'camera', name: 'Camera', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' },
-  { id: 'video', name: 'Video recorder', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>' },
-  { id: 'audio', name: 'Audio recorder', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' },
-  { id: 'screen', name: 'Screen recorder', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' },
-  { id: 'draw', name: 'Draw', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>' },
-  { id: 'poll', name: 'Poll', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>' },
-  { id: 'gdrive', name: 'Google Drive', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 17 9 7 15 17 3 17"/><polygon points="9 7 15 7 21 17 15 17 9 7"/></svg>' },
-  { id: 'onedrive', name: 'OneDrive', isNew: true, icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>' },
-  { id: 'ai-image', name: 'AI image', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>' },
-  { id: 'ai-speech', name: 'AI speech', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>' },
-  { id: 'album', name: 'Photo album', isNew: true, icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' },
-  { id: 'image-search', name: 'Image search', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
-  { id: 'gif', name: 'GIF', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 8H7v8h3v-3H8.5m6-5v8m3.5-8h-3v8m0-4h2.5"/></svg>' },
-  { id: 'youtube', name: 'YouTube', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>' },
-  { id: 'spotify', name: 'Spotify', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.208-2.35-1.436-5.308-1.76-8.793-.963-.334.077-.67-.13-.746-.465-.077-.334.13-.67.465-.746 3.808-.87 7.076-.505 9.723 1.11.295.18.387.562.208.856zm1.224-2.724c-.227.37-.714.487-1.084.26-2.69-1.653-6.79-2.132-9.972-1.166-.417.127-.863-.109-.99-.526-.127-.417.109-.863.526-.99 3.633-1.103 8.147-.568 11.26 1.34.37.226.487.713.26 1.082zm.106-2.835C14.692 8.93 9.38 8.754 6.297 9.69c-.495.15-1.023-.13-1.173-.625-.15-.495.13-1.023.625-1.173 3.551-1.077 9.426-.874 13.14 1.33.447.265.592.848.327 1.295-.265.447-.848.592-1.295.327z"/></svg>' },
-  { id: 'web-search', name: 'Web search', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' },
-  { id: 'location', name: 'Location', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' }
+// 21 Built-In Media Tools categorized into Padlet's 4 signature colored groups
+const TOOL_GROUPS = [
+  {
+    id: 'purple',
+    name: 'Creation & Links',
+    groupClass: 'group-purple',
+    tools: [
+      { id: 'padles', name: 'Padles', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
+      { id: 'arcade', name: 'Padles Arcade', isNew: true, icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m8-2h.01m3 0h.01"/></svg>' },
+      { id: 'upload', name: 'Upload', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' },
+      { id: 'link', name: 'Link', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' }
+    ]
+  },
+  {
+    id: 'blue',
+    name: 'Studio & Drawing',
+    groupClass: 'group-blue',
+    tools: [
+      { id: 'camera', name: 'Camera', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' },
+      { id: 'video', name: 'Video recorder', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>' },
+      { id: 'audio', name: 'Audio recorder', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' },
+      { id: 'screen', name: 'Screen recorder', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' },
+      { id: 'draw', name: 'Draw', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>' }
+    ]
+  },
+  {
+    id: 'green',
+    name: 'Interactive & Cloud',
+    groupClass: 'group-green',
+    tools: [
+      { id: 'poll', name: 'Poll', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>' },
+      { id: 'gdrive', name: 'Google Drive', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 17 9 7 15 17 3 17"/><polygon points="9 7 15 7 21 17 15 17 9 7"/></svg>' },
+      { id: 'onedrive', name: 'OneDrive', isNew: true, icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>' },
+      { id: 'ai-image', name: 'AI image', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>' },
+      { id: 'ai-speech', name: 'AI speech', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>' },
+      { id: 'album', name: 'Photo album', isNew: true, icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' }
+    ]
+  },
+  {
+    id: 'orange',
+    name: 'Search & Media',
+    groupClass: 'group-orange',
+    tools: [
+      { id: 'image-search', name: 'Image search', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
+      { id: 'gif', name: 'GIF', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 8H7v8h3v-3H8.5m6-5v8m3.5-8h-3v8m0-4h2.5"/></svg>' },
+      { id: 'youtube', name: 'YouTube', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>' },
+      { id: 'spotify', name: 'Spotify', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.208-2.35-1.436-5.308-1.76-8.793-.963-.334.077-.67-.13-.746-.465-.077-.334.13-.67.465-.746 3.808-.87 7.076-.505 9.723 1.11.295.18.387.562.208.856zm1.224-2.724c-.227.37-.714.487-1.084.26-2.69-1.653-6.79-2.132-9.972-1.166-.417.127-.863-.109-.99-.526-.127-.417.109-.863.526-.99 3.633-1.103 8.147-.568 11.26 1.34.37.226.487.713.26 1.082zm.106-2.835C14.692 8.93 9.38 8.754 6.297 9.69c-.495.15-1.023-.13-1.173-.625-.15-.495.13-1.023.625-1.173 3.551-1.077 9.426-.874 13.14 1.33.447.265.592.848.327 1.295-.265.447-.848.592-1.295.327z"/></svg>' },
+      { id: 'web-search', name: 'Web search', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' },
+      { id: 'location', name: 'Location', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' }
+    ]
+  }
 ];
+
+// Flattened tools list for lookup compatibility
+const ALL_TOOLS = TOOL_GROUPS.flatMap(g => g.tools);
 
 class PadlesShelfApp {
   constructor() {
@@ -133,11 +164,13 @@ class PadlesShelfApp {
     this.scheduleDateTimeInput = document.getElementById('scheduleDateTimeInput');
     this.scheduleTimezoneText = document.getElementById('scheduleTimezoneText');
 
-    // All Tools Modal (Blueprint Section 5.1: 21 Built-In Tools)
+    // All Tools Modal (Padlet-Authentic 4 Color Groups & Search/URL Bar)
     this.allToolsModal = document.getElementById('allToolsModal');
     this.allToolsSearchInput = document.getElementById('allToolsSearchInput');
+    this.allToolsUrlSubmitBtn = document.getElementById('allToolsUrlSubmitBtn');
     this.closeAllToolsBtn = document.getElementById('closeAllToolsBtn');
-    this.allToolsGrid = document.getElementById('allToolsGrid');
+    this.allToolsGroupsContainer = document.getElementById('allToolsGroupsContainer');
+    this.allToolsGrid = this.allToolsGroupsContainer;
 
     // Custom Field Builder (Blueprint Section 6.2)
     this.customFieldBuilderModal = document.getElementById('customFieldBuilderModal');
@@ -217,10 +250,45 @@ class PadlesShelfApp {
     this.applyLoadedSettings();
     this.initMoreDrawer();
     this.attachEventListeners();
+    this.resolveStoredAttachments();
 
     if (this.backend && this.backend.isConnected) {
       this.syncFromCloud();
     }
+  }
+
+  async resolveStoredAttachments() {
+    if (!window.padlesMediaDB) return;
+
+    // Resolve offline attachments on cards
+    (this.state.sections || []).forEach(sec => {
+      (sec.cards || []).forEach(async card => {
+        if (card.attachment && card.attachment.storageId && (!card.attachment.url || card.attachment.url.startsWith('blob:'))) {
+          const freshUrl = await window.padlesMediaDB.resolveUrl(card.attachment.storageId);
+          if (freshUrl) {
+            card.attachment.url = freshUrl;
+            if (card.attachment.thumbnailUrl && card.attachment.thumbnailUrl.startsWith('blob:')) {
+              card.attachment.thumbnailUrl = freshUrl;
+            }
+            this.renderBoard();
+          }
+        }
+      });
+    });
+
+    // Resolve on drafts
+    (this.state.drafts || []).forEach(async draft => {
+      if (draft.attachment && draft.attachment.storageId && (!draft.attachment.url || draft.attachment.url.startsWith('blob:'))) {
+        const freshUrl = await window.padlesMediaDB.resolveUrl(draft.attachment.storageId);
+        if (freshUrl) {
+          draft.attachment.url = freshUrl;
+          if (draft.id === this.activeDraftId) {
+            this.composerState.attachment = draft.attachment;
+            this.updateAttachmentPreviewUI();
+          }
+        }
+      }
+    });
   }
 
   loadState() {
@@ -2652,11 +2720,69 @@ class PadlesShelfApp {
 
     if (this.allToolsSearchInput) {
       this.allToolsSearchInput.addEventListener('input', (e) => {
-        this.renderAllToolsGrid(e.target.value.trim());
+        const val = e.target.value.trim();
+        this.handleAllToolsSearchInput(val);
+      });
+
+      this.allToolsSearchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.submitAllToolsUrlOrFirstMatch();
+        }
+      });
+    }
+
+    if (this.allToolsUrlSubmitBtn) {
+      this.allToolsUrlSubmitBtn.addEventListener('click', () => {
+        this.submitAllToolsUrlOrFirstMatch();
       });
     }
 
     this.renderAllToolsGrid();
+  }
+
+  isValidUrl(text) {
+    if (!text) return false;
+    try {
+      const u = new URL(text);
+      return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  handleAllToolsSearchInput(val) {
+    const isUrl = this.isValidUrl(val);
+    if (this.allToolsUrlSubmitBtn) {
+      this.allToolsUrlSubmitBtn.disabled = !isUrl;
+    }
+    this.renderAllToolsGrid(val);
+  }
+
+  submitAllToolsUrlOrFirstMatch() {
+    const val = (this.allToolsSearchInput?.value || '').trim();
+    if (this.isValidUrl(val)) {
+      this.closeAllToolsModal();
+      this.attachDirectUrl(val);
+    }
+  }
+
+  attachDirectUrl(url) {
+    try {
+      const domain = new URL(url).hostname;
+      this.composerState.attachment = {
+        type: 'link',
+        provider: domain,
+        title: url,
+        domain: domain,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600',
+        url: url
+      };
+      this.updateAttachmentPreviewUI();
+      this.showToast(`Link attached: ${domain}`);
+    } catch (e) {
+      this.showToast('Invalid URL');
+    }
   }
 
   openAllToolsModal() {
@@ -2664,6 +2790,9 @@ class PadlesShelfApp {
     if (!this.allToolsModal) return;
     if (this.allToolsSearchInput) {
       this.allToolsSearchInput.value = '';
+    }
+    if (this.allToolsUrlSubmitBtn) {
+      this.allToolsUrlSubmitBtn.disabled = true;
     }
     this.renderAllToolsGrid();
     this.allToolsModal.hidden = false;
@@ -2677,31 +2806,49 @@ class PadlesShelfApp {
   }
 
   renderAllToolsGrid(filter = '') {
-    if (!this.allToolsGrid) return;
-    this.allToolsGrid.innerHTML = '';
-    const q = filter.toLowerCase();
+    const container = this.allToolsGroupsContainer || this.allToolsGrid;
+    if (!container) return;
+    container.innerHTML = '';
+    const q = filter.toLowerCase().trim();
 
-    const filtered = ALL_TOOLS.filter(t => !q || t.name.toLowerCase().includes(q));
+    TOOL_GROUPS.forEach(group => {
+      const matchingTools = group.tools.filter(t => !q || t.name.toLowerCase().includes(q));
+      if (matchingTools.length === 0) return;
 
-    filtered.forEach(tool => {
-      const tile = document.createElement('button');
-      tile.type = 'button';
-      tile.className = 'tool-grid-tile';
-      tile.dataset.toolId = tool.id;
-      tile.innerHTML = `
-        <div class="tool-grid-icon-wrap">${tool.icon}</div>
-        <div class="tool-grid-info">
-          <span class="tool-grid-label">${this.escapeHtml(tool.name)}</span>
-          ${tool.isNew ? '<span class="tool-badge-new">New</span>' : ''}
-        </div>
-      `;
+      const groupEl = document.createElement('div');
+      groupEl.className = `all-tools-group ${group.groupClass}`;
 
-      tile.addEventListener('click', () => {
-        this.closeAllToolsModal();
-        this.triggerToolAction(tool.id);
+      const titleEl = document.createElement('h4');
+      titleEl.className = 'all-tools-group-title';
+      titleEl.textContent = group.name;
+      groupEl.appendChild(titleEl);
+
+      const gridEl = document.createElement('div');
+      gridEl.className = 'all-tools-group-grid';
+
+      matchingTools.forEach(tool => {
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.className = 'all-tools-tile';
+        tile.dataset.toolId = tool.id;
+        tile.innerHTML = `
+          <div class="all-tools-tile-icon">${tool.icon}</div>
+          <div class="all-tools-tile-info">
+            <span class="all-tools-tile-label">${this.escapeHtml(tool.name)}</span>
+            ${tool.isNew ? '<span class="tool-badge-new">New</span>' : ''}
+          </div>
+        `;
+
+        tile.addEventListener('click', () => {
+          this.closeAllToolsModal();
+          this.triggerToolAction(tool.id);
+        });
+
+        gridEl.appendChild(tile);
       });
 
-      this.allToolsGrid.appendChild(tile);
+      groupEl.appendChild(gridEl);
+      container.appendChild(groupEl);
     });
   }
 
@@ -3251,20 +3398,45 @@ class PadlesShelfApp {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*,video/*,audio/*,.pdf,.doc,.docx';
-      input.onchange = (e) => {
+      input.onchange = async (e) => {
         const file = e.target.files[0];
         if (file) {
           const isImg = file.type.startsWith('image/');
-          const fileUrl = URL.createObjectURL(file);
-          this.composerState.attachment = {
-            type: isImg ? 'image' : 'file',
-            provider: 'Upload',
-            title: file.name,
-            thumbnailUrl: isImg ? fileUrl : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600',
-            url: fileUrl
-          };
-          this.updateAttachmentPreviewUI();
-          this.showToast(`Uploaded ${file.name}`);
+          const isVideo = file.type.startsWith('video/');
+          const isAudio = file.type.startsWith('audio/');
+          const mediaType = isImg ? 'image' : (isVideo ? 'video' : (isAudio ? 'audio' : 'file'));
+
+          this.showToast(`Attaching ${file.name}...`);
+          try {
+            let uploaded = null;
+            if (window.padlesR2) {
+              uploaded = await window.padlesR2.uploadMedia(file, {
+                type: mediaType,
+                filename: file.name,
+                boardId: this.activeBoardId || 'board-default-physics'
+              });
+            } else {
+              const localUrl = URL.createObjectURL(file);
+              uploaded = { url: localUrl, thumbnailUrl: isImg ? localUrl : '', storageId: 'att_' + Date.now() };
+            }
+
+            this.composerState.attachment = {
+              type: mediaType,
+              category: 'upload',
+              provider: 'Upload',
+              title: file.name,
+              thumbnailUrl: uploaded.thumbnailUrl || (isImg ? uploaded.url : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600'),
+              url: uploaded.url,
+              storageId: uploaded.storageId,
+              size: file.size,
+              mimeType: file.type
+            };
+            this.updateAttachmentPreviewUI();
+            this.showToast(`Attached ${file.name}`);
+          } catch (err) {
+            console.error('File attach failed:', err);
+            this.showToast('Failed to attach file');
+          }
         }
       };
       input.click();

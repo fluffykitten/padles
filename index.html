@@ -606,21 +606,26 @@
     </div>
   </div>
 
-  <!-- All Tools Modal (Blueprint Section 5.1: 21 Built-In Tools) -->
+  <!-- All Tools Modal (Padlet-Authentic 4 Color Groups & Search/URL Bar) -->
   <div id="allToolsModal" class="submodal-backdrop" hidden>
     <div class="all-tools-dialog">
       <div class="all-tools-header">
         <div class="all-tools-search-wrap">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="all-tools-search-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="all-tools-search-icon">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
-          <input type="text" id="allToolsSearchInput" class="all-tools-search-input" placeholder="Search web or paste URL" />
+          <input type="text" id="allToolsSearchInput" class="all-tools-search-input" placeholder="Search web or paste URL" autocomplete="off" />
+          <button type="button" id="allToolsUrlSubmitBtn" class="all-tools-url-submit" title="Attach URL" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
         </div>
-        <button type="button" id="closeAllToolsBtn" class="modal-close">&times;</button>
+        <button type="button" id="closeAllToolsBtn" class="all-tools-close-btn" aria-label="Close">&times;</button>
       </div>
-      <div class="all-tools-grid" id="allToolsGrid">
-        <!-- 21 tools rendered with icon, label, and badges -->
+      <div class="all-tools-body" id="allToolsBody">
+        <div class="all-tools-groups-container" id="allToolsGroupsContainer">
+          <!-- 4 Category Groups rendered dynamically: Purple, Blue, Green, Orange -->
+        </div>
       </div>
     </div>
   </div>
@@ -1879,7 +1884,9 @@
 
   <div id="toast" class="toast"></div>
 
-  <!-- Supabase JS Client & Padles Backend Integration -->
+  <!-- Storage & Backend Infrastructure -->
+  <script src="media-db.js"></script>
+  <script src="r2-service.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="supabase-service.js"></script>
