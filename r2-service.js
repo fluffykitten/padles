@@ -15,9 +15,10 @@ class PadlesR2Service {
   }
 
   initFromEnv() {
-    // Check if configuration exists in localStorage or window environment
-    const savedEndpoint = localStorage.getItem('padles_r2_upload_endpoint');
-    const savedCdn = localStorage.getItem('padles_r2_public_cdn');
+    // Check if configuration exists in window environment or localStorage
+    const config = window.PADLES_R2_CONFIG || {};
+    const savedEndpoint = localStorage.getItem('padles_r2_upload_endpoint') || config.uploadEndpoint || '';
+    const savedCdn = localStorage.getItem('padles_r2_public_cdn') || config.publicCdnBase || '';
 
     if (savedEndpoint) {
       this.uploadEndpoint = savedEndpoint;

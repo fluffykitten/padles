@@ -7313,6 +7313,13 @@ class PadlesShelfApp {
     if (this.supabaseKeyInput) this.supabaseKeyInput.value = savedKey;
     if (this.supabaseBoardIdInput) this.supabaseBoardIdInput.value = boardId;
 
+    const r2EndpointInput = document.getElementById('r2EndpointInput');
+    const r2PublicCdnInput = document.getElementById('r2PublicCdnInput');
+    const savedR2Endpoint = localStorage.getItem('padles_r2_upload_endpoint') || window.PADLES_R2_CONFIG?.uploadEndpoint || '';
+    const savedR2Cdn = localStorage.getItem('padles_r2_public_cdn') || window.PADLES_R2_CONFIG?.publicCdnBase || '';
+    if (r2EndpointInput) r2EndpointInput.value = savedR2Endpoint;
+    if (r2PublicCdnInput) r2PublicCdnInput.value = savedR2Cdn;
+
     // Set initial status UI
     this.updateCloudStatusUI(this.backend.isConnected, this.backend.isConnected ? 'Supabase Live' : 'Local Mode');
 
@@ -7424,6 +7431,15 @@ class PadlesShelfApp {
         const res = await this.backend.connect(url, key, true);
         if (connectBtn) connectBtn.disabled = false;
 
+        // Save Cloudflare R2 Media Storage Configuration
+        const r2EndpointInput = document.getElementById('r2EndpointInput');
+        const r2PublicCdnInput = document.getElementById('r2PublicCdnInput');
+        const r2Ep = (r2EndpointInput?.value || '').trim();
+        const r2CdnVal = (r2PublicCdnInput?.value || '').trim();
+        if (window.padlesR2) {
+          window.padlesR2.configure(r2Ep, r2CdnVal);
+        }
+
         if (res.success) {
           this.closeCloudSettingsModal();
           this.showToast('Connected to Supabase! Syncing data...');
@@ -7440,6 +7456,13 @@ class PadlesShelfApp {
         this.backend.disconnect();
         if (this.supabaseUrlInput) this.supabaseUrlInput.value = '';
         if (this.supabaseKeyInput) this.supabaseKeyInput.value = '';
+        if (window.padlesR2) {
+          window.padlesR2.configure('', '');
+          const r2EndpointInput = document.getElementById('r2EndpointInput');
+          const r2PublicCdnInput = document.getElementById('r2PublicCdnInput');
+          if (r2EndpointInput) r2EndpointInput.value = '';
+          if (r2PublicCdnInput) r2PublicCdnInput.value = '';
+        }
         this.updateCloudStatusUI(false, 'Local Mode');
         this.showToast('Disconnected. Running in local storage mode.');
       });
