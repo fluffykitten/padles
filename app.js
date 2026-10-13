@@ -216,6 +216,56 @@ class PadlesShelfApp {
     this.detailPrevBtn = document.getElementById('detailPrevBtn');
     this.activeDetailCardId = null;
 
+    // AV Studio Modal Elements (Unified Camera, Video, Audio, Screen Studio)
+    this.avRecorderModal = document.getElementById('avRecorderModal');
+    this.avRecorderCloseBtn = document.getElementById('avRecorderCloseBtn');
+    this.avModePill = document.getElementById('avModePill');
+    this.avVideoPreview = document.getElementById('avVideoPreview');
+    this.avAudioWaveform = document.getElementById('avAudioWaveform');
+    this.avScreenPreflight = document.getElementById('avScreenPreflight');
+    this.avScreenMicCheckbox = document.getElementById('avScreenMicCheckbox');
+    this.avStartScreenSelectBtn = document.getElementById('avStartScreenSelectBtn');
+    this.avPermissionError = document.getElementById('avPermissionError');
+    this.avPermissionErrorTitle = document.getElementById('avPermissionErrorTitle');
+    this.avPermissionErrorDesc = document.getElementById('avPermissionErrorDesc');
+    this.avPermissionRetryBtn = document.getElementById('avPermissionRetryBtn');
+    this.avCountdownOverlay = document.getElementById('avCountdownOverlay');
+    this.avCountdownNumber = document.getElementById('avCountdownNumber');
+    this.avRecordingBadge = document.getElementById('avRecordingBadge');
+    this.avRecordingTimerText = document.getElementById('avRecordingTimerText');
+    this.avCaptureView = document.getElementById('avCaptureView');
+    this.avReviewView = document.getElementById('avReviewView');
+    this.avReviewMediaWrap = document.getElementById('avReviewMediaWrap');
+    this.avPhotoControls = document.getElementById('avPhotoControls');
+    this.avVideoControls = document.getElementById('avVideoControls');
+    this.avAudioControls = document.getElementById('avAudioControls');
+    this.avScreenControls = document.getElementById('avScreenControls');
+    this.avReviewControls = document.getElementById('avReviewControls');
+    this.avShutterBtn = document.getElementById('avShutterBtn');
+    this.avMirrorToggleBtn = document.getElementById('avMirrorToggleBtn');
+    this.avRecordVideoBtn = document.getElementById('avRecordVideoBtn');
+    this.avRecordAudioBtn = document.getElementById('avRecordAudioBtn');
+    this.avStopScreenBtn = document.getElementById('avStopScreenBtn');
+    this.avRetakeBtn = document.getElementById('avRetakeBtn');
+    this.avSaveMediaBtn = document.getElementById('avSaveMediaBtn');
+
+    // AV Studio State
+    this.avCurrentMode = 'photo';
+    this.avActiveStream = null;
+    this.avMediaRecorder = null;
+    this.avRecordedChunks = [];
+    this.avCapturedBlob = null;
+    this.avCapturedType = null;
+    this.avCapturedPreviewUrl = null;
+    this.avAudioContext = null;
+    this.avAudioAnalyser = null;
+    this.avWaveformAnimFrame = null;
+    this.avRecordingInterval = null;
+    this.avRecordingSeconds = 0;
+    this.avPhotoTimerSeconds = 0;
+    this.avCountdownInterval = null;
+    this.avIsMirrored = true;
+
     // Active Composer / Draft State & Edit Mode State
     this.activeDraftId = null;
     this.editingCardId = null;
@@ -242,6 +292,7 @@ class PadlesShelfApp {
     this.initCardDetailModal();
     this.initScheduleModal();
     this.initAllToolsModal();
+    this.initAvRecorderModal();
     this.initCustomFieldBuilder();
     this.initCloudBackendUI();
     this.initSlideshow();
@@ -2871,40 +2922,16 @@ class PadlesShelfApp {
         this.handleToolAction('upload');
         break;
       case 'camera':
-        this.handleToolAction('camera');
+        this.openAvRecorderModal('photo');
         break;
       case 'video':
-        this.composerState.attachment = {
-          type: 'video',
-          provider: 'Video Recorder',
-          title: 'Physics Lab Experiment Video (0:45)',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600',
-          url: '#'
-        };
-        this.updateAttachmentPreviewUI();
-        this.showToast('Video recording attached!');
+        this.openAvRecorderModal('video');
         break;
       case 'audio':
-        this.composerState.attachment = {
-          type: 'audio',
-          provider: 'Audio Recorder',
-          title: 'Voice Reflection Memo (1:20)',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=600',
-          url: '#'
-        };
-        this.updateAttachmentPreviewUI();
-        this.showToast('Audio recording attached!');
+        this.openAvRecorderModal('audio');
         break;
       case 'screen':
-        this.composerState.attachment = {
-          type: 'video',
-          provider: 'Screen Recorder',
-          title: 'Screen Demo: Kinetic Energy Simulation (2:15)',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600',
-          url: '#'
-        };
-        this.updateAttachmentPreviewUI();
-        this.showToast('Screen recording attached!');
+        this.openAvRecorderModal('screen');
         break;
       case 'ai-image':
       case 'arcade':
@@ -3003,6 +3030,789 @@ class PadlesShelfApp {
       default:
         this.showToast(`${toolId.replace('-', ' ')} tool ready`);
         break;
+    }
+  }
+
+  /* ========================================================================
+     Unified AV Studio (Photo, Video, Audio, Screen) — Padlet Parity
+     ======================================================================== */
+
+  initAvRecorderModal() {
+    if (!this.avRecorderModal) return;
+
+    if (this.avRecorderCloseBtn) {
+      this.avRecorderCloseBtn.addEventListener('click', () => this.closeAvRecorderModal());
+    }
+
+    this.avRecorderModal.addEventListener('click', (e) => {
+      if (e.target === this.avRecorderModal) {
+        this.closeAvRecorderModal();
+      }
+    });
+
+    // Mode segmented pill buttons
+    if (this.avModePill) {
+      this.avModePill.querySelectorAll('.av-mode-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const mode = tab.dataset.mode;
+          if (mode && mode !== this.avCurrentMode) {
+            this.setAvMode(mode);
+          }
+        });
+      });
+    }
+
+    // Photo timer toggle pills
+    if (this.avPhotoControls) {
+      this.avPhotoControls.querySelectorAll('.av-timer-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          this.avPhotoControls.querySelectorAll('.av-timer-pill').forEach(p => p.classList.remove('is-active'));
+          pill.classList.add('is-active');
+          this.avPhotoTimerSeconds = parseInt(pill.dataset.timer || '0', 10);
+        });
+      });
+    }
+
+    // Mirror toggle
+    if (this.avMirrorToggleBtn) {
+      this.avMirrorToggleBtn.addEventListener('click', () => {
+        this.avIsMirrored = !this.avIsMirrored;
+        this.avMirrorToggleBtn.classList.toggle('is-active', this.avIsMirrored);
+        if (this.avVideoPreview) {
+          this.avVideoPreview.classList.toggle('is-mirrored', this.avIsMirrored);
+        }
+      });
+    }
+
+    // Photo shutter button
+    if (this.avShutterBtn) {
+      this.avShutterBtn.addEventListener('click', () => this.handlePhotoShutter());
+    }
+
+    // Video record button
+    if (this.avRecordVideoBtn) {
+      this.avRecordVideoBtn.addEventListener('click', () => this.toggleVideoRecording());
+    }
+
+    // Audio record button
+    if (this.avRecordAudioBtn) {
+      this.avRecordAudioBtn.addEventListener('click', () => this.toggleAudioRecording());
+    }
+
+    // Screen preflight start button
+    if (this.avStartScreenSelectBtn) {
+      this.avStartScreenSelectBtn.addEventListener('click', () => this.startScreenCapture());
+    }
+
+    // Stop screen recording button
+    if (this.avStopScreenBtn) {
+      this.avStopScreenBtn.addEventListener('click', () => this.stopScreenRecording());
+    }
+
+    // Permission retry button
+    if (this.avPermissionRetryBtn) {
+      this.avPermissionRetryBtn.addEventListener('click', () => this.setAvMode(this.avCurrentMode));
+    }
+
+    // Review stage: Retake & Save
+    if (this.avRetakeBtn) {
+      this.avRetakeBtn.addEventListener('click', () => this.retakeCapturedMedia());
+    }
+
+    if (this.avSaveMediaBtn) {
+      this.avSaveMediaBtn.addEventListener('click', () => this.saveCapturedMedia());
+    }
+  }
+
+  openAvRecorderModal(mode = 'photo') {
+    this.closeAllPopovers();
+    if (!this.avRecorderModal) return;
+
+    this.avRecorderModal.hidden = false;
+    this.setAvMode(mode);
+  }
+
+  closeAvRecorderModal() {
+    this.stopAnyRecording(false);
+    this.stopActiveMediaStreams();
+    this.cleanupAudioContext();
+    this.cleanupRecordingTimer();
+    this.cleanupCountdown();
+
+    if (this.avCapturedPreviewUrl) {
+      URL.revokeObjectURL(this.avCapturedPreviewUrl);
+      this.avCapturedPreviewUrl = null;
+    }
+    this.avCapturedBlob = null;
+    this.avCapturedType = null;
+
+    if (this.avRecorderModal) {
+      this.avRecorderModal.hidden = true;
+    }
+  }
+
+  async setAvMode(mode) {
+    this.stopAnyRecording(false);
+    this.stopActiveMediaStreams();
+    this.cleanupAudioContext();
+    this.cleanupRecordingTimer();
+    this.cleanupCountdown();
+
+    if (this.avCapturedPreviewUrl) {
+      URL.revokeObjectURL(this.avCapturedPreviewUrl);
+      this.avCapturedPreviewUrl = null;
+    }
+    this.avCapturedBlob = null;
+    this.avCapturedType = null;
+
+    this.avCurrentMode = mode;
+
+    // Update segmented pill active state
+    if (this.avModePill) {
+      this.avModePill.querySelectorAll('.av-mode-tab').forEach(tab => {
+        tab.classList.toggle('is-active', tab.dataset.mode === mode);
+      });
+    }
+
+    // Show/hide dock controls
+    if (this.avPhotoControls) this.avPhotoControls.hidden = (mode !== 'photo');
+    if (this.avVideoControls) this.avVideoControls.hidden = (mode !== 'video');
+    if (this.avAudioControls) this.avAudioControls.hidden = (mode !== 'audio');
+    if (this.avScreenControls) this.avScreenControls.hidden = (mode !== 'screen');
+    if (this.avReviewControls) this.avReviewControls.hidden = true;
+
+    // Reset stages
+    if (this.avCaptureView) this.avCaptureView.hidden = false;
+    if (this.avReviewView) this.avReviewView.hidden = true;
+    if (this.avReviewMediaWrap) this.avReviewMediaWrap.innerHTML = '';
+    if (this.avPermissionError) this.avPermissionError.hidden = true;
+    if (this.avRecordingBadge) this.avRecordingBadge.hidden = true;
+    if (this.avCountdownOverlay) this.avCountdownOverlay.hidden = true;
+
+    // Reset record buttons
+    if (this.avRecordVideoBtn) this.avRecordVideoBtn.classList.remove('is-recording');
+    if (this.avRecordAudioBtn) this.avRecordAudioBtn.classList.remove('is-recording');
+    if (this.avStopScreenBtn) this.avStopScreenBtn.hidden = true;
+
+    if (mode === 'photo') {
+      if (this.avVideoPreview) {
+        this.avVideoPreview.hidden = false;
+        this.avVideoPreview.classList.toggle('is-mirrored', this.avIsMirrored);
+      }
+      if (this.avAudioWaveform) this.avAudioWaveform.hidden = true;
+      if (this.avScreenPreflight) this.avScreenPreflight.hidden = true;
+      await this.startMediaStream({
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: 'user' },
+        audio: false
+      });
+    } else if (mode === 'video') {
+      if (this.avVideoPreview) {
+        this.avVideoPreview.hidden = false;
+        this.avVideoPreview.classList.toggle('is-mirrored', this.avIsMirrored);
+      }
+      if (this.avAudioWaveform) this.avAudioWaveform.hidden = true;
+      if (this.avScreenPreflight) this.avScreenPreflight.hidden = true;
+      await this.startMediaStream({
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: 'user' },
+        audio: true
+      });
+    } else if (mode === 'audio') {
+      if (this.avVideoPreview) this.avVideoPreview.hidden = true;
+      if (this.avAudioWaveform) this.avAudioWaveform.hidden = false;
+      if (this.avScreenPreflight) this.avScreenPreflight.hidden = true;
+      await this.startMediaStream({ video: false, audio: true }, true);
+    } else if (mode === 'screen') {
+      if (this.avVideoPreview) this.avVideoPreview.hidden = true;
+      if (this.avAudioWaveform) this.avAudioWaveform.hidden = true;
+      if (this.avScreenPreflight) this.avScreenPreflight.hidden = false;
+    }
+  }
+
+  async startMediaStream(constraints, isAudioWaveform = false) {
+    try {
+      this.stopActiveMediaStreams();
+      if (this.avPermissionError) this.avPermissionError.hidden = true;
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      this.avActiveStream = stream;
+
+      if (!isAudioWaveform && this.avVideoPreview) {
+        this.avVideoPreview.srcObject = stream;
+        try {
+          await this.avVideoPreview.play();
+        } catch (e) {
+          // Autoplay policy fallback
+        }
+      }
+
+      if (isAudioWaveform) {
+        this.setupAudioWaveform(stream);
+      }
+    } catch (err) {
+      console.warn('[AVStudio] Media permission failed:', err);
+      this.showPermissionError(err);
+    }
+  }
+
+  stopActiveMediaStreams() {
+    if (this.avActiveStream) {
+      try {
+        this.avActiveStream.getTracks().forEach(t => t.stop());
+      } catch (e) {}
+      this.avActiveStream = null;
+    }
+    if (this.avVideoPreview) {
+      this.avVideoPreview.srcObject = null;
+    }
+  }
+
+  showPermissionError(err) {
+    if (!this.avPermissionError) return;
+    this.avPermissionError.hidden = false;
+    if (this.avVideoPreview) this.avVideoPreview.hidden = true;
+    if (this.avAudioWaveform) this.avAudioWaveform.hidden = true;
+    if (this.avScreenPreflight) this.avScreenPreflight.hidden = true;
+
+    if (this.avPermissionErrorTitle) {
+      this.avPermissionErrorTitle.textContent = 'Hardware Access Required';
+    }
+    if (this.avPermissionErrorDesc) {
+      this.avPermissionErrorDesc.textContent = err?.name === 'NotAllowedError'
+        ? 'Access was denied. Please allow camera and microphone permissions in your browser address bar.'
+        : `Could not connect to media device: ${err?.message || 'Check if another app is using the device.'}`;
+    }
+  }
+
+  setupAudioWaveform(stream) {
+    this.cleanupAudioContext();
+    if (!this.avAudioWaveform) return;
+
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+
+      this.avAudioContext = new AudioCtx();
+      const source = this.avAudioContext.createMediaStreamSource(stream);
+      this.avAudioAnalyser = this.avAudioContext.createAnalyser();
+      this.avAudioAnalyser.fftSize = 128;
+      this.avAudioAnalyser.smoothingTimeConstant = 0.8;
+      source.connect(this.avAudioAnalyser);
+
+      const canvas = this.avAudioWaveform;
+      const ctx = canvas.getContext('2d');
+      const bufferLength = this.avAudioAnalyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+
+      const draw = () => {
+        if (!this.avAudioAnalyser) return;
+        this.avWaveformAnimFrame = requestAnimationFrame(draw);
+
+        const width = canvas.width = canvas.offsetWidth || 440;
+        const height = canvas.height = canvas.offsetHeight || 140;
+
+        this.avAudioAnalyser.getByteFrequencyData(dataArray);
+
+        ctx.clearRect(0, 0, width, height);
+
+        // Center line
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.fillRect(0, height / 2 - 1, width, 2);
+
+        const barCount = 36;
+        const barWidth = Math.max(3, (width / barCount) - 4);
+        const step = Math.floor(bufferLength / barCount) || 1;
+
+        for (let i = 0; i < barCount; i++) {
+          const val = dataArray[i * step] || 0;
+          const percent = val / 255;
+          const barHeight = Math.max(4, percent * (height * 0.82));
+          const x = i * (barWidth + 4) + 6;
+          const y = (height - barHeight) / 2;
+
+          // Gradient from hot pink #ff4081 to #de3163
+          const grad = ctx.createLinearGradient(x, y, x, y + barHeight);
+          grad.addColorStop(0, '#ff4081');
+          grad.addColorStop(1, '#de3163');
+
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(x, y, barWidth, barHeight, 4);
+          } else {
+            ctx.rect(x, y, barWidth, barHeight);
+          }
+          ctx.fill();
+        }
+      };
+
+      draw();
+    } catch (e) {
+      console.warn('[AVStudio] Audio waveform setup failed:', e);
+    }
+  }
+
+  cleanupAudioContext() {
+    if (this.avWaveformAnimFrame) {
+      cancelAnimationFrame(this.avWaveformAnimFrame);
+      this.avWaveformAnimFrame = null;
+    }
+    if (this.avAudioContext && this.avAudioContext.state !== 'closed') {
+      try {
+        this.avAudioContext.close();
+      } catch (e) {}
+      this.avAudioContext = null;
+    }
+    this.avAudioAnalyser = null;
+  }
+
+  getBestSupportedMime(kind = 'video') {
+    if (typeof MediaRecorder === 'undefined') return '';
+    if (kind === 'audio') {
+      const audioTypes = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/mp4',
+        'audio/ogg;codecs=opus'
+      ];
+      return audioTypes.find(t => MediaRecorder.isTypeSupported(t)) || '';
+    }
+    const videoTypes = [
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp8,opus',
+      'video/webm',
+      'video/mp4'
+    ];
+    return videoTypes.find(t => MediaRecorder.isTypeSupported(t)) || '';
+  }
+
+  handlePhotoShutter() {
+    if (!this.avActiveStream || !this.avVideoPreview) return;
+
+    if (this.avPhotoTimerSeconds > 0) {
+      this.startCountdown(this.avPhotoTimerSeconds, () => {
+        this.snapPhoto();
+      });
+    } else {
+      this.snapPhoto();
+    }
+  }
+
+  startCountdown(seconds, callback) {
+    if (!this.avCountdownOverlay || !this.avCountdownNumber) {
+      callback();
+      return;
+    }
+
+    this.cleanupCountdown();
+    let current = seconds;
+    this.avCountdownNumber.textContent = current;
+    this.avCountdownOverlay.hidden = false;
+
+    this.avCountdownInterval = setInterval(() => {
+      current--;
+      if (current <= 0) {
+        this.cleanupCountdown();
+        callback();
+      } else {
+        this.avCountdownNumber.textContent = current;
+      }
+    }, 1000);
+  }
+
+  cleanupCountdown() {
+    if (this.avCountdownInterval) {
+      clearInterval(this.avCountdownInterval);
+      this.avCountdownInterval = null;
+    }
+    if (this.avCountdownOverlay) {
+      this.avCountdownOverlay.hidden = true;
+    }
+  }
+
+  snapPhoto() {
+    if (!this.avVideoPreview) return;
+    const video = this.avVideoPreview;
+
+    const width = video.videoWidth || 1280;
+    const height = video.videoHeight || 720;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    if (this.avIsMirrored) {
+      ctx.translate(width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0, width, height);
+
+    canvas.toBlob((blob) => {
+      if (blob) {
+        this.showReviewScreen('photo', blob);
+      }
+    }, 'image/jpeg', 0.92);
+  }
+
+  toggleVideoRecording() {
+    if (this.avMediaRecorder && this.avMediaRecorder.state === 'recording') {
+      this.stopVideoRecording();
+    } else {
+      this.startVideoRecording();
+    }
+  }
+
+  startVideoRecording() {
+    if (!this.avActiveStream) return;
+
+    const mime = this.getBestSupportedMime('video');
+    this.avRecordedChunks = [];
+
+    try {
+      this.avMediaRecorder = new MediaRecorder(this.avActiveStream, mime ? { mimeType: mime } : undefined);
+      this.avMediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          this.avRecordedChunks.push(e.data);
+        }
+      };
+      this.avMediaRecorder.onstop = () => {
+        const finalBlob = new Blob(this.avRecordedChunks, { type: mime || 'video/webm' });
+        this.showReviewScreen('video', finalBlob);
+      };
+
+      this.avMediaRecorder.start(250);
+      if (this.avRecordVideoBtn) this.avRecordVideoBtn.classList.add('is-recording');
+      this.startRecordingTimer(15 * 60, () => this.stopVideoRecording());
+    } catch (e) {
+      console.error('[AVStudio] Failed to start video recording:', e);
+      this.showToast('Could not start video recording');
+    }
+  }
+
+  stopVideoRecording() {
+    this.cleanupRecordingTimer();
+    if (this.avRecordVideoBtn) this.avRecordVideoBtn.classList.remove('is-recording');
+    if (this.avMediaRecorder && this.avMediaRecorder.state !== 'inactive') {
+      this.avMediaRecorder.stop();
+    }
+  }
+
+  toggleAudioRecording() {
+    if (this.avMediaRecorder && this.avMediaRecorder.state === 'recording') {
+      this.stopAudioRecording();
+    } else {
+      this.startAudioRecording();
+    }
+  }
+
+  startAudioRecording() {
+    if (!this.avActiveStream) return;
+
+    const mime = this.getBestSupportedMime('audio');
+    this.avRecordedChunks = [];
+
+    try {
+      this.avMediaRecorder = new MediaRecorder(this.avActiveStream, mime ? { mimeType: mime } : undefined);
+      this.avMediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          this.avRecordedChunks.push(e.data);
+        }
+      };
+      this.avMediaRecorder.onstop = () => {
+        const finalBlob = new Blob(this.avRecordedChunks, { type: mime || 'audio/webm' });
+        this.showReviewScreen('audio', finalBlob);
+      };
+
+      this.avMediaRecorder.start(250);
+      if (this.avRecordAudioBtn) this.avRecordAudioBtn.classList.add('is-recording');
+      this.startRecordingTimer(15 * 60, () => this.stopAudioRecording());
+    } catch (e) {
+      console.error('[AVStudio] Failed to start audio recording:', e);
+      this.showToast('Could not start audio recording');
+    }
+  }
+
+  stopAudioRecording() {
+    this.cleanupRecordingTimer();
+    if (this.avRecordAudioBtn) this.avRecordAudioBtn.classList.remove('is-recording');
+    if (this.avMediaRecorder && this.avMediaRecorder.state !== 'inactive') {
+      this.avMediaRecorder.stop();
+    }
+  }
+
+  async startScreenCapture() {
+    try {
+      this.stopActiveMediaStreams();
+      const withMic = this.avScreenMicCheckbox?.checked ?? true;
+
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: { cursor: 'always' },
+        audio: true
+      });
+
+      let finalStream = displayStream;
+
+      if (withMic) {
+        try {
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          const combinedTracks = [
+            ...displayStream.getVideoTracks(),
+            ...displayStream.getAudioTracks(),
+            ...micStream.getAudioTracks()
+          ];
+          finalStream = new MediaStream(combinedTracks);
+        } catch (micErr) {
+          console.warn('[AVStudio] Optional mic capture denied, continuing with screen only');
+        }
+      }
+
+      this.avActiveStream = finalStream;
+
+      if (this.avVideoPreview) {
+        this.avVideoPreview.srcObject = finalStream;
+        this.avVideoPreview.classList.remove('is-mirrored');
+        this.avVideoPreview.hidden = false;
+        try { await this.avVideoPreview.play(); } catch (e) {}
+      }
+
+      if (this.avScreenPreflight) this.avScreenPreflight.hidden = true;
+      if (this.avStopScreenBtn) this.avStopScreenBtn.hidden = false;
+
+      // Handle user clicking native browser "Stop sharing" bar
+      const videoTrack = displayStream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.onended = () => {
+          this.stopScreenRecording();
+        };
+      }
+
+      // Automatically begin recording screen stream
+      const mime = this.getBestSupportedMime('video');
+      this.avRecordedChunks = [];
+      this.avMediaRecorder = new MediaRecorder(finalStream, mime ? { mimeType: mime } : undefined);
+      this.avMediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          this.avRecordedChunks.push(e.data);
+        }
+      };
+      this.avMediaRecorder.onstop = () => {
+        const finalBlob = new Blob(this.avRecordedChunks, { type: mime || 'video/webm' });
+        this.showReviewScreen('screen', finalBlob);
+      };
+      this.avMediaRecorder.start(250);
+      this.startRecordingTimer(15 * 60, () => this.stopScreenRecording());
+    } catch (err) {
+      console.warn('[AVStudio] Display capture cancelled or failed:', err);
+      if (this.avScreenPreflight) this.avScreenPreflight.hidden = false;
+    }
+  }
+
+  stopScreenRecording() {
+    this.cleanupRecordingTimer();
+    if (this.avStopScreenBtn) this.avStopScreenBtn.hidden = true;
+    if (this.avMediaRecorder && this.avMediaRecorder.state !== 'inactive') {
+      this.avMediaRecorder.stop();
+    }
+  }
+
+  stopAnyRecording(triggerReview = true) {
+    this.cleanupRecordingTimer();
+    if (this.avMediaRecorder && this.avMediaRecorder.state !== 'inactive') {
+      if (!triggerReview) {
+        this.avMediaRecorder.ondataavailable = null;
+        this.avMediaRecorder.onstop = null;
+      }
+      try {
+        this.avMediaRecorder.stop();
+      } catch (e) {}
+      this.avMediaRecorder = null;
+    }
+  }
+
+  startRecordingTimer(maxSeconds, onMaxReached) {
+    this.cleanupRecordingTimer();
+    this.avRecordingSeconds = 0;
+    if (this.avRecordingBadge) this.avRecordingBadge.hidden = false;
+    if (this.avRecordingTimerText) this.avRecordingTimerText.textContent = '00:00';
+
+    this.avRecordingInterval = setInterval(() => {
+      this.avRecordingSeconds++;
+      const mins = String(Math.floor(this.avRecordingSeconds / 60)).padStart(2, '0');
+      const secs = String(this.avRecordingSeconds % 60).padStart(2, '0');
+      if (this.avRecordingTimerText) {
+        this.avRecordingTimerText.textContent = `${mins}:${secs}`;
+      }
+      if (this.avRecordingSeconds >= maxSeconds) {
+        this.cleanupRecordingTimer();
+        if (onMaxReached) onMaxReached();
+      }
+    }, 1000);
+  }
+
+  cleanupRecordingTimer() {
+    if (this.avRecordingInterval) {
+      clearInterval(this.avRecordingInterval);
+      this.avRecordingInterval = null;
+    }
+    if (this.avRecordingBadge) {
+      this.avRecordingBadge.hidden = true;
+    }
+    this.avRecordingSeconds = 0;
+  }
+
+  showReviewScreen(type, blob) {
+    this.stopActiveMediaStreams();
+    this.cleanupAudioContext();
+    this.cleanupRecordingTimer();
+    this.cleanupCountdown();
+
+    this.avCapturedBlob = blob;
+    this.avCapturedType = type;
+
+    if (this.avCapturedPreviewUrl) {
+      URL.revokeObjectURL(this.avCapturedPreviewUrl);
+    }
+    this.avCapturedPreviewUrl = URL.createObjectURL(blob);
+
+    if (this.avCaptureView) this.avCaptureView.hidden = true;
+    if (this.avReviewView) this.avReviewView.hidden = false;
+
+    // Hide all mode dock controls, reveal review dock controls
+    if (this.avPhotoControls) this.avPhotoControls.hidden = true;
+    if (this.avVideoControls) this.avVideoControls.hidden = true;
+    if (this.avAudioControls) this.avAudioControls.hidden = true;
+    if (this.avScreenControls) this.avScreenControls.hidden = true;
+    if (this.avReviewControls) this.avReviewControls.hidden = false;
+
+    if (this.avReviewMediaWrap) {
+      this.avReviewMediaWrap.innerHTML = '';
+      if (type === 'photo') {
+        const img = document.createElement('img');
+        img.src = this.avCapturedPreviewUrl;
+        img.alt = 'Captured photo';
+        this.avReviewMediaWrap.appendChild(img);
+      } else if (type === 'video' || type === 'screen') {
+        const video = document.createElement('video');
+        video.src = this.avCapturedPreviewUrl;
+        video.controls = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        this.avReviewMediaWrap.appendChild(video);
+      } else if (type === 'audio') {
+        const audioWrap = document.createElement('div');
+        audioWrap.className = 'av-audio-review-card';
+        audioWrap.innerHTML = `
+          <div class="av-audio-icon-wrap">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23" stroke="currentColor" stroke-width="2"/><line x1="8" y1="23" x2="16" y2="23" stroke="currentColor" stroke-width="2"/></svg>
+          </div>
+          <h4>Audio Reflection Ready</h4>
+          <audio src="${this.avCapturedPreviewUrl}" controls autoplay></audio>
+        `;
+        this.avReviewMediaWrap.appendChild(audioWrap);
+      }
+    }
+  }
+
+  retakeCapturedMedia() {
+    if (this.avCapturedPreviewUrl) {
+      URL.revokeObjectURL(this.avCapturedPreviewUrl);
+      this.avCapturedPreviewUrl = null;
+    }
+    this.avCapturedBlob = null;
+    this.setAvMode(this.avCurrentMode);
+  }
+
+  async saveCapturedMedia() {
+    if (!this.avCapturedBlob) return;
+    const type = this.avCapturedType;
+    const blob = this.avCapturedBlob;
+
+    if (this.avSaveMediaBtn) {
+      this.avSaveMediaBtn.disabled = true;
+      this.avSaveMediaBtn.textContent = 'Saving...';
+    }
+    this.showToast('Attaching media...');
+
+    try {
+      let ext = 'webm';
+      let mediaType = 'video';
+      let category = 'Video Recording';
+
+      if (type === 'photo') {
+        ext = 'jpg';
+        mediaType = 'image';
+        category = 'Camera Snapshot';
+      } else if (type === 'audio') {
+        ext = 'webm';
+        mediaType = 'audio';
+        category = 'Audio Reflection';
+      } else if (type === 'screen') {
+        ext = 'webm';
+        mediaType = 'video';
+        category = 'Screen Recording';
+      }
+
+      const filename = `${type}_${Date.now()}.${ext}`;
+      let uploaded = null;
+
+      if (window.padlesR2) {
+        uploaded = await window.padlesR2.uploadMedia(blob, {
+          type: mediaType,
+          filename: filename,
+          boardId: this.activeBoardId || 'board-default-physics'
+        });
+      } else {
+        const localUrl = URL.createObjectURL(blob);
+        uploaded = {
+          url: localUrl,
+          thumbnailUrl: mediaType === 'image' ? localUrl : '',
+          storageId: 'att_' + Date.now()
+        };
+      }
+
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const attachment = {
+        type: mediaType,
+        category: category,
+        provider: 'Padles Studio',
+        title: `${category} (${timeStr})`,
+        url: uploaded.url,
+        storageId: uploaded.storageId,
+        thumbnailUrl: uploaded.thumbnailUrl || (mediaType === 'image' ? uploaded.url : ''),
+        size: blob.size,
+        mimeType: blob.type || (mediaType === 'image' ? 'image/jpeg' : (mediaType === 'audio' ? 'audio/webm' : 'video/webm'))
+      };
+
+      if (!this.activeDraftId && !this.editingCardId) {
+        this.openComposer(this.state.sections[0]?.id);
+      }
+
+      this.composerState.attachment = attachment;
+      if (this.activeDraftId) {
+        const draft = this.state.drafts.find(d => d.id === this.activeDraftId);
+        if (draft) draft.attachment = attachment;
+      }
+      if (this.editingCardId) {
+        const card = this.findCardById(this.editingCardId);
+        if (card) {
+          card.attachment = attachment;
+          card.type = mediaType;
+        }
+      }
+
+      this.updateAttachmentPreviewUI();
+      this.syncActiveDraftFromInputs();
+      this.saveState();
+      this.closeAvRecorderModal();
+      this.showToast(`${category} attached!`);
+    } catch (err) {
+      console.error('[AVStudio] Failed to save media:', err);
+      this.showToast('Failed to save media: ' + (err.message || 'Unknown error'));
+    } finally {
+      if (this.avSaveMediaBtn) {
+        this.avSaveMediaBtn.disabled = false;
+        this.avSaveMediaBtn.textContent = 'Save & Attach';
+      }
     }
   }
 
@@ -3441,15 +4251,7 @@ class PadlesShelfApp {
       };
       input.click();
     } else if (tool === 'camera') {
-      this.composerState.attachment = {
-        type: 'image',
-        provider: 'Camera',
-        title: 'Camera Snapshot',
-        thumbnailUrl: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600',
-        url: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600'
-      };
-      this.updateAttachmentPreviewUI();
-      this.showToast('Camera photo captured!');
+      this.openAvRecorderModal('photo');
     } else if (tool === 'ai') {
       const promptText = prompt('Describe what you want AI to draw:', 'Quantum particles colliding in space');
       if (promptText) {
@@ -3609,6 +4411,10 @@ class PadlesShelfApp {
     // Keyboard shortcuts (Escape to dismiss, Cmd/Ctrl+Enter to submit)
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        if (this.avRecorderModal && !this.avRecorderModal.hidden) {
+          this.closeAvRecorderModal();
+          return;
+        }
         if (this.editingCardId) {
           this.cancelEditPost();
           return;

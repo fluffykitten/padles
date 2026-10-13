@@ -3311,6 +3311,599 @@ body.dark-mode .bulk-menu-tail,
 }
 
 /* ==========================================================================
+   Unified AV Studio Modal (Photo, Video, Audio, Screen)
+   ========================================================================== */
+
+.av-recorder-dialog {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+  width: 720px;
+  max-width: min(720px, calc(100vw - 32px));
+  height: 540px;
+  max-height: 88vh;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: composerPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.av-recorder-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid #f1f3f4;
+  background: #ffffff;
+  z-index: 10;
+}
+
+.av-header-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: #f1f3f4;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.av-header-btn:hover {
+  background: #e5e7eb;
+  color: #111111;
+}
+
+.av-header-spacer {
+  width: 36px;
+  height: 36px;
+}
+
+.av-mode-segmented-pill {
+  display: flex;
+  align-items: center;
+  background: #f1f3f4;
+  padding: 3px;
+  border-radius: 9999px;
+  gap: 2px;
+}
+
+.av-mode-tab {
+  padding: 6px 16px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.av-mode-tab:hover {
+  color: #111111;
+}
+
+.av-mode-tab.is-active {
+  background: #ffffff;
+  color: #111111;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.av-viewport-stage {
+  flex: 1;
+  position: relative;
+  background: #0f172a;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.av-capture-view {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.av-video-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000000;
+}
+
+.av-video-preview.is-mirrored {
+  transform: scaleX(-1);
+}
+
+.av-audio-waveform {
+  width: 88%;
+  height: 160px;
+  max-width: 520px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.av-screen-preflight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #ffffff;
+  padding: 32px 24px;
+  max-width: 440px;
+}
+
+.av-screen-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: #38bdf8;
+}
+
+.av-screen-preflight h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.av-screen-preflight p {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+.av-screen-mic-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  margin-bottom: 22px;
+  user-select: none;
+}
+
+.av-screen-mic-toggle input[type="checkbox"] {
+  accent-color: #de3163;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.av-btn-primary {
+  background: #de3163;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 11px 28px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 14px rgba(222, 49, 99, 0.4);
+}
+
+.av-btn-primary:hover {
+  background: #c2185b;
+  transform: translateY(-1px);
+}
+
+.av-permission-error {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.96);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #ffffff;
+  padding: 24px;
+  z-index: 30;
+}
+
+.av-permission-error svg {
+  color: #f87171;
+  margin-bottom: 14px;
+}
+
+.av-permission-error h4 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.av-permission-error p {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 380px;
+  margin: 0 0 18px 0;
+  line-height: 1.45;
+}
+
+.av-btn-retry {
+  background: #f1f3f4;
+  color: #111111;
+  border: none;
+  border-radius: 9999px;
+  padding: 8px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.av-btn-retry:hover {
+  background: #ffffff;
+}
+
+.av-countdown-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 110px;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  z-index: 20;
+  animation: avCountPulse 1s infinite;
+}
+
+@keyframes avCountPulse {
+  0% { transform: scale(1.2); opacity: 0.8; }
+  50% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+.av-recording-badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 15;
+}
+
+.av-recording-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ef4444;
+  animation: avPulseDot 1.2s infinite;
+}
+
+@keyframes avPulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.85); }
+}
+
+.av-review-view {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.av-review-media-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.av-review-media-wrap img,
+.av-review-media-wrap video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.av-review-media-wrap audio {
+  width: 80%;
+  max-width: 480px;
+}
+
+.av-audio-review-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #ffffff;
+  padding: 32px 24px;
+  max-width: 480px;
+  width: 90%;
+}
+
+.av-audio-icon-wrap {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(222, 49, 99, 0.18);
+  color: #ff4081;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.av-audio-review-card h4 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 18px 0;
+}
+
+.av-audio-review-card audio {
+  width: 100%;
+}
+
+.av-action-dock {
+  height: 80px;
+  background: #ffffff;
+  border-top: 1px solid #f1f3f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  position: relative;
+}
+
+.av-dock-controls {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.av-timer-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.av-dock-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.av-timer-pill {
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.av-timer-pill:hover {
+  background: #f3f4f6;
+  color: #111111;
+}
+
+.av-timer-pill.is-active {
+  background: #111827;
+  color: #ffffff;
+  border-color: #111827;
+}
+
+.av-shutter-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 4px solid #de3163;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0;
+}
+
+.av-shutter-btn:hover {
+  transform: scale(1.06);
+}
+
+.av-shutter-btn:active .av-shutter-inner {
+  transform: scale(0.88);
+}
+
+.av-shutter-inner {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #de3163;
+  transition: all 0.1s ease;
+}
+
+.av-record-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 4px solid #ef4444;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.av-record-btn:hover {
+  transform: scale(1.06);
+}
+
+.av-record-inner {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ef4444;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.av-record-btn.is-recording .av-record-inner {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+}
+
+.av-record-btn.is-audio {
+  border-color: #ec4899;
+  color: #ffffff;
+  background: #ec4899;
+}
+
+.av-record-btn.is-audio:hover {
+  background: #db2777;
+}
+
+.av-record-btn.is-audio.is-recording {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.av-action-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.av-action-icon-btn:hover {
+  background: #f3f4f6;
+  color: #111111;
+}
+
+.av-action-icon-btn.is-active {
+  background: #f3e8ff;
+  border-color: #d8b4fe;
+  color: #9333ea;
+}
+
+.av-dock-spacer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.av-dock-hint {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.av-stop-screen-btn {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 10px 24px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.av-stop-screen-btn:hover {
+  background: #dc2626;
+}
+
+.av-stop-square {
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border-radius: 2px;
+}
+
+.av-btn-secondary {
+  background: #f1f3f4;
+  color: #374151;
+  border: none;
+  border-radius: 9999px;
+  padding: 10px 22px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.av-btn-secondary:hover {
+  background: #e5e7eb;
+  color: #111111;
+}
+
+.av-btn-save {
+  background: #de3163;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 10px 26px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 14px rgba(222, 49, 99, 0.35);
+}
+
+.av-btn-save:hover {
+  background: #c2185b;
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
    Custom Field Schema Builder (Blueprint Section 6.2)
    ========================================================================== */
 
