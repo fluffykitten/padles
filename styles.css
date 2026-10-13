@@ -323,7 +323,7 @@ body.aurora-theme {
 
 .topbar-signup-btn {
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -332,9 +332,10 @@ body.aurora-theme {
   border-radius: 12px;
   background-color: rgb(1, 40, 50);
   backdrop-filter: blur(12px);
-  color: rgb(233, 248, 251);
+  color: rgb(255, 64, 129);
   text-decoration: none;
   cursor: pointer;
+  border: none;
   transition: background 0.15s ease;
 }
 
@@ -8286,17 +8287,17 @@ body.theme-corkboard {
 
 .padlet-input-floating-error {
   position: absolute;
-  right: 12px;
-  bottom: -9px;
+  right: 8px;
+  bottom: -8px;
   background: rgb(17, 17, 17);
   color: rgb(239, 68, 68);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 0 6px;
-  line-height: 14px;
+  padding: 0 4px;
+  line-height: 16px;
   border-radius: 4px;
   pointer-events: none;
-  letter-spacing: 0.2px;
+  z-index: 2;
 }
 
 .padlet-auth-input {
@@ -8330,23 +8331,44 @@ body.theme-corkboard {
   color: #ffffff;
 }
 
-/* Continue Button: Padlet Hot Pink #de3163 */
+/* Continue Button Container: Aligns right on desktop */
+.padlet-auth-continue-container {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+  .padlet-auth-continue-container {
+    justify-content: center;
+  }
+}
+
+/* Continue Button: Padlet Hot Pink rgb(255, 64, 129) */
 .padlet-auth-continue-btn {
   height: 40px;
   border-radius: 16px;
   border: none;
   font-size: 17px;
   font-weight: 600;
-  width: 100%;
+  width: auto;
+  min-width: 113px;
+  padding: 0 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: inherit;
-  margin-top: 6px;
   transition: all 0.15s ease;
   cursor: pointer;
-  background: rgb(222, 49, 99);
+  background: rgb(255, 64, 129);
   color: #ffffff;
+}
+
+@media (max-width: 600px) {
+  .padlet-auth-continue-btn {
+    width: 100%;
+  }
 }
 
 .padlet-auth-continue-btn:disabled {
@@ -8356,7 +8378,7 @@ body.theme-corkboard {
 }
 
 .padlet-auth-continue-btn:not(:disabled):hover {
-  background: #cf2754;
+  background: rgb(240, 50, 115);
 }
 
 .padlet-auth-back-btn,
