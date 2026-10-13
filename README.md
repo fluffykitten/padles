@@ -1,4 +1,4 @@
-# Padles — 100% Pixel-Perfect Padlet Shelf Board Clone
+# Padles — 100% Pixel-Perfect Padles Shelf Board Clone
 
 A faithful, high-fidelity, and interaction-complete recreation of **Padlet's Shelf / Section Board**, engineered with vanilla HTML, CSS, and modern JavaScript with zero external frameworks or build tooling.
 
@@ -32,8 +32,8 @@ A faithful, high-fidelity, and interaction-complete recreation of **Padlet's She
   7. `Add post before`
   8. `Add post after`
   9. `Duplicate post`
-  10. `Copy to another padlet`
-  11. `Transfer to another padlet`
+  10. `Copy to another padles`
+  11. `Transfer to another padles`
   12. `Pin / Unpin post`
   13. `Delete post` (Danger red styling)
 
