@@ -1,213 +1,297 @@
-# Padles Tools Revamp Implementation Plan: 100% Reverse-Engineered Fidelity
+# Padles Tools Revamp Implementation Plan: 100% Reverse-Engineered Parity with Supabase & Cloudflare R2
 
-## 1. Problem Statement & Ground Truth Audit
-
-### Current Limitations in Padles
-In Padles (`c:\padles\app.js` and `index.html`), the composer attachment tools currently fail to deliver a functional user experience:
-1. **Camera, Video, Audio, and Screen**: Hardcoded dummy stubs that inject static Unsplash stock photos and toast messages without requesting browser media permissions or providing viewfinders.
-2. **Draw**: Injects a static placeholder card titled `"Freehand Sketch Drawing"` without opening a canvas whiteboard.
-3. **Poll**: Hardcodes a static poll card without an interactive question-and-option creation modal.
-4. **Location**: Injects a static location string (`"MIT Physics Lab"`) without an interactive map picker.
-5. **Link & AI Art**: Trigger browser-native `window.prompt()` alerts rather than in-app modals.
-6. **All Tools Modal**: Does not match Padlet's 4 signature colored tile categories, unified top search/URL bar, or geometry.
-
-### Reverse-Engineered Ground Truth (Live Padlet Runtime)
-Direct CDP inspection of live Padlet (`936772306C5181274F50AC3777BC6788`) revealed that tools belong to specific unified dialog subsystems:
-* **Unified AV Studio Modal (`avRecorderModal`)**: A single top-mounted modal (`720px × 520px`, `rounded-b-3xl`) managing **Photo (Camera)**, **Video**, **Audio**, and **Screen** via `getUserMedia` and `getDisplayMedia`. Includes shutter capture, recording timers, and a video playback/trimmer review screen (`Playback` | `Trim`).
-* **Whiteboard Canvas (`drawModal`)**: A top-mounted drawing canvas with `WHITE` | `BLACK` background toggle, 10 preset color swatches, brush/eraser tools, undo/redo, and PNG export.
-* **Interactive Poll Creator (`pollModal`)**: A `540px × 400px` modal with question input, dynamic radio choices (`Choice 1`–`4`, `+ Add option`), and interactive vote cards.
-* **Map Location Picker (`locationModal`)**: A `720px × 520px` card with search geocoding (`"Search for a place"`), GPS current location button, style toggle (`Roadmap` | `Satellite` | `Terrain` | `Hybrid`), and pin dropping.
-* **All Tools Hub (`moreAttachmentTypesModal`)**: Top input `"Search web or paste URL"` with 21 tools organized into **4 color-coded tile groups** (`#F7EDFF`, `#ECF6FF`, `#EEFFED`, `#FFF5EF`).
+> [!IMPORTANT]
+> **Production Parity Mandate**
+> This specification details the end-to-end architecture, UI contracts, data models, and storage pipelines to replace all stubbed composer attachment tools in Padles with fully functional, Padlet-authentic equivalents backed by **Supabase (Realtime, Postgres)**, **Cloudflare R2 (Zero-Egress Object Storage)**, and **IndexedDB (Offline Fallback)**.
 
 ---
 
-## 2. Architecture & Subsystem Breakdown
+## 1. Ground Truth Audit & Problem Statement
+
+### 1.1 Current Limitations in Padles
+1. **Camera, Video, Audio, and Screen**: Dummy stubs inject static Unsplash stock images and toast notifications without requesting browser permissions (`getUserMedia`, `getDisplayMedia`) or displaying viewfinders.
+2. **Draw**: Injects a static placeholder card titled `"Freehand Sketch Drawing"` without an interactive drawing canvas.
+3. **Poll**: Injects a hardcoded card without an interactive question/choice creation modal or live voting.
+4. **Location**: Injects a static string (`"MIT Physics Lab"`) without a map interface or geocoding search.
+5. **Link & AI Art**: Trigger browser-native `window.prompt()` popups instead of in-app modals.
+6. **All Tools Modal**: Does not match Padlet's 4 signature color-coded tile categories, geometry, or unified search/URL bar.
+7. **Storage & Reload Blind Spot**: Storing `blob:` URLs causes broken attachments on page refresh; storing base64 strings in `localStorage` crashes with `QuotaExceededError` (5MB limit).
+8. **Incomplete Rendering Pipeline**: `app.js` (`renderCards()` and `cardDetailModal`) only knows how to render static images and YouTube badges; interactive polls, audio waveforms, video players, and maps do not render.
+
+### 1.2 Reverse-Engineered Ground Truth (Live Padlet Runtime)
+Direct REA/CDP extraction from live Padlet (`padlet.com/ezzarscarlet/...`) identified 5 unified dialog subsystems:
+* **Unified AV Studio (`#avRecorderModal`)**: Centered top modal (`720px × 520px`, `rounded-b-3xl`) managing **Photo (Camera)**, **Video**, **Audio**, and **Screen**. Includes live viewfinders, shutter/record actions, timer displays, and a playback/trimmer review screen (`Playback` | `Trim`).
+* **Whiteboard Canvas (`#drawModal`)**: Top modal with `WHITE` | `BLACK` background toggle, 10 preset color swatches, brush/eraser tools, stroke thickness slider, undo/redo, and PNG export.
+* **Interactive Poll Creator (`#pollModal`)**: `540px × 420px` centered modal with question input, dynamic radio options (`Choice 1`–`8`, `+ Add option`), and interactive post vote cards with live percentage bars.
+* **Map Location Picker (`#locationModal`)**: `720px × 520px` modal with OpenStreetMap geocoding search, GPS button, style toggle (`Roadmap` | `Satellite` | `Terrain`), and pin placement.
+* **All Tools Hub (`#allToolsModal`)**: Top input `"Search web or paste URL"` with 21 tools organized into **4 signature colored tile groups** (`#F7EDFF`, `#ECF6FF`, `#EEFFED`, `#FFF5EF`).
+
+---
+
+## 2. Multi-Tier Media Storage & Backend Architecture
+
+To handle high-resolution photos, 1080p screen recordings, and audio reflection memos without running into storage limits or broken reloads, Padles uses a **three-tier storage pipeline**:
 
 ```mermaid
 graph TD
-    Composer[Post Composer] --> Dock[Attachment Tool Dock]
-    Dock --> CamBtn[Camera]
-    Dock --> AllBtn[All Tools]
-    Dock --> LinkBtn[Link]
-    Dock --> SearchBtn[Search]
-    Dock --> UpBtn[Upload]
+    Client[Padles Client (app.js)] --> MediaPicker[AV Studio / Draw / Upload]
+    MediaPicker --> BlobData[Binary Blob (JPEG / WebM / PNG)]
 
-    CamBtn --> AVModal[1. Unified AV Studio Modal<br>Photo | Video | Audio | Screen]
-    AllBtn --> AllToolsModal[5. Revamped All Tools Hub<br>4 Color Groups + URL Bar]
+    BlobData --> Decision{Cloud Configured?}
+    
+    Decision -->|Yes: Supabase + R2| UploadPipeline[Storage Pipeline]
+    UploadPipeline --> PresignedCheck{R2 Function Available?}
+    PresignedCheck -->|Yes| EdgeFunc[Supabase Edge Function: get-r2-upload-url]
+    EdgeFunc -->|S3 Presigned PUT URL| Client
+    Client -->|Direct S3 PUT| R2[(Cloudflare R2 Bucket)]
+    R2 --> CDN[Cloudflare Edge CDN]
+    CDN -->|Public URL| PostRecord[Supabase Posts Table]
+    
+    PresignedCheck -->|No / Standby| SupaStorage[Supabase Storage: padles-attachments]
+    SupaStorage -->|Public Bucket URL| PostRecord
 
-    AllToolsModal --> AVModal
-    AllToolsModal --> DrawModal[2. Canvas Whiteboard<br>Draw / Sketch]
-    AllToolsModal --> PollModal[3. Interactive Poll Creator]
-    AllToolsModal --> MapModal[4. Location Map Picker]
-    AllToolsModal --> SearchModal[Search & Media Drawer]
-    AllToolsModal --> AiArtModal[AI Art Generator Modal]
+    Decision -->|No: Offline / Local| IDB[(IndexedDB: PadlesMediaDB)]
+    IDB -->|attachmentId| LocalState[localStorage State Pointer]
 
-    AVModal --> AttachPreview[Composer Attachment Card<br>Image / Video / Audio Blob]
-    DrawModal --> AttachPreview
-    PollModal --> AttachPreview
-    MapModal --> AttachPreview
+    PostRecord --> Realtime[Supabase Realtime (WAL)]
+    Realtime --> OtherClients[All Active Collaborators]
+```
+
+### 2.1 Tier 1: Cloudflare R2 (Primary Production Object Storage)
+* **Zero Egress Fees**: Essential for classroom/collaborative boards where hundreds of students stream audio memos and video demonstrations.
+* **Upload Flow**:
+  1. Client calls Supabase Edge Function `POST /functions/v1/get-r2-upload-url` with `{ fileName, contentType, boardId }`.
+  2. Edge Function verifies user access and generates a presigned S3 `PutObjectCommand` URL (5-minute expiry).
+  3. Client executes direct `fetch(presignedUrl, { method: 'PUT', body: fileBlob, headers: { 'Content-Type': mimeType } })`.
+  4. Public CDN URL (`https://cdn.padles.com/attachments/<id>.<ext>` or Cloudflare R2 public dev URL) is saved to `card.attachment.url`.
+
+### 2.2 Tier 2: Supabase Storage (`padles-attachments` Bucket)
+* **Instant Fallback**: If Cloudflare R2 edge credentials are not yet configured in `.env.local`, client falls back seamlessly to Supabase Storage:
+  ```javascript
+  const { data, error } = await supabase.storage
+    .from('padles-attachments')
+    .upload(`${boardId}/${attachmentId}.${ext}`, blob, { contentType: mimeType, upsert: true });
+  const publicUrl = supabase.storage.from('padles-attachments').getPublicUrl(data.path).data.publicUrl;
+  ```
+
+### 2.3 Tier 3: IndexedDB Binary Store (`PadlesMediaDB` - Offline Fallback)
+* **Zero Dependency & High Capacity**: Uses native browser IndexedDB (`window.indexedDB`), which supports gigabytes of binary Blob storage without hitting `localStorage` 5MB limits.
+* **Mechanism**:
+  - Store Blobs in object store: `{ id: 'att_123', mimeType: 'audio/webm', blob: Blob, createdAt: timestamp }`.
+  - In `localStorage` state (`this.state`), only store: `{ type: 'audio', storageId: 'att_123', title: 'Voice Memo' }`.
+  - On app startup, `PadlesMediaDB.resolveUrl(storageId)` generates fresh, working `blob:` URLs for the current session.
+  - When cloud sync connects, an automatic background queue uploads cached IndexedDB blobs to R2 / Supabase Storage.
+
+---
+
+## 3. Strict Attachment JSON Data Contracts
+
+Every attachment stored in `composerState.attachment`, `card.attachment`, and Supabase `posts.attachment` MUST conform to these schemas:
+
+### 3.1 Photo & Image (`type: 'image'`)
+```json
+{
+  "type": "image",
+  "category": "photo" | "ai" | "upload",
+  "url": "https://.../photo_abc.jpg",
+  "thumbnailUrl": "https://.../photo_abc.jpg",
+  "storageId": "att_photo_123",
+  "title": "Camera Snapshot",
+  "caption": "",
+  "width": 1280,
+  "height": 720
+}
+```
+
+### 3.2 Video & Screen Recording (`type: 'video'`)
+```json
+{
+  "type": "video",
+  "category": "camera" | "screen" | "upload",
+  "url": "https://.../video_xyz.webm",
+  "thumbnailUrl": "https://.../thumb_xyz.jpg",
+  "storageId": "att_video_456",
+  "title": "Physics Lab Experiment (0:45)",
+  "duration": 45,
+  "mimeType": "video/webm"
+}
+```
+
+### 3.3 Audio Reflection Memo (`type: 'audio'`)
+```json
+{
+  "type": "audio",
+  "category": "voice" | "upload",
+  "url": "https://.../audio_ref.webm",
+  "storageId": "att_audio_789",
+  "title": "I See, I Think, I Wonder Reflection",
+  "duration": 82,
+  "waveform": [12, 45, 88, 62, 30, 95, 74, 40, 20, 65, 80, 50],
+  "mimeType": "audio/webm"
+}
+```
+
+### 3.4 Freehand Drawing Canvas (`type: 'drawing'`)
+```json
+{
+  "type": "drawing",
+  "category": "canvas",
+  "url": "https://.../drawing_sketch.png",
+  "thumbnailUrl": "https://.../drawing_sketch.png",
+  "storageId": "att_draw_321",
+  "title": "Kinetic Diagram Sketch",
+  "width": 1440,
+  "height": 1040,
+  "background": "white"
+}
+```
+
+### 3.5 Interactive Poll (`type: 'poll'`)
+```json
+{
+  "type": "poll",
+  "question": "Which balloon car travel distance was greatest?",
+  "options": [
+    { "id": "opt-1", "text": "Car A (Smooth floor)", "votes": 12 },
+    { "id": "opt-2", "text": "Car B (Carpet)", "votes": 4 },
+    { "id": "opt-3", "text": "Car C (Ramp incline)", "votes": 19 }
+  ],
+  "totalVotes": 35,
+  "voters": {
+    "user_abc123": "opt-3"
+  }
+}
+```
+
+### 3.6 Location Map Card (`type: 'location'`)
+```json
+{
+  "type": "location",
+  "placeName": "MIT Department of Physics",
+  "address": "77 Massachusetts Ave, Cambridge, MA 02139",
+  "lat": 42.3598,
+  "lng": -71.0921,
+  "mapType": "roadmap" | "satellite" | "terrain",
+  "showPin": true,
+  "thumbnailUrl": "https://staticmap.openstreetmap.de/staticmap.php?center=42.3598,-71.0921&zoom=15&size=600x300&markers=42.3598,-71.0921,red-pushpin"
+}
 ```
 
 ---
 
-## 3. Phase-by-Phase Implementation Blueprint
+## 4. End-to-End Rendering Pipeline Specifications
 
-### Phase 1: Unified AV Studio Modal (`#avRecorderModal`)
-**Target Tools**: `Camera (Photo)`, `Video recorder`, `Audio recorder`, `Screen recorder`.
+Attachment support requires updates across **3 UI surfaces**:
 
-#### 1.1 DOM Structure (`index.html`)
-- Container: `#avRecorderModal` (`class="av-recorder-modal"`, `720px × 520px`, centered, top-mounted, `border-radius: 0 0 24px 24px`).
-- Header:
-  - Close button `#avRecorderCloseBtn` (32px squircle `✕`).
-  - Centered segmented pill selector: `[ Photo ] [ Video ] [ Audio ] [ Screen ]`.
-- Viewport:
-  - Live viewfinder video element: `<video id="avVideoPreview" autoplay playsinline muted></video>`.
-  - Audio waveform visualizer: `<canvas id="avAudioWaveform"></canvas>`.
-  - Screen recording pre-flight configuration card (microphone selector dropdown with audio level meter + time limit pill selector + `Next` button).
-- Bottom Action Dock:
-  - Photo mode: 64px circular shutter button (`#avShutterBtn`), flip camera button, 3s/10s timer toggle.
-  - Video mode: Red circular record button (`#avRecordVideoBtn`), pause button, recording timer display (`00:00`).
-  - Audio mode: Central red microphone record button, timer display, max limit (15m).
-  - Screen mode: Floating `Stop` button bar during screen capture.
-- Review / Trimmer Viewport (`#avReviewView`):
-  - Segmented top bar: `< Back`, `Playback` | `Trim` toggle, Pink `Save` button (`#avSaveBtn`).
-  - Video/Audio player controls with playback scrubber, speed (`1x`), volume.
-  - Draggable trim handles (`startTrimLineButton`, `endTrimLineButton`).
+### 4.1 Surface A: Post Composer Preview (`#activeAttachmentPreview`)
+* **Image / Drawing**: Fixed height (`160px`), rounded thumbnail, `✕` remove button on top-right, title badge on bottom.
+* **Video**: Viewport thumbnail with centered white play icon + duration pill (`00:45`).
+* **Audio**: Waveform pill bar with inline mini-player and duration display (`01:22`).
+* **Poll**: Compact option pills with question text and choice badges.
+* **Location**: Map snapshot with marker pin and geocoded location chip.
 
-#### 1.2 JavaScript Implementation (`app.js`)
-- **Camera/Photo Capture Flow**:
-  - Request stream: `navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 1280 } }, audio: false })`.
-  - Draw frame to hidden `<canvas>` on shutter click.
-  - Transition to review state (`Save` vs `Retake`).
-  - On `Save`: Convert canvas to JPEG Blob (`canvas.toBlob(...)`), generate Object URL / Supabase upload, and inject into `composerState.attachment`.
-- **Video Recorder Flow**:
-  - Request stream: `navigator.mediaDevices.getUserMedia({ video: true, audio: true })`.
-  - Initialize `new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9,opus' })`.
-  - Collect chunks into `Blob(['video/webm'])`.
-  - Transition to video playback & trimmer review screen before saving.
-- **Audio Recorder Flow**:
-  - Request stream: `navigator.mediaDevices.getUserMedia({ audio: true })`.
-  - Connect stream to Web Audio API `AudioContext` & `AnalyserNode` to draw live dynamic frequency bars on `#avAudioWaveform`.
-  - Record via `MediaRecorder` into `audio/webm` / `audio/wav`.
-  - Preview audio with waveform seekbar on review.
-- **Screen Recorder Flow**:
-  - Call `navigator.mediaDevices.getDisplayMedia({ video: { cursor: 'always' }, audio: true })`.
-  - Combine screen stream + selected microphone stream via `AudioContext.createMediaStreamDestination()`.
-  - Record via `MediaRecorder`, listen for `stream.getVideoTracks()[0].onended` to auto-stop when user stops sharing.
-  - Present video trimmer review screen before attaching.
+### 4.2 Surface B: Board Card View (`renderCards()` in `app.js`)
+* **Audio Player Widget**: Custom styled audio container with play/pause circular button, elapsed time, and dynamic CSS bar visualizer.
+* **Video Card**: Full-width video container with custom play overlay. Clicking plays inline or opens theater view.
+* **Interactive Poll Card**:
+  - Options render as clickable choice capsules.
+  - Clicking an option submits vote immediately, updates Supabase in real-time, displays animated percentage fill bars, and locks user's choice with a checkmark.
+* **Location Card**: Interactive OpenStreetMap snippet or high-resolution map snapshot with destination pin and address caption.
+
+### 4.3 Surface C: Expanded Theater View (`#cardDetailModal`)
+* **Media Canvas (`#detailMediaCanvas`)**:
+  - Audio: Large central audio player with interactive seekbar and full-fidelity dynamic waveform visualization.
+  - Video: Native HTML5 `<video controls playsinline>` with playback rate selector.
+  - Drawing / Photo: Full-res lightbox canvas with zoom/pan.
+  - Poll: Full-width live voting view with live avatar heads of voters (via Supabase Realtime).
+  - Location: Interactive full-screen map with zoom controls and directions link.
 
 ---
 
-### Phase 2: Drawing Whiteboard Canvas (`#drawModal`)
-**Target Tool**: `Draw`.
+## 5. Media Hardware Lifecycle & Resource Protection
 
-#### 2.1 DOM & UI Specifications
-- Modal size: `720px × 520px`, top-mounted, `border-radius: 24px`.
-- Top Header:
-  - Left: Pink text button `CLOSE`.
-  - Center: `Undo` & `Redo` icons.
-  - Center-right: Background switch segmented pill: **`WHITE` | `BLACK`**.
-  - Right: Pink filled pill button `SAVE`.
-- Canvas Body: `<canvas id="drawingCanvas">` with high-DPI scaling (`window.devicePixelRatio`).
-- Bottom Palette Dock:
-  - **10 preset color swatches**: Black (`#000000`), Red (`#ef4444`), Blue (`#3b82f6`), Yellow (`#eab308`), Green (`#22c55e`), Pink (`#ec4899`), Purple (`#a855f7`), Cyan (`#06b6d4`), Orange (`#f97316`), Brown (`#854d0e`).
-  - Active color indicator ring (`box-shadow: 0 0 0 2px #fff, 0 0 0 4px #f59e0b`).
-  - Pen tool, Eraser tool, Brush stroke thickness slider (2px, 6px, 12px, 24px).
+```javascript
+// Hardware Cleanup Protocol
+stopActiveMediaStreams() {
+  if (this.activeMediaStream) {
+    this.activeMediaStream.getTracks().forEach(track => {
+      track.stop();
+      console.log(`[AVStudio] Stopped track: ${track.kind}`);
+    });
+    this.activeMediaStream = null;
+  }
+}
 
-#### 2.2 JavaScript Implementation
-- Pointer event listeners (`pointerdown`, `pointermove`, `pointerup`, `pointercancel`) supporting mouse, touch, and stylus pen.
-- Quadratic Bezier curves for stroke smoothing.
-- Undo/Redo stack storing canvas image snapshots (`ImageData` / path strokes).
-- On `SAVE`: Call `canvas.toBlob('image/png')` and attach as high-res drawing card to the post composer.
+cleanupAudioContext() {
+  if (this.audioContext && this.audioContext.state !== 'closed') {
+    this.audioContext.close();
+    this.audioContext = null;
+  }
+}
+```
 
----
-
-### Phase 3: Interactive Poll Creator (`#pollModal`)
-**Target Tool**: `Poll`.
-
-#### 3.1 DOM & UI Specifications
-- Modal size: `540px × 420px`, centered, `border-radius: 24px`.
-- Header: Squircle close `✕`, Title `"Poll"`, Pink `"Add"` button (disabled while question is blank).
-- Form Body:
-  - Question input: `"Ask a question..."` (`font-size: 16px; font-weight: 600; border: none; outline: none;`).
-  - Option items list:
-    - `Choice 1` (radio dot + input)
-    - `Choice 2` (radio dot + input)
-    - `Choice 3 (optional)`
-    - `Choice 4 (optional)`
-  - `+ Add option` button (allows up to 8 choices).
-
-#### 3.2 Post Card Interactive Rendering
-- Renders poll card inside post with clickable choice options.
-- Clicking an option updates vote counts, computes percentage bars, and highlights the user's vote.
+### Critical Rules:
+1. **Always Stop Tracks on Modal Close**: When user clicks `✕`, presses `Escape`, or switches tabs inside `#avRecorderModal`, immediately call `stopActiveMediaStreams()`.
+2. **AudioContext Recycling**: Never instantiate `new AudioContext()` without calling `.close()` on the previous instance. Limit active instances to 1.
+3. **Graceful Permission Failures**: If `getUserMedia` rejects with `NotAllowedError` or `NotFoundError`:
+   - Display an in-modal friendly banner: *"Camera or Microphone blocked. Please enable access in browser settings."*
+   - Never freeze the modal or throw unhandled exceptions.
 
 ---
 
-### Phase 4: Map Location Picker (`#locationModal`)
-**Target Tool**: `Location`.
+## 6. Implementation Phasing & Step-by-Step Deliverables
 
-#### 4.1 DOM & UI Specifications
-- Modal size: `720px × 520px`, top-mounted, `border-radius: 24px`.
-- Top Header:
-  - Close button `✕`.
-  - Search input: `"Search for a place"` with GPS location icon button (`Search for my current location`).
-  - Pink `Save` button.
-- Bottom Toolbar:
-  - Segmented layer toggle: **`Roadmap` | `Satellite` | `Terrain` | `Hybrid`**.
-  - Checkbox toggle: `[x] Show pin`.
-- Viewport: Interactive Leaflet map container (`#leafletMapContainer`) with center pin marker.
+To avoid testing bottlenecks, phasing is ordered by **infrastructure & entry points first**, followed by tool subsystems:
 
-#### 4.2 JavaScript Implementation
-- Embed lightweight Leaflet.js with OpenStreetMap (Roadmap) and Esri World Imagery (Satellite) tiles.
-- Search input integration querying OpenStreetMap Nominatim API with 300ms debounce.
-- GPS button calling `navigator.geolocation.getCurrentPosition(...)`.
-- On `Save`: Captures coordinates, address text, and a static map thumbnail, attaching to composer as a rich location card.
+```mermaid
+timeline
+    title Padles Tools Implementation Phasing
+    Phase 1 : Storage Core & All Tools Hub : IndexedDB MediaStore + Supabase/R2 upload pipeline + 4-color All Tools Hub
+    Phase 2 : Unified AV Studio Modal : Photo, Video, Audio, Screen via WebRTC & Web Audio with R2 uploads
+    Phase 3 : Whiteboard Drawing Canvas : High-DPI canvas, 10 palettes, undo/redo, PNG R2 export
+    Phase 4 : Interactive Poll Creator : Poll modal + live in-card voting with Supabase Realtime sync
+    Phase 5 : Location Map Picker : Interactive geocoding search, map layers, pin drop
+    Phase 6 : Card & Theater Rendering : Update renderCards() and cardDetailModal for all 6 media types
+    Phase 7 : Automated CDP Verification : End-to-end parity script testing all 21 tools with screenshots
+```
 
----
-
-### Phase 5: Search Modal, AI Art Generator & All Tools Hub Upgrades
-**Target Tools**: `Link`, `AI image`, `Image search`, `GIF`, `YouTube`, `Spotify`, `Web search`, `Padlet`, `Arcade`.
-
-#### 5.1 Revamped All Tools Hub (`#allToolsModal`)
-- Replace current unstyled modal with Padlet's exact layout:
-  - Top search input: `"Search web or paste URL"` with purple focus border and submit arrow `->`.
-  - Pasting any valid URL (`http://` or `https://`) auto-activates the arrow button to attach link immediately without separate prompt.
-  - **4 Categorized Colored Tile Groups**:
+### Phase 1: Storage Core & Revamped All Tools Hub
+* **1.1 IndexedDB Media Store (`PadlesMediaDB`)**: Local Blob persistence module.
+* **1.2 Supabase & R2 Storage Adapter (`supabase-service.js`)**: Direct upload helper for files and Blobs.
+* **1.3 Revamped All Tools Modal (`#allToolsModal`)**:
+  - Authentic Padlet dimensions and layout.
+  - Top search input `"Search web or paste URL"` with instant URL preview parser.
+  - 4 color-coded tile groups:
     - **Purple (`#F7EDFF`)**: Padles, Padles Arcade, Upload, Link.
     - **Blue (`#ECF6FF`)**: Camera, Video recorder, Audio recorder, Screen recorder, Draw.
     - **Green (`#EEFFED`)**: Poll, Google Drive, OneDrive, AI image, AI speech, Photo album.
     - **Orange (`#FFF5EF`)**: Image search, GIF, YouTube, Spotify, Web search, Location.
 
-#### 5.2 AI Art Generator Modal (`#aiArtModal`)
-- Header: Close `✕`, Input `"Write what you want to draw"`, Submit `->`.
-- Inspiration preview card with sample image, italicized prompt, and `"Try this example"` button.
-- Submit generates artwork and attaches directly to composer.
+### Phase 2: Unified AV Studio Modal (`#avRecorderModal`)
+* **2.1 Photo (Camera)**: Viewfinder, shutter, 3s/10s timer, canvas capture, review screen, R2 upload.
+* **2.2 Video Recorder**: Live stream, 1080p recording, pause/resume, playback & trimmer review screen.
+* **2.3 Audio Recorder**: Live frequency waveform via Web Audio `AnalyserNode`, timer, seekbar review.
+* **2.4 Screen Recorder**: `getDisplayMedia`, microphone mix option, auto-stop on screen share termination.
 
----
+### Phase 3: Whiteboard Canvas (`#drawModal`)
+* High-DPI `<canvas id="drawingCanvas">` with pointer event smoothing (Bezier curves).
+* 10 preset color swatches, White/Black canvas toggle, undo/redo stack, export to PNG Blob.
 
-## 4. Testing & REA Verification Protocol
+### Phase 4: Interactive Poll Creator (`#pollModal`) & Multiplayer Voting
+* Creation modal with 2–8 dynamic options.
+* Real-time post card voting with animated percentage bars.
+* Supabase Realtime listener updating poll counts live across all open sessions.
 
-1. **Automated CDP Verification Script**:
-   - Write `verify_tools_runtime.js` to test every tool:
-     - Open composer -> Click Camera -> Ensure `video` stream initializes with active tracks.
-     - Shutter click -> Verify canvas snapshot generated -> Save -> Verify image attachment attached to draft.
-     - Open Video recorder -> Verify `MediaRecorder` state changes to `recording` -> Stop -> Save -> Verify video attachment.
-     - Open Draw -> Simulate pointer strokes -> Save -> Verify drawing attachment.
-     - Open Poll -> Enter question & 2 choices -> Add -> Verify poll attached and interactive.
-     - Open Location -> Search "Paris" -> Verify map updates -> Save -> Verify location card attached.
-2. **Visual Side-by-Side Comparison**:
-   - Capture screenshots of each tool modal in Padles vs Padlet.
-   - Strict 0-diff tolerance on dimensions, border radii, colors, and typography.
+### Phase 5: Location Map Picker (`#locationModal`)
+* Search geocoding via OpenStreetMap Nominatim with 300ms debounce.
+* GPS current location button (`navigator.geolocation`).
+* Layer switcher (Roadmap / Satellite / Terrain).
+* Zero CDN dependency: Uses local lightweight Leaflet vendor bundle in `vendor/leaflet/`.
 
----
+### Phase 6: Post Card & Theater View Rendering Upgrades
+* Update `renderCards()` in `app.js` to render authentic audio players, video players, interactive polls, maps, and drawings.
+* Update `openCardDetailModal()` to render full-fidelity media canvases for all 6 attachment types.
 
-## 5. Execution Schedule
-
-| Step | Scope | Expected Deliverable |
-| :--- | :--- | :--- |
-| **Step 1** | **Unified AV Studio Modal (`#avRecorderModal`)** | Functional Camera, Video, Audio, and Screen recorders with live viewfinder, shutter, timers, and playback/trimmer review. |
-| **Step 2** | **Whiteboard Canvas Modal (`#drawModal`)** | Functional drawing board with smooth strokes, 10 color swatches, undo/redo, white/black toggle, and save. |
-| **Step 3** | **Interactive Poll Creator (`#pollModal`)** | Functional poll modal with dynamic choices and interactive in-post voting cards. |
-| **Step 4** | **Location Map Picker (`#locationModal`)** | Functional Leaflet map with Nominatim search, satellite/roadmap toggle, and pin drop. |
-| **Step 5** | **All Tools Hub & AI Art Modal** | Authentic 4-group colored tile layout with unified URL search bar and AI art modal. |
-| **Step 6** | **CDP Verification & Regression Test** | Automated test script verifying all 21 tools with screenshots. |
+### Phase 7: Automated Verification & 0-Regression Testing
+* Execute CDP automation script (`verify_tools_runtime.js`) testing the end-to-end creation, storage, and rendering of all tools.
+* Visual screenshot comparison against live Padlet.
