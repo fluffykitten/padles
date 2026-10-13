@@ -906,6 +906,214 @@ class PadlesSupabaseService {
   isAuthenticated() {
     return !!(this.currentUser && !this.currentUser.isGuest && this.currentUser.email);
   }
+
+  // ==========================================================================
+  // Dashboard Boards Management (Recents, Bookmarks, Shared, Trash)
+  // ==========================================================================
+
+  getSeedBoards() {
+    return [
+      {
+        id: 'board-default-physics',
+        title: 'Physics Audio Reflections: I see, I think, I wonder',
+        format: 'shelf',
+        wallpaper: 'aurora',
+        thumbnail_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80',
+        author: 'Salman Madani',
+        updated_at: new Date(Date.now() - 3600000 * 8).toISOString(), // 8 hours ago
+        is_bookmarked: true,
+        is_trashed: false,
+        trashed_at: null,
+        is_shared: false
+      },
+      {
+        id: 'board-burrito-map',
+        title: 'San Francisco Burrito Map',
+        format: 'wall',
+        wallpaper: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80',
+        thumbnail_url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&auto=format&fit=crop&q=80',
+        author: 'Salman Madani',
+        updated_at: new Date(Date.now() - 86400000 * 1).toISOString(), // 1 day ago
+        is_bookmarked: false,
+        is_trashed: false,
+        trashed_at: null,
+        is_shared: true
+      },
+      {
+        id: 'board-travel-itinerary',
+        title: 'Travel Itinerary: Tokyo & Kyoto',
+        format: 'shelf',
+        wallpaper: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=600&auto=format&fit=crop&q=80',
+        thumbnail_url: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=600&auto=format&fit=crop&q=80',
+        author: 'Salman Madani',
+        updated_at: new Date(Date.now() - 86400000 * 2).toISOString(), // 2 days ago
+        is_bookmarked: true,
+        is_trashed: false,
+        trashed_at: null,
+        is_shared: false
+      },
+      {
+        id: 'board-growth-brainstorm',
+        title: 'Growth Brainstorming Session',
+        format: 'stream',
+        wallpaper: 'oceanic',
+        thumbnail_url: 'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&auto=format&fit=crop&q=80',
+        author: 'Gallery Community',
+        updated_at: new Date(Date.now() - 86400000 * 7).toISOString(), // 1 week ago
+        is_bookmarked: false,
+        is_trashed: false,
+        trashed_at: null,
+        is_shared: true
+      }
+    ];
+  }
+
+  getLocalBoards() {
+    try {
+      const stored = localStorage.getItem('padles_dashboard_boards');
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (_) {}
+    const seeds = this.getSeedBoards();
+    localStorage.setItem('padles_dashboard_boards', JSON.stringify(seeds));
+    return seeds;
+  }
+
+  saveLocalBoards(boards) {
+    try {
+      localStorage.setItem('padles_dashboard_boards', JSON.stringify(boards));
+    } catch (_) {}
+  }
+
+  async listBoards(filter = 'recents', searchQuery = '') {
+    let boards = [];
+    if (this.client && this.isConnected) {
+      try {
+        let query = this.client.from('boards').select('*');
+        if (filter === 'trash') {
+          query = query.eq('is_trashed', true);
+        } else {
+          query = query.eq('is_trashed', false);
+        }
+        const { data, error } = await query;
+        if (!error && data && data.length > 0) {
+          const remoteIds = new Set(data.map(b => b.id));
+          const localSeeds = this.getLocalBoards().filter(b => !remoteIds.has(b.id));
+          boards = [...data, ...localSeeds];
+        } else {
+          boards = this.getLocalBoards();
+        }
+      } catch (_) {
+        boards = this.getLocalBoards();
+      }
+    } else {
+      boards = this.getLocalBoards();
+    }
+
+    // Apply Filter Tab
+    if (filter === 'trash') {
+      boards = boards.filter(b => b.is_trashed);
+    } else {
+      boards = boards.filter(b => !b.is_trashed);
+      if (filter === 'bookmarks') {
+        boards = boards.filter(b => b.is_bookmarked);
+      } else if (filter === 'shared') {
+        boards = boards.filter(b => b.is_shared);
+      }
+    }
+
+    // Apply Search Query
+    if (searchQuery && searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      boards = boards.filter(b => (b.title && b.title.toLowerCase().includes(q)) || (b.author && b.author.toLowerCase().includes(q)));
+    }
+
+    // Sort by updated_at descending
+    boards.sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+    return boards;
+  }
+
+  async createBoard({ title = 'Untitled Padlet', format = 'shelf', wallpaper = 'aurora', thumbnail_url = null }) {
+    const id = 'board_' + Math.random().toString(36).substring(2, 9);
+    const author = this.currentUser?.name || 'Anonymous';
+    const newBoard = {
+      id,
+      title,
+      format,
+      wallpaper,
+      thumbnail_url: thumbnail_url || (wallpaper === 'aurora' ? 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80' : 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80'),
+      author,
+      updated_at: new Date().toISOString(),
+      is_bookmarked: false,
+      is_trashed: false,
+      trashed_at: null,
+      is_shared: false
+    };
+
+    const boards = this.getLocalBoards();
+    boards.unshift(newBoard);
+    this.saveLocalBoards(boards);
+
+    if (this.client && this.isConnected) {
+      try {
+        await this.client.from('boards').insert({
+          id: newBoard.id,
+          title: newBoard.title,
+          format: newBoard.format,
+          wallpaper: newBoard.wallpaper,
+          thumbnail_url: newBoard.thumbnail_url,
+          created_by: this.currentUser?.id || null
+        });
+      } catch (err) {
+        console.warn('Could not insert board to Supabase:', err.message);
+      }
+    }
+
+    return newBoard;
+  }
+
+  async toggleBookmark(boardId) {
+    const boards = this.getLocalBoards();
+    const target = boards.find(b => b.id === boardId);
+    if (target) {
+      target.is_bookmarked = !target.is_bookmarked;
+      this.saveLocalBoards(boards);
+      return target.is_bookmarked;
+    }
+    return false;
+  }
+
+  async trashBoard(boardId) {
+    const boards = this.getLocalBoards();
+    const target = boards.find(b => b.id === boardId);
+    if (target) {
+      target.is_trashed = true;
+      target.trashed_at = new Date().toISOString();
+      this.saveLocalBoards(boards);
+      return true;
+    }
+    return false;
+  }
+
+  async restoreBoard(boardId) {
+    const boards = this.getLocalBoards();
+    const target = boards.find(b => b.id === boardId);
+    if (target) {
+      target.is_trashed = false;
+      target.trashed_at = null;
+      this.saveLocalBoards(boards);
+      return true;
+    }
+    return false;
+  }
+
+  async deleteBoardPermanently(boardId) {
+    let boards = this.getLocalBoards();
+    boards = boards.filter(b => b.id !== boardId);
+    this.saveLocalBoards(boards);
+    return true;
+  }
 }
 
 

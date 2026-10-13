@@ -304,6 +304,43 @@ class PadlesShelfApp {
     this.authModal = document.getElementById('authModal');
     this.authStandaloneView = document.getElementById('authStandaloneView');
 
+    // Dashboard Shell Elements (Phase 3 1:1 Parity)
+    this.dashboardView = document.getElementById('dashboardView');
+    this.dashboardSidebar = document.getElementById('dashboardSidebar');
+    this.sidebarProfileBtn = document.getElementById('sidebarProfileBtn');
+    this.sidebarAvatarImg = document.getElementById('sidebarAvatarImg');
+    this.sidebarUserName = document.getElementById('sidebarUserName');
+    this.sidebarMakePadletBtn = document.getElementById('sidebarMakePadletBtn');
+    this.tabRecentsBtn = document.getElementById('tabRecentsBtn');
+    this.tabBookmarksBtn = document.getElementById('tabBookmarksBtn');
+    this.tabSharedBtn = document.getElementById('tabSharedBtn');
+    this.tabTrashBtn = document.getElementById('tabTrashBtn');
+    this.sidebarNavItems = document.querySelectorAll('.sidebar-nav-item');
+    this.sidebarNewFolderBtn = document.getElementById('sidebarNewFolderBtn');
+    this.dashboardSearchBar = document.getElementById('dashboardSearchBar');
+    this.dashboardSearchInput = document.getElementById('dashboardSearchInput');
+    this.dashboardJoinBtn = document.getElementById('dashboardJoinBtn');
+    this.dashboardGalleryBtn = document.getElementById('dashboardGalleryBtn');
+    this.dashboardBellBtn = document.getElementById('dashboardBellBtn');
+    this.dashboardAvatarBtn = document.getElementById('dashboardAvatarBtn');
+    this.dashboardAvatarImg = document.getElementById('dashboardAvatarImg');
+    this.dashboardTabTitle = document.getElementById('dashboardTabTitle');
+    this.dashboardSortSelect = document.getElementById('dashboardSortSelect');
+    this.dashboardBoardsGrid = document.getElementById('dashboardBoardsGrid');
+    this.dashboardEmptyState = document.getElementById('dashboardEmptyState');
+    this.dashboardEmptyTitle = document.getElementById('dashboardEmptyTitle');
+    this.dashboardEmptyDesc = document.getElementById('dashboardEmptyDesc');
+    this.dashboardEmptyMakeBtn = document.getElementById('dashboardEmptyMakeBtn');
+    this.topbarLogoLink = document.querySelector('.padles-logo-link');
+    this.boardContainer = document.getElementById('boardContainer');
+    this.surfaceHeaderBlock = document.querySelector('.surface-header-block');
+    this.floatingPostContainer = document.getElementById('new-post-button-container');
+
+    this.dashboardTab = 'recents';
+    this.dashboardSearchQuery = '';
+    this.dashboardSort = 'last_viewed';
+    this.currentBoardId = 'board-default-physics';
+
     // Section Context Menu (Blueprint Section 2.2)
     this.sectionContextMenu = document.getElementById('sectionContextMenu');
     this.activeSectionContextId = null;
@@ -495,6 +532,7 @@ class PadlesShelfApp {
     this.initCustomFieldBuilder();
     this.initCloudBackendUI();
     this.initAuthSystem();
+    this.initDashboard();
     this.initSlideshow();
     this.initShareDrawer();
     this.initSettingsDrawer();
@@ -7354,6 +7392,11 @@ class PadlesShelfApp {
       this.guestAvatarAnchor.addEventListener('click', (e) => {
         e.stopPropagation();
         if (this.backend && this.backend.isAuthenticated()) {
+          if (this.userAccountDropdown) {
+            this.userAccountDropdown.style.left = 'auto';
+            this.userAccountDropdown.style.right = '16px';
+            this.userAccountDropdown.style.top = '54px';
+          }
           this.toggleUserAccountDropdown();
         } else {
           this.openAuthModal('login');
@@ -7688,6 +7731,398 @@ class PadlesShelfApp {
         submitBtn.textContent = this.authMode === 'login' ? 'Log in' : 'Create account';
       }
     }
+  }
+
+  /* ========================================================================
+     Padles Dashboard Shell & Navigation System (Phase 3 1:1 Parity)
+     ======================================================================== */
+
+  initDashboard() {
+    // 1. Sync User Profile in Sidebar & Topbar
+    if (this.backend && this.backend.currentUser) {
+      this.updateDashboardUser(this.backend.currentUser);
+    }
+    if (this.backend) {
+      this.backend.on('authStateChange', ({ user }) => {
+        this.updateDashboardUser(user);
+      });
+    }
+
+    // 2. Logo click on board topbar -> Opens Dashboard
+    if (this.topbarLogoLink) {
+      this.topbarLogoLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.showDashboard('recents');
+      });
+    }
+
+    // 3. Profile button & Avatar button -> Toggle User Account Dropdown
+    if (this.sidebarProfileBtn) {
+      this.sidebarProfileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.userAccountDropdown) {
+          this.userAccountDropdown.style.left = '12px';
+          this.userAccountDropdown.style.right = 'auto';
+          this.userAccountDropdown.style.top = '72px';
+        }
+        this.toggleUserAccountDropdown();
+      });
+    }
+    if (this.dashboardAvatarBtn) {
+      this.dashboardAvatarBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.userAccountDropdown) {
+          this.userAccountDropdown.style.left = 'auto';
+          this.userAccountDropdown.style.right = '16px';
+          this.userAccountDropdown.style.top = '54px';
+        }
+        this.toggleUserAccountDropdown();
+      });
+    }
+
+    // 4. Sidebar Nav Items Click
+    if (this.sidebarNavItems && this.sidebarNavItems.length) {
+      this.sidebarNavItems.forEach(item => {
+        item.addEventListener('click', () => {
+          const tab = item.getAttribute('data-tab') || 'recents';
+          this.setDashboardTab(tab);
+        });
+      });
+    }
+
+    // 5. Search Bar Input
+    if (this.dashboardSearchInput) {
+      let debounceTimer = null;
+      this.dashboardSearchInput.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          this.dashboardSearchQuery = e.target.value.trim();
+          this.renderDashboardBoards();
+        }, 150);
+      });
+    }
+
+    // Keyboard shortcut "/" to focus search
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+        if (this.dashboardView && !this.dashboardView.hidden) {
+          e.preventDefault();
+          this.dashboardSearchInput?.focus();
+        }
+      }
+    });
+
+    // 6. Sort Select
+    if (this.dashboardSortSelect) {
+      this.dashboardSortSelect.addEventListener('change', (e) => {
+        this.dashboardSort = e.target.value;
+        this.renderDashboardBoards();
+      });
+    }
+
+    // 7. Make a padlet buttons
+    const handleMakePadlet = async () => {
+      const title = prompt('Enter a title for your new padlet:', 'My Awesome Board');
+      if (title && title.trim()) {
+        const newBoard = await this.backend.createBoard({
+          title: title.trim(),
+          format: 'shelf',
+          wallpaper: 'aurora'
+        });
+        this.showToast(`Created "${newBoard.title}"!`);
+        this.openBoard(newBoard.id);
+      }
+    };
+
+    if (this.sidebarMakePadletBtn) {
+      this.sidebarMakePadletBtn.addEventListener('click', handleMakePadlet);
+    }
+    if (this.dashboardEmptyMakeBtn) {
+      this.dashboardEmptyMakeBtn.addEventListener('click', handleMakePadlet);
+    }
+
+    // 8. Join & Gallery buttons
+    if (this.dashboardJoinBtn) {
+      this.dashboardJoinBtn.addEventListener('click', () => {
+        const urlOrCode = prompt('Enter Padlet URL or code to join:');
+        if (urlOrCode && urlOrCode.trim()) {
+          this.showToast('Joining padlet...');
+          this.openBoard('board-default-physics');
+        }
+      });
+    }
+    if (this.dashboardGalleryBtn) {
+      this.dashboardGalleryBtn.addEventListener('click', () => {
+        this.setDashboardTab('shared');
+      });
+    }
+
+    // 9. Check URL on page load for ?view=dashboard
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewParam = urlParams.get('view');
+    const tabParam = urlParams.get('tab') || 'recents';
+    if (viewParam === 'dashboard') {
+      this.showDashboard(tabParam);
+    }
+  }
+
+  updateDashboardUser(user) {
+    if (!user) return;
+    if (this.sidebarAvatarImg) this.sidebarAvatarImg.src = user.avatar || 'https://padlet.net/identicons/6461510121x24.png';
+    if (this.dashboardAvatarImg) this.dashboardAvatarImg.src = user.avatar || 'https://padlet.net/identicons/6461510121x24.png';
+    if (this.sidebarUserName) this.sidebarUserName.textContent = user.name || 'Salman Madani';
+  }
+
+  showDashboard(tab = 'recents') {
+    if (!this.dashboardView) return;
+    this.dashboardView.hidden = false;
+    if (this.surfaceTopbar) this.surfaceTopbar.style.display = 'none';
+    if (this.surfaceHeaderBlock) this.surfaceHeaderBlock.style.display = 'none';
+    if (this.boardContainer) this.boardContainer.style.display = 'none';
+    if (this.floatingPostContainer) this.floatingPostContainer.style.display = 'none';
+
+    this.setDashboardTab(tab);
+    history.pushState(null, '', '?view=dashboard' + (tab !== 'recents' ? '&tab=' + tab : ''));
+  }
+
+  openBoard(boardId) {
+    if (this.dashboardView) this.dashboardView.hidden = true;
+    if (this.surfaceTopbar) this.surfaceTopbar.style.display = '';
+    if (this.surfaceHeaderBlock) this.surfaceHeaderBlock.style.display = '';
+    if (this.boardContainer) this.boardContainer.style.display = '';
+    if (this.floatingPostContainer) this.floatingPostContainer.style.display = '';
+
+    this.currentBoardId = boardId;
+    const boards = this.backend.getLocalBoards();
+    const targetBoard = boards.find(b => b.id === boardId);
+    if (targetBoard && this.boardTitle) {
+      this.boardTitle.textContent = targetBoard.title;
+    }
+
+    history.pushState(null, '', boardId === 'board-default-physics' ? '/' : '?board=' + boardId);
+    this.showToast('Loaded ' + (targetBoard ? targetBoard.title : 'board'));
+  }
+
+  setDashboardTab(tab) {
+    this.dashboardTab = tab;
+
+    if (this.sidebarNavItems) {
+      this.sidebarNavItems.forEach(item => {
+        if (item.getAttribute('data-tab') === tab) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+
+    const titles = {
+      recents: 'Recents',
+      bookmarks: 'Bookmarks',
+      shared: 'Shared with me',
+      trash: 'Trash'
+    };
+    if (this.dashboardTabTitle) {
+      this.dashboardTabTitle.textContent = titles[tab] || 'Recents';
+    }
+
+    this.renderDashboardBoards();
+  }
+
+  async renderDashboardBoards() {
+    if (!this.dashboardBoardsGrid) return;
+    const boards = await this.backend.listBoards(this.dashboardTab, this.dashboardSearchQuery);
+
+    if (this.dashboardSort === 'title_az') {
+      boards.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    } else if (this.dashboardSort === 'last_modified') {
+      boards.sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+    } else {
+      boards.sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+    }
+
+    if (boards.length === 0) {
+      this.dashboardBoardsGrid.innerHTML = '';
+      if (this.dashboardEmptyState) {
+        this.dashboardEmptyState.style.display = 'flex';
+        const emptyData = {
+          recents: { title: 'No padlets found', desc: 'Create your first padlet or join an existing one to get started.' },
+          bookmarks: { title: 'No bookmarks yet', desc: 'Star padlets to quickly access your favorite boards here.' },
+          shared: { title: 'Nothing shared with you', desc: 'Boards shared with you by other padlers will appear here.' },
+          trash: { title: 'Trash is empty', desc: 'Deleted padlets will appear here before being permanently removed.' }
+        };
+        const activeEmpty = emptyData[this.dashboardTab] || emptyData.recents;
+        if (this.dashboardEmptyTitle) this.dashboardEmptyTitle.textContent = activeEmpty.title;
+        if (this.dashboardEmptyDesc) this.dashboardEmptyDesc.textContent = activeEmpty.desc;
+      }
+      return;
+    }
+
+    if (this.dashboardEmptyState) this.dashboardEmptyState.style.display = 'none';
+
+    this.dashboardBoardsGrid.innerHTML = boards.map(b => {
+      const thumbUrl = b.thumbnail_url || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80';
+      const timeAgo = this.formatTimeAgo(b.updated_at);
+      return `
+        <div class="wall-card-button" data-board-id="${b.id}" tabindex="0" role="button" aria-label="${this.escapeHtml(b.title)}">
+          <div class="wall-card-thumbnail-wrap">
+            <img class="wall-card-thumbnail-img" src="${thumbUrl}" alt="${this.escapeHtml(b.title)}" loading="lazy" />
+            <div class="wall-card-thumbnail-gradient"></div>
+            ${b.is_bookmarked ? `
+              <div class="wall-card-bookmark-badge" title="Bookmarked">
+                <svg viewBox="0 0 32 32" width="14" height="14" fill="currentColor">
+                  <path d="M7.333 4C6.23 4 5.333 4.897 5.333 6v22.667a1.333 1.333 0 0 0 2.06 1.116L16 23.774l8.607 6.009a1.333 1.333 0 0 0 2.06-1.116V6c0-1.103-.897-2-2-2z"/>
+                </svg>
+              </div>
+            ` : ''}
+            <button type="button" class="wall-card-menu-btn" data-board-id="${b.id}" title="Board options" aria-label="Board options">
+              <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor">
+                <circle cx="7" cy="16" r="3"/><circle cx="16" cy="16" r="3"/><circle cx="25" cy="16" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <div class="wall-card-info">
+            <h3 class="wall-card-title">${this.escapeHtml(b.title)}</h3>
+            <div class="wall-card-meta">
+              <span>${this.escapeHtml(b.author || 'Salman Madani')}</span>
+              <span class="wall-card-meta-dot">•</span>
+              <time>${timeAgo}</time>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Attach Click Handlers to Cards
+    const cardEls = this.dashboardBoardsGrid.querySelectorAll('.wall-card-button');
+    cardEls.forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.wall-card-menu-btn')) return;
+        const boardId = card.getAttribute('data-board-id');
+        if (boardId) this.openBoard(boardId);
+      });
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const boardId = card.getAttribute('data-board-id');
+          if (boardId) this.openBoard(boardId);
+        }
+      });
+    });
+
+    // Attach Click Handlers to Menu Buttons
+    const menuBtns = this.dashboardBoardsGrid.querySelectorAll('.wall-card-menu-btn');
+    menuBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const boardId = btn.getAttribute('data-board-id');
+        const board = boards.find(b => b.id === boardId);
+        if (board) {
+          const rect = btn.getBoundingClientRect();
+          this.openDashboardCardMenu(board, rect.right, rect.bottom);
+        }
+      });
+    });
+  }
+
+  openDashboardCardMenu(board, x, y) {
+    this.closeDashboardCardMenu();
+
+    const isTrash = this.dashboardTab === 'trash' || board.is_trashed;
+    const menu = document.createElement('div');
+    menu.id = 'dashboardCardMenu';
+    menu.className = 'dashboard-card-menu';
+    menu.style.left = `${Math.min(x - 180, window.innerWidth - 220)}px`;
+    menu.style.top = `${y + 6}px`;
+
+    menu.innerHTML = `
+      ${!isTrash ? `
+        <button type="button" class="dashboard-card-menu-item" data-action="open">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M6 4h20v2.667H6zm0 6.667h20v2.666H6zm0 6.666h20V20H6zm0 6.667h13.333V26.667H6z"/></svg>
+          <span>Open padlet</span>
+        </button>
+        <button type="button" class="dashboard-card-menu-item" data-action="copy">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M18.667 4H9.333C7.86 4 6.667 5.193 6.667 6.667v14.666h2.666V6.667h9.334zm4 5.333h-9.334c-1.473 0-2.666 1.194-2.666 2.667V28c0 1.473 1.193 2.667 2.666 2.667h9.334c1.473 0 2.666-1.194 2.666-2.667V12c0-1.473-1.193-2.667-2.666-2.667m0 18.667h-9.334V12h9.334z"/></svg>
+          <span>Copy link</span>
+        </button>
+        <button type="button" class="dashboard-card-menu-item" data-action="bookmark">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M7.333 4C6.23 4 5.333 4.897 5.333 6v22.667a1.333 1.333 0 0 0 2.06 1.116L16 23.774l8.607 6.009a1.333 1.333 0 0 0 2.06-1.116V6c0-1.103-.897-2-2-2z"/></svg>
+          <span>${board.is_bookmarked ? 'Remove bookmark' : 'Bookmark'}</span>
+        </button>
+        <button type="button" class="dashboard-card-menu-item danger" data-action="trash">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M12 2.667a1.333 1.333 0 0 0-1.333 1.333V6H4a1.333 1.333 0 0 0 0 2.667h1.439l1.642 18.067A3.333 3.333 0 0 0 10.395 30h11.21a3.333 3.333 0 0 0 3.314-3.266L26.561 8.667H28a1.333 1.333 0 1 0 0-2.667h-6.667V4A1.333 1.333 0 0 0 20 2.667zM8.114 8.667h15.772l-1.616 17.777a.667.667 0 0 1-.675.623h-11.21a.667.667 0 0 1-.675-.623z"/></svg>
+          <span>Move to trash</span>
+        </button>
+      ` : `
+        <button type="button" class="dashboard-card-menu-item" data-action="restore">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M16 4a12 12 0 1 0 11.314 8h-2.828A9.333 9.333 0 1 1 16 6.667V12l6.667-6.667L16 0v4z"/></svg>
+          <span>Restore padlet</span>
+        </button>
+        <button type="button" class="dashboard-card-menu-item danger" data-action="delete">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M12 2.667a1.333 1.333 0 0 0-1.333 1.333V6H4a1.333 1.333 0 0 0 0 2.667h1.439l1.642 18.067A3.333 3.333 0 0 0 10.395 30h11.21a3.333 3.333 0 0 0 3.314-3.266L26.561 8.667H28a1.333 1.333 0 1 0 0-2.667h-6.667V4A1.333 1.333 0 0 0 20 2.667z"/></svg>
+          <span>Delete permanently</span>
+        </button>
+      `}
+    `;
+
+    document.body.appendChild(menu);
+
+    menu.querySelectorAll('.dashboard-card-menu-item').forEach(item => {
+      item.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const action = item.getAttribute('data-action');
+        this.closeDashboardCardMenu();
+
+        if (action === 'open') {
+          this.openBoard(board.id);
+        } else if (action === 'copy') {
+          const url = `${window.location.origin}/?board=${board.id}`;
+          navigator.clipboard.writeText(url);
+          this.showToast('Board link copied to clipboard!');
+        } else if (action === 'bookmark') {
+          const isBookmarked = await this.backend.toggleBookmark(board.id);
+          this.showToast(isBookmarked ? 'Added to Bookmarks' : 'Removed from Bookmarks');
+          this.renderDashboardBoards();
+        } else if (action === 'trash') {
+          await this.backend.trashBoard(board.id);
+          this.showToast('Moved padlet to trash');
+          this.renderDashboardBoards();
+        } else if (action === 'restore') {
+          await this.backend.restoreBoard(board.id);
+          this.showToast('Restored padlet');
+          this.renderDashboardBoards();
+        } else if (action === 'delete') {
+          if (confirm(`Permanently delete "${board.title}"? This cannot be undone.`)) {
+            await this.backend.deleteBoardPermanently(board.id);
+            this.showToast('Permanently deleted');
+            this.renderDashboardBoards();
+          }
+        }
+      });
+    });
+
+    const outsideCloser = (e) => {
+      if (!menu.contains(e.target)) {
+        this.closeDashboardCardMenu();
+        document.removeEventListener('click', outsideCloser);
+      }
+    };
+    setTimeout(() => document.addEventListener('click', outsideCloser), 50);
+  }
+
+  closeDashboardCardMenu() {
+    const existing = document.getElementById('dashboardCardMenu');
+    if (existing) existing.remove();
+  }
+
+  formatTimeAgo(dateStr) {
+    if (!dateStr) return 'just now';
+    const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+    if (diff < 86400 * 7) return `${Math.floor(diff / 86400)}d`;
+    if (diff < 86400 * 30) return `${Math.floor(diff / (86400 * 7))}w`;
+    return `${Math.floor(diff / (86400 * 30))}mo`;
   }
 
   escapeHtml(str) {
