@@ -2,7 +2,7 @@
 
 A lightweight collaborative board for organizing posts, media, and notes into sections, inspired by Padlet. Built with standard HTML, CSS, and vanilla JavaScript (WIP).
 
-![Padles Overview](docs/screenshots/post_workflow_4_final_board.png)
+![Padles Overview](docs/screenshots/padles_overview.png)
 
 ---
 
