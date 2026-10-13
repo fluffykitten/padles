@@ -4,21 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Physics Audio Reflections: I see, I think, I wonder — Padles</title>
-  <meta name="description" content="Padles Section & Shelf board inspired by Padlet, featuring columns, rich media attachments, and interactive reactions.">
+  <meta name="description" content="Padles Section & Shelf board, featuring columns, rich media attachments, and interactive reactions.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="aurora-theme">
-  <!-- Top Global Header (Padlet Surface Topbar) -->
+  <!-- Top Global Header (Padles Surface Topbar) -->
   <nav id="surface-topbar" data-testid="surfaceTopbar" class="surface-topbar">
     <div class="topbar-left">
-      <a class="padlet-logo-link" href="https://padlet.com/dashboard" data-testid="surfaceTopBarPadletLogo" title="Padlet dashboard">
-        <svg viewBox="0 0 72 20" xmlns="http://www.w3.org/2000/svg" role="img" class="padlet-logo-svg">
-          <title>Padlet logo</title>
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M7.2 14.7984C11.1765 14.7984 14.4 11.5749 14.4 7.59844C14.4 3.62199 11.1765 0.398438 7.2 0.398438C7.13312 0.398438 7.06644 0.39935 7 0.401162V0.398438H3.6H2.4H0V7.59844V19.5984H3.6V14.7984H7V14.7957C7.06644 14.7975 7.13312 14.7984 7.2 14.7984ZM7.19992 11.1984H7.2C9.16019 11.1984 10.7492 9.58664 10.7492 7.59844C10.7492 5.61024 9.16019 3.99848 7.2 3.99844H7.19992H3.6V11.1984H7.19992ZM25.2 5.19844H28.8V19.5984H25.2V18.6353C24.141 19.2479 22.9114 19.5985 21.6 19.5985C17.6235 19.5985 14.4 16.3749 14.4 12.3985C14.4 8.42204 17.6235 5.19849 21.6 5.19849C22.9114 5.19849 24.141 5.54911 25.2 6.16172V5.19844ZM21.6 8.79844C23.5882 8.79844 25.2 10.4102 25.2 12.3984C25.2 14.3867 23.5882 15.9984 21.6 15.9984C19.6118 15.9984 18 14.3867 18 12.3984C18 10.4102 19.6118 8.79844 21.6 8.79844ZM44 0.398438H40.4V6.16167C39.3409 5.54906 38.1114 5.19844 36.8 5.19844C32.8235 5.19844 29.6 8.42199 29.6 12.3984C29.6 16.3749 32.8235 19.5984 36.8 19.5984C38.1114 19.5984 39.3409 19.2478 40.4 18.6352V19.5984H44V12.3984V0.398438ZM40.4 12.4169C40.39 14.3966 38.7821 15.9984 36.8 15.9984C34.8118 15.9984 33.2 14.3866 33.2 12.3984C33.2 10.4102 34.8118 8.79839 36.8 8.79839C38.7821 8.79839 40.39 10.4002 40.4 12.3799V12.4169ZM49 0.398438H45.4V19.5984H49V0.398438ZM64.33 13.6088C63.9644 15.7426 62.6474 17.7036 60.6252 18.7339C56.9257 20.6189 52.5901 19.2102 50.8645 15.8236C48.9795 12.1241 50.3883 7.78843 54.0878 5.90344C57.4743 4.17789 61.81 5.58664 63.695 9.28615C63.884 9.65698 64.0353 10.0392 64.1506 10.4281L60.5086 12.2838L60.5088 12.2838L54.882 15.1508C55.9628 16.051 57.5435 16.2637 58.9871 15.5282C60.1296 14.9461 60.8166 13.695 60.8047 12.3864L64.33 13.6088ZM53.6108 12.656L59.5229 9.64364C58.4565 8.73604 56.9329 8.49409 55.7184 9.11291C54.2747 9.84852 53.5176 11.2525 53.6108 12.656ZM65.4 0.398438H68.9985V6.39844H71.7984V9.99844H68.9985V19.5984H65.4V0.398438Z"/>
-        </svg>
+      <a class="padlet-logo-link padles-logo-link" href="#" data-testid="surfaceTopBarPadletLogo" title="Padles dashboard" aria-label="Padles dashboard">
+        <span class="padles-logo-text">Padles</span>
       </a>
     </div>
 
@@ -47,8 +44,14 @@
         <span>Share</span>
       </button>
 
-      <!-- Group Pill: Bell (Activity) + Remake + More -->
+      <!-- Group Pill: Settings + Bell (Activity) + Remake + More -->
       <div class="topbar-glass-pill-group">
+        <button id="surfaceSettingsButton" class="group-pill-btn" title="Open padles settings" aria-label="Open padles settings" data-testid="surfaceSettingsButton">
+          <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+            <path d="M16 2.667c-1.051 0-2.065.133-3.033.358a1 1 0 0 0-.767.866l-.212 1.935a1.997 1.997 0 0 1-2.793 1.612h-.001l-1.777-.783a1 1 0 0 0-1.132.232 13.3 13.3 0 0 0-3.044 5.247.995.995 0 0 0 .366 1.096l1.577 1.156a2 2 0 0 1 0 3.226l-1.577 1.155a1 1 0 0 0-.366 1.096 13.3 13.3 0 0 0 3.044 5.249.998.998 0 0 0 1.133.231l1.777-.783a1.998 1.998 0 0 1 2.794 1.613l.212 1.935a1 1 0 0 0 .765.865c.968.226 1.983.359 3.034.359s2.065-.133 3.033-.358a1 1 0 0 0 .767-.866l.212-1.935a1.997 1.997 0 0 1 2.793-1.613l1.779.783a1.01 1.01 0 0 0 1.133-.231 13.3 13.3 0 0 0 3.044-5.249.995.995 0 0 0-.366-1.096l-1.577-1.155a1.998 1.998 0 0 1 0-3.226l1.577-1.155a1 1 0 0 0 .366-1.096 13.3 13.3 0 0 0-3.044-5.249 1 1 0 0 0-1.133-.23l-1.779.783a2 2 0 0 1-2.793-1.613L19.8 3.891a1 1 0 0 0-.765-.865 13.3 13.3 0 0 0-3.034-.359zm0 2c.65 0 1.273.117 1.898.227l.125 1.15c.139 1.266.875 2.392 1.976 3.029s2.445.71 3.611.198l1.057-.465a11.2 11.2 0 0 1 1.904 3.283l-.938.688c-1.026.753-1.634 1.952-1.634 3.225s.608 2.472 1.634 3.225l.938.688a11.2 11.2 0 0 1-1.904 3.282l-1.057-.465a4 4 0 0 0-5.587 3.227l-.125 1.15c-.625.11-1.249.226-1.898.226s-1.273-.116-1.898-.226l-.125-1.15a4.005 4.005 0 0 0-5.588-3.227l-1.057.465a11.2 11.2 0 0 1-1.904-3.282l.938-.688a4.003 4.003 0 0 0 0-6.452l-.938-.688a11.3 11.3 0 0 1 1.905-3.283l1.056.465a4 4 0 0 0 5.588-3.226l.125-1.15c.625-.11 1.249-.227 1.898-.227zm0 6c-2.934 0-5.333 2.4-5.333 5.333s2.4 5.333 5.333 5.333 5.333-2.4 5.333-5.333-2.4-5.333-5.333-5.333m0 2c1.853 0 3.333 1.481 3.333 3.333S17.852 19.333 16 19.333 12.667 17.852 12.667 16s1.481-3.333 3.333-3.333"/>
+          </svg>
+        </button>
+        <span class="group-divider"></span>
         <button id="surfaceActivityPanelButton" class="group-pill-btn" title="Open activity panel" aria-label="Open activity panel" data-testid="surfaceActivityPanelButton">
           <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor"><path d="M16 2.662c5.4 0 9.809 4.26 9.994 9.665l.006.335v5.463l1.84 4.208a1.667 1.667 0 0 1-1.527 2.335L20 24.67a4 4 0 0 1-7.993.235L12 24.667l-6.3.001a1.668 1.668 0 0 1-1.529-2.331L6 18.126v-5.464a9.984 9.984 0 0 1 10-10m1.999 22.004L14 24.669a2 2 0 0 0 3.991.193l.009-.196zM16 4.662a7.985 7.985 0 0 0-8 8v5.879l-1.792 4.126h19.595L24 18.543v-5.864l-.005-.3A7.984 7.984 0 0 0 16 4.662"/></svg>
         </button>
@@ -57,7 +60,7 @@
           <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor"><path d="M4.986 5.333c-.26.004-.509.109-.693.293L.96 8.959a.99.99 0 0 0-.307.712 1 1 0 0 0 .293.717q.143.142.329.219c.186.077.255.075.388.074a1 1 0 0 0 .712-.307l1.626-1.626v13.586a4.34 4.34 0 0 0 4.333 4.333h14.76l-1.547-1.547a3 3 0 0 1-.374-.453H8.333A2.336 2.336 0 0 1 6 22.334V8.748l1.626 1.626a.99.99 0 0 0 .712.307 1 1 0 0 0 .717-.293q.142-.143.219-.329c.077-.186.075-.255.074-.388a1 1 0 0 0-.307-.712L5.708 5.626a1 1 0 0 0-.721-.293zM8.906 6l1.547 1.547q.212.212.374.453h12.874a2.336 2.336 0 0 1 2.333 2.333v13.62l-1.66-1.66a1 1 0 0 0-1.276-.132 1 1 0 0 0-.138 1.547l3.333 3.333a1.003 1.003 0 0 0 1.414 0l3.333-3.333a.99.99 0 0 0 .307-.712 1 1 0 0 0-.293-.717q-.143-.142-.329-.219c-.186-.077-.255-.075-.388-.074a1 1 0 0 0-.712.307l-1.592 1.593V10.334A4.34 4.34 0 0 0 23.7 6.001z"/></svg>
         </button>
         <span class="group-divider"></span>
-        <button id="moreBtn" class="group-pill-btn" title="More padlet actions" aria-label="More padlet actions" data-testid="surfaceMoreButton">
+        <button id="moreBtn" class="group-pill-btn" title="More padles actions" aria-label="More padles actions" data-testid="surfaceMoreButton">
           <svg viewBox="0 0 768 768" height="20" width="20" fill="currentColor"><path d="M384 64c-176.447 0-320 143.553-320 320s143.553 320 320 320c176.448 0 320-143.552 320-320 0-176.446-143.552-320-320-320zM384 112c150.505 0 272 121.495 272 272s-121.495 272-272 272c-150.506 0-272-121.495-272-272s121.494-272 272-272zM240 336c-12.731 0-24.94 5.056-33.941 14.057s-14.059 21.213-14.059 33.943c0 12.73 5.057 24.941 14.059 33.943s21.211 14.057 33.941 14.057c12.731 0 24.94-5.056 33.941-14.057s14.059-21.213 14.059-33.943c0-12.73-5.057-24.94-14.059-33.943s-21.211-14.057-33.941-14.057zM384 336c-12.73 0-24.941 5.056-33.943 14.057s-14.057 21.213-14.057 33.943c0 12.73 5.056 24.941 14.057 33.943s21.213 14.057 33.943 14.057c12.73 0 24.941-5.056 33.943-14.057s14.057-21.213 14.057-33.943c0-12.73-5.056-24.94-14.057-33.943s-21.213-14.057-33.943-14.057zM528 336c-12.73 0-24.941 5.056-33.943 14.057s-14.057 21.213-14.057 33.943c0 12.73 5.056 24.941 14.057 33.943s21.213 14.057 33.943 14.057c12.73 0 24.941-5.056 33.943-14.057s14.057-21.213 14.057-33.943c0-12.73-5.056-24.94-14.057-33.943s-21.213-14.057-33.943-14.057z"/></svg>
         </button>
       </div>
@@ -71,9 +74,9 @@
       <!-- Collaborators Presence Strip -->
       <div id="collaboratorsStrip" class="collaborators-strip" style="display: none;" title="Active collaborators"></div>
 
-      <!-- Sign up for Padlet CTA -->
-      <a href="https://padlet.com/auth/signup" class="topbar-signup-btn" data-testid="surfaceHeaderSignupButton">
-        <span>Sign up for Padlet</span>
+      <!-- Sign up for Padles CTA -->
+      <a href="https://padles.com/auth/signup" class="topbar-signup-btn" data-testid="surfaceHeaderSignupButton">
+        <span>Sign up for Padles</span>
       </a>
 
       <!-- Guest Avatar Anchor -->
@@ -91,7 +94,11 @@
       <span class="byline-dot"> • </span>
       <time class="byline-time" title="October 12, 2026">8h</time>
     </div>
-    <h1 class="surface-board-title" data-testid="surfaceTitle" id="boardTitle">Physics Audio Reflections: I see, I think, I wonder</h1>
+    <div class="surface-title-row">
+      <span id="boardIcon" class="board-icon-badge" style="display: none;"></span>
+      <h1 class="surface-board-title" data-testid="surfaceTitle" id="boardTitle">Physics Audio Reflections: I see, I think, I wonder</h1>
+    </div>
+    <p id="boardDescription" class="surface-board-description" style="display: none;"></p>
   </header>
 
   <!-- Search Overlay Box (Toggled) -->
@@ -117,7 +124,7 @@
     </div>
   </main>
 
-  <!-- Floating "+ Post" Button (Padlet Signature Canary Yellow Pill) -->
+  <!-- Floating "+ Post" Button (Padles Signature Canary Yellow Pill) -->
   <div id="new-post-button-container" class="floating-post-container">
     <button id="mainPostBtn" class="padlet-floating-post-btn" data-testid="surfaceAddPostButton" title="Start writing a new post" aria-label="Start writing a new post">
       <span class="icon-wrap" style="width: 20px; height: 20px;">
@@ -127,7 +134,7 @@
     </button>
   </div>
 
-  <!-- Padlet-Authentic Dockable Multiple Drafts System -->
+  <!-- Padles-Authentic Dockable Multiple Drafts System -->
   <aside id="dockableModalsContainer" class="dockable-modals-dock" aria-label="Post drafts dock">
     <!-- Minimized Draft Tabs -->
     <div id="dockedTabsTrack" class="docked-tabs-track" role="group" aria-label="Post drafts list">
@@ -165,8 +172,8 @@
               </svg>
             </button>
 
-            <!-- Publish Button (Padlet bg-padlet-pink #ff1f6d) -->
-            <button id="publishBtn" class="composer-publish-btn" disabled data-testid="publishPostButton" title="Submit post" aria-label="Submit post">Submit</button>
+            <!-- Publish Button (Padlet Signature Publish Button) -->
+            <button id="publishBtn" class="composer-publish-btn" disabled data-testid="publishPostButton" title="Publish post" aria-label="Publish post">Publish</button>
           </div>
         </div>
 
@@ -312,14 +319,14 @@
               <div class="attachment-preview-badge">
                 <span id="previewTypeBadge">Link</span>
                 <span id="previewTitleText">Attachment attached</span>
-                <button id="removeAttachmentBtn" class="remove-attachment-btn" title="Remove attachment">&times;</button>
+                <button type="button" id="removeAttachmentBtn" class="remove-attachment-btn" title="Remove attachment" aria-label="Remove attachment">&times;</button>
               </div>
             </div>
           </div>
 
           <!-- Body / Notes Input -->
           <div class="composer-body-section">
-            <textarea id="composerBodyInput" class="composer-body-textarea" placeholder="Write something beautiful..."></textarea>
+            <textarea id="composerBodyInput" class="composer-body-textarea" placeholder="Write something incredible..."></textarea>
           </div>
 
           <!-- Dynamic Custom Fields Inputs in Composer -->
@@ -673,7 +680,7 @@
     </div>
   </div>
 
-  <!-- Card 3-Dots Context Menu (Padlet Authentic 14-Item Menu with 6 Inline Color Swatches) -->
+  <!-- Card 3-Dots Context Menu (Padles Authentic 14-Item Menu with 6 Inline Color Swatches) -->
   <div id="cardContextMenu" class="padlet-dropdown-menu card-context-menu" hidden data-testid="surfacePostActionsPopover" role="menu" aria-label="Post actions">
     <div class="menu-group">
       <button type="button" class="menu-action-item" data-action="open-post" role="menuitem">
@@ -751,7 +758,7 @@
           <path d="M11.333 5.667a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-12a3 3 0 0 0-3-3zm-1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-12a1 1 0 0 1-1-1z"/>
           <path d="M5 12c0-1.306.835-2.417 2-2.829v12.163a3.667 3.667 0 0 0 3.667 3.667H22.83a3 3 0 0 1-2.829 2h-9.333a5.667 5.667 0 0 1-5.667-5.667z"/>
         </svg>
-        <span>Copy to another padlet</span>
+        <span>Copy to another padles</span>
       </button>
       <div class="menu-divider"></div>
       <button type="button" class="menu-action-item" data-action="transfer-to-another" role="menuitem">
@@ -759,7 +766,7 @@
           <path d="M6 7a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-1.333a1 1 0 0 0-2 0V22a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V10a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v1.333a1 1 0 0 0 2 0V10a3 3 0 0 0-3-3z"/>
           <path d="M11.52 16.991a.99.99 0 0 1-.853-.991 1 1 0 0 1 1-1h14.254l-2.956-2.96-.097-.112a1 1 0 0 1 1.51-1.302l4.663 4.667.097.112a1 1 0 0 1-.097 1.302l-4.663 4.667-.112.097a1 1 0 0 1-1.301-.097l-.097-.112a1 1 0 0 1 .097-1.302L25.921 17l-14.4-.009z"/>
         </svg>
-        <span>Transfer to another padlet</span>
+        <span>Transfer to another padles</span>
       </button>
     </div>
 
@@ -780,7 +787,37 @@
     </div>
   </div>
 
-  <!-- Post Detail / Expand Theater Modal (Padlet Authentic Theater View) -->
+  <!-- Authentic Padlet Emoji Picker Popover (336px x 377px) -->
+  <div id="emojiPickerPopover" class="emoji-picker-popover" hidden data-testid="emojiPicker" role="dialog" aria-label="Emoji reaction picker">
+    <div class="emoji-picker-header">
+      <div class="emoji-search-bar">
+        <svg class="emoji-search-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" id="emojiSearchInput" class="emoji-search-input" placeholder="Search" autocomplete="off" />
+        <button type="button" id="emojiSearchClearBtn" class="emoji-search-clear-btn" hidden aria-label="Clear search">&times;</button>
+      </div>
+    </div>
+    
+    <div class="emoji-picker-content" id="emojiPickerContent">
+      <!-- Dynamic categorized emoji grids rendered here -->
+    </div>
+
+    <!-- Category Tabs Bar (8 Authentic Padlet Categories) -->
+    <div class="emoji-category-tabs" id="emojiCategoryTabs" role="tablist">
+      <button type="button" class="emoji-cat-tab is-active" data-cat="people" data-testid="peopleButton" title="Smileys & People" aria-label="Smileys & People">😀</button>
+      <button type="button" class="emoji-cat-tab" data-cat="nature" data-testid="natureButton" title="Animals & Nature" aria-label="Animals & Nature">🐻</button>
+      <button type="button" class="emoji-cat-tab" data-cat="food" data-testid="foodButton" title="Food & Drinks" aria-label="Food & Drinks">🍔</button>
+      <button type="button" class="emoji-cat-tab" data-cat="activity" data-testid="activityButton" title="Activities" aria-label="Activities">⚽</button>
+      <button type="button" class="emoji-cat-tab" data-cat="travel" data-testid="travelButton" title="Travel & Places" aria-label="Travel & Places">🚀</button>
+      <button type="button" class="emoji-cat-tab" data-cat="objects" data-testid="objectsButton" title="Objects" aria-label="Objects">💡</button>
+      <button type="button" class="emoji-cat-tab" data-cat="symbols" data-testid="symbolsButton" title="Symbols" aria-label="Symbols">❤️</button>
+      <button type="button" class="emoji-cat-tab" data-cat="flags" data-testid="flagsButton" title="Flags" aria-label="Flags">🚩</button>
+    </div>
+  </div>
+
+
+  <!-- Post Detail / Expand Theater Modal (Padles Authentic Theater View) -->
   <div id="cardDetailModal" class="card-detail-modal-backdrop" hidden data-testid="surfacePanelPostExpanded" role="dialog" aria-modal="true" aria-label="Expanded post dialog">
     <div class="card-detail-theater">
       <!-- Media / Content Area (Left/Center) -->
@@ -1003,7 +1040,7 @@
     </div>
   </div>
 
-  <!-- 2. Share Drawer Modal (Padlet Authentic Sliding Panel) -->
+  <!-- 2. Share Drawer Modal (Padles Authentic Sliding Panel) -->
   <div id="shareDrawer" class="drawer-backdrop" hidden>
     <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Share this board">
       <div class="drawer-header">
@@ -1111,71 +1148,636 @@
     </div>
   </div>
 
-  <!-- 3. Settings Drawer Modal (Padlet Authentic Settings) -->
-  <div id="settingsDrawer" class="drawer-backdrop" hidden>
-    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Settings">
-      <div class="drawer-header">
-        <button id="closeSettingsDrawerBtn" class="drawer-close-btn" title="Close" aria-label="Close">&times;</button>
-        <h3 class="drawer-title">Settings</h3>
-        <button id="saveSettingsBtn" class="settings-save-pill">Save</button>
+  <!-- 3. Padles Authentic Settings Panel (surfaceSettingsMainPanel) -->
+  <div id="surfaceSettingsMainPanel" class="padlet-settings-overlay" data-testid="surfaceSettingsMainPanel" role="dialog" aria-labelledby="main-settings-panel-title" hidden>
+    <div class="padlet-settings-container modal-container end-to-start" role="dialog" aria-modal="true" aria-label="Settings">
+      
+      <!-- Subview 1: Main Settings View -->
+      <div id="settingsMainView" class="settings-subview active">
+        <!-- Settings Header (Padlet 3-Column Layout: Left Close Button, Center Title, Right Balance Spacer) -->
+        <header class="padlet-settings-header">
+          <div class="settings-header-col-left">
+            <button id="settingsMainPanelCloseButton" class="padlet-settings-close-btn" title="Close settings panel" aria-label="Close settings panel" data-testid="settingsMainPanelCloseButton">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M23.891 6.667a1.4 1.4 0 0 0-.984.434L16 14.008 9.093 7.101a1.41 1.41 0 0 0-1.798-.186A1.41 1.41 0 0 0 7.1 9.094l6.907 6.907L7.1 22.908a1.399 1.399 0 0 0-.33 1.549 1.42 1.42 0 0 0 .772.772 1.41 1.41 0 0 0 1.55-.33l6.907-6.907 6.907 6.907a1.399 1.399 0 0 0 1.549.33 1.405 1.405 0 0 0 .877-1.319 1.4 1.4 0 0 0-.434-1.002l-6.907-6.907 6.907-6.907a1.411 1.411 0 0 0-1.009-2.427z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="settings-header-col-center">
+            <h2 id="main-settings-panel-title" class="padlet-settings-title">Settings</h2>
+          </div>
+          <div class="settings-header-col-right"></div>
+        </header>
+
+        <!-- Settings Tab Navigation Bar -->
+        <div class="padlet-settings-nav-wrap">
+          <nav aria-label="Main settings panel tabs" class="padlet-settings-nav">
+            <ul class="settings-tabs-list" role="tablist">
+              <li role="tab" data-testid="headingTab" class="settings-tab-item active" data-target="settingSectionHeading">
+                <button type="button" class="settings-tab-btn" data-testid="HeadingButton">Heading</button>
+              </li>
+              <li role="tab" data-testid="appearanceTab" class="settings-tab-item" data-target="settingSectionAppearance">
+                <button type="button" class="settings-tab-btn" data-testid="AppearanceButton">Appearance</button>
+              </li>
+              <li role="tab" data-testid="layoutTab" class="settings-tab-item" data-target="settingSectionLayout">
+                <button type="button" class="settings-tab-btn" data-testid="LayoutButton">Layout</button>
+              </li>
+              <li role="tab" data-testid="postsTab" class="settings-tab-item" data-target="settingSectionPosts">
+                <button type="button" class="settings-tab-btn" data-testid="PostsButton">Posts</button>
+              </li>
+              <li role="tab" data-testid="engagementTab" class="settings-tab-item" data-target="settingSectionEngagement">
+                <button type="button" class="settings-tab-btn" data-testid="EngagementButton">Engagement</button>
+              </li>
+              <li role="tab" data-testid="contentTab" class="settings-tab-item" data-target="settingSectionContent">
+                <button type="button" class="settings-tab-btn" data-testid="ContentButton">Content</button>
+              </li>
+              <li role="tab" data-testid="advancedTab" class="settings-tab-item" data-target="settingSectionAdvanced">
+                <button type="button" class="settings-tab-btn" data-testid="AdvancedButton">Advanced</button>
+              </li>
+            </ul>
+            <div id="settingsTabIndicator" class="settings-tab-indicator"></div>
+          </nav>
+        </div>
+        <div class="settings-nav-divider"></div>
+
+        <!-- Scrollable Settings Body -->
+        <div class="padlet-settings-body" id="settingsBody">
+          
+          <!-- 1. Heading Section -->
+          <section id="settingSectionHeading" class="settings-section" data-key="Heading">
+            <h2 class="settings-section-title">Heading</h2>
+            <div class="settings-card-group">
+              <div class="settings-field-row">
+                <label class="settings-field-label" for="wall-title-input">Title</label>
+                <div class="settings-input-wrapper">
+                  <textarea rows="1" id="wall-title-input" data-testid="surfaceWallTitleInput" placeholder="My brilliant padles" class="settings-textarea"></textarea>
+                </div>
+              </div>
+
+              <div class="settings-card-divider"></div>
+
+              <div class="settings-field-row">
+                <label class="settings-field-label" for="wall-desc-input">Description</label>
+                <div class="settings-input-wrapper">
+                  <textarea rows="1" id="wall-desc-input" data-testid="surfaceWallDescriptionInput" placeholder="Made with a dash of wit" class="settings-textarea"></textarea>
+                </div>
+              </div>
+
+              <div class="settings-card-divider"></div>
+
+              <div class="settings-clickable-row" id="settingRowIcon" data-testid="surfaceSettingsIcon" role="button" tabindex="0">
+                <div class="row-text-group">
+                  <div class="row-primary-label">Icon</div>
+                </div>
+                <div class="row-value-preview">
+                  <span id="settingCurrentIconDisplay" class="row-value-text">None</span>
+                  <span class="chevron-icon-wrap">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M17.724 3.391a1.333 1.333 0 0 1 1.886 0l11.667 11.667a1.334 1.334 0 0 1 0 1.886L19.61 28.611a1.333 1.333 0 1 1-1.886-1.886l10.724-10.724L17.724 5.277a1.333 1.333 0 0 1 0-1.886"/>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. Appearance Section -->
+          <section id="settingSectionAppearance" class="settings-section" data-key="Appearance">
+            <h2 class="settings-section-title">Appearance</h2>
+            <div class="settings-card-group">
+              <div class="settings-clickable-row" id="settingRowWallpaper" data-testid="surfaceSettingsMainPanelWallpaperButton" role="button" tabindex="0">
+                <div class="row-text-group">
+                  <div class="row-primary-label">Wallpaper</div>
+                </div>
+                <div class="row-value-preview">
+                  <div id="settingWallpaperThumbPreview" class="wallpaper-thumb-preview"></div>
+                  <span class="chevron-icon-wrap">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M17.724 3.391a1.333 1.333 0 0 1 1.886 0l11.667 11.667a1.334 1.334 0 0 1 0 1.886L19.61 28.611a1.333 1.333 0 1 1-1.886-1.886l10.724-10.724L17.724 5.277a1.333 1.333 0 0 1 0-1.886"/>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+
+              <div class="settings-card-divider"></div>
+
+              <div class="settings-row-inline">
+                <div class="row-primary-label">Color scheme</div>
+                <div class="segmented-control" role="group" aria-label="Color scheme">
+                  <button type="button" class="segmented-btn active" id="colorSchemeDarkBtn" data-scheme="dark">Dark</button>
+                  <button type="button" class="segmented-btn" id="colorSchemeLightBtn" data-scheme="light">Light</button>
+                </div>
+              </div>
+
+              <div class="settings-card-divider"></div>
+
+              <div class="settings-row-inline">
+                <div class="row-primary-label">Font</div>
+                <div class="font-button-group" role="group" aria-label="Font">
+                  <button type="button" class="font-choice-btn active" id="fontBtnNiagara" data-testid="fontButton3" aria-label="Niagara" title="Niagara (Sans-serif)">
+                    <span class="font-preview-text font-niagara">ABba</span>
+                  </button>
+                  <button type="button" class="font-choice-btn" id="fontBtnThames" data-testid="fontButton2" aria-label="Thames" title="Thames (Serif)">
+                    <span class="font-preview-text font-thames">ABba</span>
+                  </button>
+                  <button type="button" class="font-choice-btn" id="fontBtnFuji" data-testid="fontButton4" aria-label="Fuji" title="Fuji (Handwriting)">
+                    <span class="font-preview-text font-fuji">ABba</span>
+                  </button>
+                  <button type="button" class="font-choice-btn" id="fontBtnAlps" data-testid="fontButton1" aria-label="Alps" title="Alps (Monospace)">
+                    <span class="font-preview-text font-alps">ABba</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="settings-card-divider"></div>
+
+              <div class="settings-row-inline">
+                <div class="row-primary-label">Post size</div>
+                <div class="segmented-control" role="group" aria-label="Post size">
+                  <button type="button" class="segmented-btn active" id="postSizeStandardBtn" data-testid="postSizeButton-standard" data-size="standard">Standard</button>
+                  <button type="button" class="segmented-btn" id="postSizeWideBtn" data-testid="postSizeButton-wide" data-size="wide">Wide</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. Layout Section -->
+          <section id="settingSectionLayout" class="settings-section" data-key="Layout" data-testid="surfaceSettingsLayoutSection">
+            <h2 class="settings-section-title">Layout</h2>
+            <div class="settings-card-group">
+              <div class="settings-clickable-row" id="settingRowFormat" data-testid="surfaceSettingsFormatRow" role="button" tabindex="0">
+                <div class="row-text-group">
+                  <div class="row-primary-label">Format</div>
+                  <div class="row-secondary-desc">Choose how posts are laid out.</div>
+                </div>
+                <button type="button" class="settings-dropdown-pill" id="settingFormatBtn" data-testid="settingsMainPanelWallFormatDropdownButton">
+                  <span class="pill-icon-left">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M26.667 4.667c.368 0 .667.298.667.667v21.333a.667.667 0 0 1-.667.667H20a.667.667 0 0 1-.667-.667V5.334c0-.368.299-.667.667-.667zm-6.667-2a2.667 2.667 0 0 0-2.667 2.667v21.333A2.667 2.667 0 0 0 20 29.334h6.667a2.667 2.667 0 0 0 2.667-2.667V5.334a2.667 2.667 0 0 0-2.667-2.667zM12 4.667c.368 0 .667.298.667.667v21.333a.667.667 0 0 1-.667.667H5.333a.667.667 0 0 1-.667-.667V5.334c0-.368.298-.667.667-.667zm-6.667-2a2.667 2.667 0 0 0-2.667 2.667v21.333a2.667 2.667 0 0 0 2.667 2.667H12a2.667 2.667 0 0 0 2.667-2.667V5.334A2.667 2.667 0 0 0 12 2.667z"/>
+                    </svg>
+                  </span>
+                  <span class="pill-text" id="currentFormatLabel">Columns</span>
+                  <span class="pill-chevron-down">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M16 23.522a1.44 1.44 0 0 0 1.048-.474l8.568-8.771c.248-.248.383-.564.383-.936 0-.746-.576-1.341-1.34-1.341a1.4 1.4 0 0 0-1.002.428L16 20.312l-7.657-7.844a1.4 1.4 0 0 0-1.002-.428c-.764 0-1.341.595-1.341 1.341 0 .372.135.688.383.936l8.568 8.771a1.44 1.44 0 0 0 1.049.474"/>
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-card-group" style="margin-top: 12px;">
+              <div class="settings-clickable-row" id="settingRowSort" role="button" tabindex="0">
+                <div class="row-text-group">
+                  <div class="row-primary-label">Sort by</div>
+                </div>
+                <button type="button" class="settings-dropdown-pill" id="sortPostsBtn" data-testid="sortPostsPanelRowSelected">
+                  <span class="pill-icon-left">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M16.003 5.332v8.336a1 1 0 0 1-2 0V6.967a.66.66 0 0 0-.664-.637c-.35-.002-.672.326-.672.672V17a1.001 1.001 0 0 1-1.727.687l-.001-.001-.003-.004-.03-.03q-.043-.043-.136-.128a6 6 0 0 0-.535-.427c-.469-.332-1.079-.661-1.737-.776-.716-.126-1.396-.049-1.848.184-.278.144-.496.353-.594.704l2.211 1.662q.056.042.106.092l2.9 2.897a16.4 16.4 0 0 1 3.07 4.257 2.2 2.2 0 0 0 1.966 1.215h3.637c.762 0 1.425-.364 1.768-.951.981-1.68 2.285-4.383 2.285-6.711V9.334a.666.666 0 0 0-.668-.667.666.666 0 0 0-.671.667V14a1 1 0 0 1-2 0V7.002a.66.66 0 0 0-.661-.672.66.66 0 0 0-.667.672v6.665a1 1 0 0 1-2 0V5.331a.66.66 0 0 0-.665-.666.653.653 0 0 0-.666.666z"/>
+                    </svg>
+                  </span>
+                  <span class="pill-text" id="currentSortLabel">Drag and drop</span>
+                  <span class="pill-chevron-down">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M16 23.522a1.44 1.44 0 0 0 1.048-.474l8.568-8.771c.248-.248.383-.564.383-.936 0-.746-.576-1.341-1.34-1.341a1.4 1.4 0 0 0-1.002.428L16 20.312l-7.657-7.844a1.4 1.4 0 0 0-1.002-.428c-.764 0-1.341.595-1.341 1.341 0 .372.135.688.383.936l8.568 8.771a1.44 1.44 0 0 0 1.049.474"/>
+                    </svg>
+                  </span>
+                </button>
+              </div>
+
+              <div class="settings-card-divider"></div>
+
+              <div class="settings-row-inline">
+                <div class="row-primary-label">New post position</div>
+                <div class="segmented-control" role="group" aria-label="New post position">
+                  <button type="button" class="segmented-btn" id="newPostFirstBtn" data-testid="sortby-option-manual_new_posts_first">First</button>
+                  <button type="button" class="segmented-btn active" id="newPostLastBtn" data-testid="sortby-option-manual_new_posts_last">Last</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. Posts Section -->
+          <section id="settingSectionPosts" class="settings-section" data-key="Posts">
+            <h2 class="settings-section-title">Posts</h2>
+            <div class="settings-card-group">
+              <div class="settings-clickable-row" id="settingRowPostFields" data-testid="surfaceSettingsPostFields" role="button" tabindex="0">
+                <div class="row-text-group">
+                  <div class="row-primary-label">Post fields</div>
+                  <div class="row-secondary-desc">Customize post subject, body, and attachments. Add custom fields.</div>
+                </div>
+                <span class="chevron-icon-wrap">
+                  <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                    <path d="M17.724 3.391a1.333 1.333 0 0 1 1.886 0l11.667 11.667a1.334 1.334 0 0 1 0 1.886L19.61 28.611a1.333 1.333 0 1 1-1.886-1.886l10.724-10.724L17.724 5.277a1.333 1.333 0 0 1 0-1.886"/>
+                  </svg>
+                </span>
+              </div>
+
+              <div class="settings-card-divider"></div>
+
+              <div class="settings-row-inline">
+                <div class="row-text-group">
+                  <div class="row-primary-label">Author name and time</div>
+                  <div class="row-secondary-desc">Display author name with timestamp above each post?</div>
+                </div>
+                <button aria-disabled="false" class="switch-control" type="button" role="switch" aria-checked="false" id="settingAuthorTimeToggle" data-testid="surfaceSettingsPostsAttributionToggle">
+                  <div class="switch-thumb">
+                    <svg class="switch-icon" viewBox="0 0 32 32" height="12" width="12" fill="currentColor">
+                      <path d="M23.891 6.667a1.4 1.4 0 0 0-.984.434L16 14.008 9.093 7.101a1.41 1.41 0 0 0-1.798-.186A1.41 1.41 0 0 0 7.1 9.094l6.907 6.907L7.1 22.908a1.399 1.399 0 0 0-.33 1.549 1.42 1.42 0 0 0 .772.772 1.41 1.41 0 0 0 1.55-.33l6.907-6.907 6.907 6.907a1.399 1.399 0 0 0 1.549.33 1.405 1.405 0 0 0 .877-1.319 1.4 1.4 0 0 0-.434-1.002l-6.907-6.907 6.907-6.907a1.411 1.411 0 0 0-1.009-2.427z"/>
+                    </svg>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 5. Engagement Section -->
+          <section id="settingSectionEngagement" class="settings-section" data-key="Engagement">
+            <h2 class="settings-section-title">Engagement</h2>
+            <div class="settings-card-group">
+              <div class="settings-clickable-row" id="settingRowComments" data-testid="surfaceSettingsComments" role="button" tabindex="0">
+                <div class="row-text-group">
+                  <div class="row-primary-label">Comments</div>
+                </div>
+                <div class="row-value-preview">
+                  <span id="settingCommentsStatus" class="row-value-text">On</span>
+                  <span class="chevron-icon-wrap">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M17.724 3.391a1.333 1.333 0 0 1 1.886 0l11.667 11.667a1.334 1.334 0 0 1 0 1.886L19.61 28.611a1.333 1.333 0 1 1-1.886-1.886l10.724-10.724L17.724 5.277a1.333 1.333 0 0 1 0-1.886"/>
+                    </svg>
+                  </span>
+                </div>
+              </div>
+
+              <div class="settings-card-divider"></div>
+
+              <div class="settings-clickable-row" id="settingRowEmojiPreset" role="button" tabindex="0">
+                <div class="row-text-group">
+                  <div class="row-primary-label">Emoji reactions</div>
+                </div>
+                <button type="button" class="settings-dropdown-pill" id="settingEmojiPresetBtn" data-testid="surfaceSettingsEmojiPreset">
+                  <span class="pill-icon-left">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M16 2.665c7.365 0 13.335 5.97 13.335 13.335S23.365 29.335 16 29.335 2.665 23.365 2.665 16 8.635 2.665 16 2.665m0 2C9.74 4.665 4.665 9.74 4.665 16S9.74 27.335 16 27.335 27.335 22.26 27.335 16 22.26 4.665 16 4.665m-4.718 15.047A5.99 5.99 0 0 0 16 22.003a5.99 5.99 0 0 0 4.713-2.285 1.001 1.001 0 0 1 1.57 1.24A7.99 7.99 0 0 1 16 24.004a7.99 7.99 0 0 1-6.289-3.053 1 1 0 1 1 1.571-1.237zm.719-8.044a1.666 1.666 0 1 1 0 3.332 1.666 1.666 0 0 1 0-3.332m8 0a1.666 1.666 0 1 1 0 3.332 1.666 1.666 0 0 1 0-3.332"/>
+                    </svg>
+                  </span>
+                  <span class="pill-text" id="currentEmojiPresetLabel">All emojis</span>
+                  <span class="pill-chevron-down">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M16 23.522a1.44 1.44 0 0 0 1.048-.474l8.568-8.771c.248-.248.383-.564.383-.936 0-.746-.576-1.341-1.34-1.341a1.4 1.4 0 0 0-1.002.428L16 20.312l-7.657-7.844a1.4 1.4 0 0 0-1.002-.428c-.764 0-1.341.595-1.341 1.341 0 .372.135.688.383.936l8.568 8.771a1.44 1.44 0 0 0 1.049.474"/>
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 6. Content Section -->
+          <section id="settingSectionContent" class="settings-section" data-key="Content">
+            <h2 class="settings-section-title">Content</h2>
+            <div class="settings-card-group">
+              <div class="settings-clickable-row" id="settingRowModeration" role="button" tabindex="0">
+                <div class="row-text-group">
+                  <div class="row-primary-label">Moderation</div>
+                  <div class="row-secondary-desc">Which posts and comments require approval?</div>
+                </div>
+                <button type="button" class="settings-dropdown-pill" id="settingModerationBtn" data-testid="settingsMainPanelContentModerationDropdownButton">
+                  <span class="pill-icon-left">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M16 2.667L4 7.111v8.889c0 7.333 5.111 14.189 12 15.333 6.889-1.144 12-8 12-15.333V7.111L16 2.667zm0 2.844l9.333 3.456v7.044c0 5.867-4.044 11.356-9.333 12.356-5.289-1-9.333-6.489-9.333-12.356v-7.044L16 5.511z"/>
+                    </svg>
+                  </span>
+                  <span class="pill-text" id="currentModerationLabel">Auto</span>
+                  <span class="pill-chevron-down">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M16 23.522a1.44 1.44 0 0 0 1.048-.474l8.568-8.771c.248-.248.383-.564.383-.936 0-.746-.576-1.341-1.34-1.341a1.4 1.4 0 0 0-1.002.428L16 20.312l-7.657-7.844a1.4 1.4 0 0 0-1.002-.428c-.764 0-1.341.595-1.341 1.341 0 .372.135.688.383.936l8.568 8.771a1.44 1.44 0 0 0 1.049.474"/>
+                    </svg>
+                  </span>
+                </button>
+              </div>
+
+              <div class="settings-card-divider"></div>
+
+              <div class="settings-clickable-row" id="settingRowCopyProtection" role="button" tabindex="0">
+                <div class="row-text-group">
+                  <div class="row-primary-label">Copy protection</div>
+                  <div class="row-secondary-desc">Can this board's content be remade, downloaded, and exported?</div>
+                </div>
+                <button type="button" class="settings-dropdown-pill" id="settingCopyProtectionBtn" data-testid="settingsMainPanelContentProtectionDropdownButton">
+                  <span class="pill-icon-left">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M22.667 12H21.33V9.333a5.333 5.333 0 0 0-10.667 0V12H9.333A2.667 2.667 0 0 0 6.667 14.667v12A2.667 2.667 0 0 0 9.333 29.333h13.334A2.667 2.667 0 0 0 25.333 26.667v-12A2.667 2.667 0 0 0 22.667 12zm-9.334-2.667a2.667 2.667 0 0 1 5.334 0V12H13.333V9.333zm9.334 17.334H9.333V14.667h13.334v12z"/>
+                    </svg>
+                  </span>
+                  <span class="pill-text" id="currentCopyProtectionLabel">None</span>
+                  <span class="pill-chevron-down">
+                    <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor">
+                      <path d="M16 23.522a1.44 1.44 0 0 0 1.048-.474l8.568-8.771c.248-.248.383-.564.383-.936 0-.746-.576-1.341-1.34-1.341a1.4 1.4 0 0 0-1.002.428L16 20.312l-7.657-7.844a1.4 1.4 0 0 0-1.002-.428c-.764 0-1.341.595-1.341 1.341 0 .372.135.688.383.936l8.568 8.771a1.44 1.44 0 0 0 1.049.474"/>
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- 7. Advanced Section -->
+          <section id="settingSectionAdvanced" class="settings-section" data-key="Advanced">
+            <h2 class="settings-section-title">Advanced</h2>
+            <div class="settings-card-group">
+              <div class="settings-field-row">
+                <label class="settings-field-label">URL</label>
+                <div class="settings-input-wrapper with-action">
+                  <textarea rows="1" id="surfaceSettingsChangeUrlInput" readonly data-testid="surfaceSettingsChangeUrlInput" class="settings-textarea"></textarea>
+                  <button type="button" id="surfaceUrlCopyButton" class="settings-copy-inline-btn" data-testid="surfaceUrlCopyButton" title="Copy">Copy</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <div class="settings-dialog-footer-caption">
+            Press the Escape key to exit this dialog
+          </div>
+        </div>
       </div>
 
-      <div class="drawer-body">
-        <!-- Board Basic Info -->
-        <div class="drawer-section">
-          <div class="drawer-section-heading">Basic info</div>
-          <div class="settings-input-group">
-            <label class="settings-label" for="settingTitleInput">Title</label>
-            <input type="text" id="settingTitleInput" class="settings-text-input" value="Physics Audio Reflections: I see, I think, I wonder" />
+      <!-- Subview 2: Wallpaper Picker -->
+      <div id="settingsWallpaperSubview" class="settings-subview">
+        <header class="padlet-settings-header subview-header">
+          <div class="settings-header-col-left">
+            <button id="settingsWallpaperBackBtn" class="settings-back-btn" title="Back" aria-label="Back">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M20.609 28.609a1.333 1.333 0 0 1-1.886 0L7.056 16.942a1.334 1.334 0 0 1 0-1.886L18.723 3.389a1.333 1.333 0 1 1 1.886 1.886L9.885 15.999l10.724 10.724a1.333 1.333 0 0 1 0 1.886"/>
+              </svg>
+            </button>
           </div>
-          <div class="settings-input-group">
-            <label class="settings-label" for="settingDescInput">Description / Author</label>
-            <input type="text" id="settingDescInput" class="settings-text-input" value="Salman Madani • 6d" />
+          <div class="settings-header-col-center">
+            <div class="subview-header-title-box">
+              <h2 id="wallpaper-panel-title" class="subview-header-title">Wallpaper</h2>
+            </div>
+          </div>
+          <div class="settings-header-col-right">
+            <button id="settingsWallpaperCloseBtn" class="padlet-settings-close-btn" title="Close" aria-label="Close">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M23.891 6.667a1.4 1.4 0 0 0-.984.434L16 14.008 9.093 7.101a1.41 1.41 0 0 0-1.798-.186A1.41 1.41 0 0 0 7.1 9.094l6.907 6.907L7.1 22.908a1.399 1.399 0 0 0-.33 1.549 1.42 1.42 0 0 0 .772.772 1.41 1.41 0 0 0 1.55-.33l6.907-6.907 6.907 6.907a1.399 1.399 0 0 0 1.549.33 1.405 1.405 0 0 0 .877-1.319 1.4 1.4 0 0 0-.434-1.002l-6.907-6.907 6.907-6.907a1.411 1.411 0 0 0-1.009-2.427z"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- Wallpaper Category Filter Tabs -->
+        <div class="wallpaper-categories-bar">
+          <button type="button" class="wp-cat-btn active" data-wp-cat="all">All</button>
+          <button type="button" class="wp-cat-btn" data-wp-cat="colors">Colors</button>
+          <button type="button" class="wp-cat-btn" data-wp-cat="gradients">Gradients</button>
+          <button type="button" class="wp-cat-btn" data-wp-cat="textures">Textures</button>
+          <button type="button" class="wp-cat-btn" data-wp-cat="photos">Photos</button>
+          <button type="button" class="wp-cat-btn" data-wp-cat="custom">Custom</button>
+        </div>
+
+        <div class="wallpaper-subview-body" id="wallpaperCardsContainer">
+          <!-- Populated dynamically via JS with beautiful previews -->
+        </div>
+      </div>
+
+      <!-- Subview 3: Icon Picker -->
+      <div id="settingsIconSubview" class="settings-subview">
+        <header class="padlet-settings-header subview-header">
+          <div class="settings-header-col-left">
+            <button id="settingsIconBackBtn" class="settings-back-btn" title="Back" aria-label="Back">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M20.609 28.609a1.333 1.333 0 0 1-1.886 0L7.056 16.942a1.334 1.334 0 0 1 0-1.886L18.723 3.389a1.333 1.333 0 1 1 1.886 1.886L9.885 15.999l10.724 10.724a1.333 1.333 0 0 1 0 1.886"/>
+              </svg>
+            </button>
+          </div>
+          <div class="settings-header-col-center">
+            <div class="subview-header-title-box">
+              <h2 id="icon-panel-title" class="subview-header-title">Icon</h2>
+            </div>
+          </div>
+          <div class="settings-header-col-right">
+            <button id="settingsIconCloseBtn" class="padlet-settings-close-btn" title="Close" aria-label="Close">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M23.891 6.667a1.4 1.4 0 0 0-.984.434L16 14.008 9.093 7.101a1.41 1.41 0 0 0-1.798-.186A1.41 1.41 0 0 0 7.1 9.094l6.907 6.907L7.1 22.908a1.399 1.399 0 0 0-.33 1.549 1.42 1.42 0 0 0 .772.772 1.41 1.41 0 0 0 1.55-.33l6.907-6.907 6.907 6.907a1.399 1.399 0 0 0 1.549.33 1.405 1.405 0 0 0 .877-1.319 1.4 1.4 0 0 0-.434-1.002l-6.907-6.907 6.907-6.907a1.411 1.411 0 0 0-1.009-2.427z"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="icon-picker-toolbar">
+          <button type="button" id="iconPickerNoneBtn" class="icon-none-pill-btn">None</button>
+          <div class="icon-search-box">
+            <input type="text" id="iconPickerSearchInput" placeholder="Search emojis..." autocomplete="off" />
           </div>
         </div>
 
-        <!-- Wallpaper Theme Switcher -->
-        <div class="drawer-section">
-          <div class="drawer-section-heading">Wallpaper theme</div>
-          <div class="wallpaper-theme-grid">
-            <button type="button" class="wallpaper-card is-active" data-theme="aurora">
-              <div class="wallpaper-swatch theme-swatch-aurora"></div>
-              <span>Aurora Glow</span>
-            </button>
-            <button type="button" class="wallpaper-card" data-theme="midnight">
-              <div class="wallpaper-swatch theme-swatch-midnight"></div>
-              <span>Midnight</span>
-            </button>
-            <button type="button" class="wallpaper-card" data-theme="blueprint">
-              <div class="wallpaper-swatch theme-swatch-blueprint"></div>
-              <span>Blueprint</span>
-            </button>
-            <button type="button" class="wallpaper-card" data-theme="corkboard">
-              <div class="wallpaper-swatch theme-swatch-corkboard"></div>
-              <span>Corkboard</span>
+        <div class="icon-picker-body" id="iconPickerGrid">
+          <!-- Emoji categories populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Subview 4: Layout Format Picker -->
+      <div id="settingsFormatSubview" class="settings-subview">
+        <header class="padlet-settings-header subview-header">
+          <div class="settings-header-col-left">
+            <button id="settingsFormatBackBtn" class="settings-back-btn" title="Back" aria-label="Back">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M20.609 28.609a1.333 1.333 0 0 1-1.886 0L7.056 16.942a1.334 1.334 0 0 1 0-1.886L18.723 3.389a1.333 1.333 0 1 1 1.886 1.886L9.885 15.999l10.724 10.724a1.333 1.333 0 0 1 0 1.886"/>
+              </svg>
             </button>
           </div>
-        </div>
+          <div class="settings-header-col-center">
+            <h2 class="subview-header-title">Format</h2>
+          </div>
+          <div class="settings-header-col-right">
+            <button id="settingsFormatCloseBtn" class="padlet-settings-close-btn" title="Close" aria-label="Close">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M23.891 6.667a1.4 1.4 0 0 0-.984.434L16 14.008 9.093 7.101a1.41 1.41 0 0 0-1.798-.186A1.41 1.41 0 0 0 7.1 9.094l6.907 6.907L7.1 22.908a1.399 1.399 0 0 0-.33 1.549 1.42 1.42 0 0 0 .772.772 1.41 1.41 0 0 0 1.55-.33l6.907-6.907 6.907 6.907a1.399 1.399 0 0 0 1.549.33 1.405 1.405 0 0 0 .877-1.319 1.4 1.4 0 0 0-.434-1.002l-6.907-6.907 6.907-6.907a1.411 1.411 0 0 0-1.009-2.427z"/>
+              </svg>
+            </button>
+          </div>
+        </header>
 
-        <!-- Reactions Setting -->
-        <div class="drawer-section">
-          <div class="drawer-section-heading">Engagement</div>
-          <div class="settings-input-group">
-            <label class="settings-label" for="settingReactionSelect">Reactions style</label>
-            <select id="settingReactionSelect" class="settings-select-input">
-              <option value="smileys">😊 Smileys</option>
-              <option value="hearts">❤️ Hearts / Likes</option>
-              <option value="stars">⭐ 1-5 Stars</option>
-              <option value="upvote">👍 Upvotes</option>
-              <option value="none">None</option>
-            </select>
+        <div class="settings-subview-body format-picker-list">
+          <button type="button" class="format-card-btn active" data-format="columns">
+            <div class="format-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="14" rx="1"/><rect x="17" y="3" width="5" height="16" rx="1"/></svg>
+            </div>
+            <div class="format-card-text">
+              <div class="format-card-title">Columns (Shelf)</div>
+              <div class="format-card-desc">Organize content in a series of customizable vertical sections.</div>
+            </div>
+          </button>
+
+          <button type="button" class="format-card-btn" data-format="wall">
+            <div class="format-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="6" rx="1"/><rect x="13" y="3" width="8" height="10" rx="1"/><rect x="3" y="11" width="8" height="10" rx="1"/><rect x="13" y="15" width="8" height="6" rx="1"/></svg>
+            </div>
+            <div class="format-card-text">
+              <div class="format-card-title">Wall</div>
+              <div class="format-card-desc">Pack posts in a flexible, masonry brick-like layout.</div>
+            </div>
+          </button>
+
+          <button type="button" class="format-card-btn" data-format="grid">
+            <div class="format-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </div>
+            <div class="format-card-text">
+              <div class="format-card-title">Grid</div>
+              <div class="format-card-desc">Arrange posts in responsive, uniform rows and columns.</div>
+            </div>
+          </button>
+
+          <button type="button" class="format-card-btn" data-format="stream">
+            <div class="format-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="4" rx="1"/><rect x="4" y="10" width="16" height="4" rx="1"/><rect x="4" y="17" width="16" height="4" rx="1"/></svg>
+            </div>
+            <div class="format-card-text">
+              <div class="format-card-title">Stream</div>
+              <div class="format-card-desc">Streamline content top-to-bottom in a single vertical feed.</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Subview 5: Sort By Picker -->
+      <div id="settingsSortSubview" class="settings-subview">
+        <header class="padlet-settings-header subview-header">
+          <div class="settings-header-col-left">
+            <button id="settingsSortBackBtn" class="settings-back-btn" title="Back" aria-label="Back">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M20.609 28.609a1.333 1.333 0 0 1-1.886 0L7.056 16.942a1.334 1.334 0 0 1 0-1.886L18.723 3.389a1.333 1.333 0 1 1 1.886 1.886L9.885 15.999l10.724 10.724a1.333 1.333 0 0 1 0 1.886"/>
+              </svg>
+            </button>
+          </div>
+          <div class="settings-header-col-center">
+            <h2 class="subview-header-title">Sort by</h2>
+          </div>
+          <div class="settings-header-col-right">
+            <button id="settingsSortCloseBtn" class="padlet-settings-close-btn" title="Close" aria-label="Close">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M23.891 6.667a1.4 1.4 0 0 0-.984.434L16 14.008 9.093 7.101a1.41 1.41 0 0 0-1.798-.186A1.41 1.41 0 0 0 7.1 9.094l6.907 6.907L7.1 22.908a1.399 1.399 0 0 0-.33 1.549 1.42 1.42 0 0 0 .772.772 1.41 1.41 0 0 0 1.55-.33l6.907-6.907 6.907 6.907a1.399 1.399 0 0 0 1.549.33 1.405 1.405 0 0 0 .877-1.319 1.4 1.4 0 0 0-.434-1.002l-6.907-6.907 6.907-6.907a1.411 1.411 0 0 0-1.009-2.427z"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="settings-subview-body selection-options-list">
+          <button type="button" class="selection-option-card active" data-sort="manual">
+            <div class="option-card-label">Drag and drop</div>
+            <div class="option-card-desc">Manually order posts freely by dragging and dropping.</div>
+          </button>
+          <button type="button" class="selection-option-card" data-sort="date_desc">
+            <div class="option-card-label">Date published (Newest first)</div>
+            <div class="option-card-desc">Order posts with newest uploads at the top.</div>
+          </button>
+          <button type="button" class="selection-option-card" data-sort="date_asc">
+            <div class="option-card-label">Date published (Oldest first)</div>
+            <div class="option-card-desc">Order posts with oldest uploads at the top.</div>
+          </button>
+          <button type="button" class="selection-option-card" data-sort="subject_asc">
+            <div class="option-card-label">Post subject (A to Z)</div>
+            <div class="option-card-desc">Sort posts alphabetically by their titles.</div>
+          </button>
+          <button type="button" class="selection-option-card" data-sort="random">
+            <div class="option-card-label">Random</div>
+            <div class="option-card-desc">Randomly shuffle cards across sections.</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Subview 6: Emoji Reactions Picker -->
+      <div id="settingsReactionsSubview" class="settings-subview">
+        <header class="padlet-settings-header subview-header">
+          <div class="settings-header-col-left">
+            <button id="settingsReactionsBackBtn" class="settings-back-btn" title="Back" aria-label="Back">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M20.609 28.609a1.333 1.333 0 0 1-1.886 0L7.056 16.942a1.334 1.334 0 0 1 0-1.886L18.723 3.389a1.333 1.333 0 1 1 1.886 1.886L9.885 15.999l10.724 10.724a1.333 1.333 0 0 1 0 1.886"/>
+              </svg>
+            </button>
+          </div>
+          <div class="settings-header-col-center">
+            <h2 class="subview-header-title">Emoji reactions</h2>
+          </div>
+          <div class="settings-header-col-right">
+            <button id="settingsReactionsCloseBtn" class="padlet-settings-close-btn" title="Close" aria-label="Close">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M23.891 6.667a1.4 1.4 0 0 0-.984.434L16 14.008 9.093 7.101a1.41 1.41 0 0 0-1.798-.186A1.41 1.41 0 0 0 7.1 9.094l6.907 6.907L7.1 22.908a1.399 1.399 0 0 0-.33 1.549 1.42 1.42 0 0 0 .772.772 1.41 1.41 0 0 0 1.55-.33l6.907-6.907 6.907 6.907a1.399 1.399 0 0 0 1.549.33 1.405 1.405 0 0 0 .877-1.319 1.4 1.4 0 0 0-.434-1.002l-6.907-6.907 6.907-6.907a1.411 1.411 0 0 0-1.009-2.427z"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="settings-subview-body selection-options-list">
+          <button type="button" class="selection-option-card active" data-reactions="all">
+            <div class="option-card-label">All emojis</div>
+            <div class="option-card-desc">React with any emoji from the full emoji picker.</div>
+          </button>
+          <button type="button" class="selection-option-card" data-reactions="heart">
+            <div class="option-card-label">Heart (❤️)</div>
+            <div class="option-card-desc">Only react with heart emoji.</div>
+          </button>
+          <button type="button" class="selection-option-card" data-reactions="thumbs_up">
+            <div class="option-card-label">Thumbs up (👍)</div>
+            <div class="option-card-desc">Only react with thumbs up emoji.</div>
+          </button>
+          <button type="button" class="selection-option-card" data-reactions="classic">
+            <div class="option-card-label">Classic (❤️ 👍 😂 😮)</div>
+            <div class="option-card-desc">Only react with four classic emojis.</div>
+          </button>
+          <button type="button" class="selection-option-card" data-reactions="off">
+            <div class="option-card-label">Off</div>
+            <div class="option-card-desc">No emoji reactions allowed.</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Subview 7: Comments Settings -->
+      <div id="settingsCommentsSubview" class="settings-subview">
+        <header class="padlet-settings-header subview-header">
+          <div class="settings-header-col-left">
+            <button id="settingsCommentsBackBtn" class="settings-back-btn" title="Back" aria-label="Back">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M20.609 28.609a1.333 1.333 0 0 1-1.886 0L7.056 16.942a1.334 1.334 0 0 1 0-1.886L18.723 3.389a1.333 1.333 0 1 1 1.886 1.886L9.885 15.999l10.724 10.724a1.333 1.333 0 0 1 0 1.886"/>
+              </svg>
+            </button>
+          </div>
+          <div class="settings-header-col-center">
+            <h2 class="subview-header-title">Comments</h2>
+          </div>
+          <div class="settings-header-col-right">
+            <button id="settingsCommentsCloseBtn" class="padlet-settings-close-btn" title="Close" aria-label="Close">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M23.891 6.667a1.4 1.4 0 0 0-.984.434L16 14.008 9.093 7.101a1.41 1.41 0 0 0-1.798-.186A1.41 1.41 0 0 0 7.1 9.094l6.907 6.907L7.1 22.908a1.399 1.399 0 0 0-.33 1.549 1.42 1.42 0 0 0 .772.772 1.41 1.41 0 0 0 1.55-.33l6.907-6.907 6.907 6.907a1.399 1.399 0 0 0 1.549.33 1.405 1.405 0 0 0 .877-1.319 1.4 1.4 0 0 0-.434-1.002l-6.907-6.907 6.907-6.907a1.411 1.411 0 0 0-1.009-2.427z"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="settings-subview-body">
+          <div class="settings-card-group">
+            <div class="settings-row-inline">
+              <div class="row-text-group">
+                <div class="row-primary-label">Allow new comments</div>
+                <div class="row-secondary-desc">Viewers can write comments and reflections on posts.</div>
+              </div>
+              <button aria-disabled="false" class="switch-control active" type="button" role="switch" aria-checked="true" id="settingAllowCommentsToggle">
+                <div class="switch-thumb">
+                  <svg class="switch-icon" viewBox="0 0 32 32" height="12" width="12" fill="currentColor">
+                    <path d="M11.667 25.333a1.333 1.333 0 0 1-.943-.39l-6.667-6.667a1.333 1.333 0 1 1 1.886-1.886l5.724 5.724 13.057-13.057a1.333 1.333 0 1 1 1.886 1.886l-14 14a1.333 1.333 0 0 1-.943.39z"/>
+                  </svg>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
-  <!-- 4. More Options Drawer Modal (Padlet Authentic Additional Options) -->
+  <!-- 4. More Options Drawer Modal (Padles Authentic Additional Options) -->
   <div id="moreDrawer" class="drawer-backdrop" hidden>
     <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Additional options">
       <div class="drawer-header">

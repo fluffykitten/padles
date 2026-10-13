@@ -1,114 +1,86 @@
-# Padles — 100% Pixel-Perfect Padlet Shelf Board Clone
+# Padles
 
-A faithful, high-fidelity, and interaction-complete recreation of **Padlet's Shelf / Section Board**, engineered with vanilla HTML, CSS, and modern JavaScript with zero external frameworks or build tooling.
+A lightweight collaborative board for organizing posts, media, and notes into sections, inspired by Padlet. Built with standard HTML, CSS, and vanilla JavaScript (WIP).
 
-![Padles Overview](docs/screenshots/post_workflow_4_final_board.png)
-
----
-
-## ✨ Features & Parity Highlights
-
-### 1. Authentic Post Composer
-* **Top Bar Controls**: Exact Padlet SVG icons for Close, Expand/Dock toggle, Minimize to dock, and Schedule post.
-* **Hot-Pink Publish Button**: Active button transitions to Padlet's signature hot-pink `#ff1f6d` with white text and glowing drop shadow (`box-shadow: 0 4px 14px rgba(255, 31, 109, 0.4)`).
-* **Striped Multi-Tool Attachment Bar**: Signature striped SVG diagonal background patterns across tool columns with tooltips and shortcut indicators (`Upload`, `Camera`, `AI Art`, `Link`, `Search`, and `All tools`).
-* **Composer Bottom Bar**: Color swatch selector, Section selector pill with official Section glyph, and `Fields` button for custom post properties.
-
-![Post Composer](docs/screenshots/post_workflow_1_composer.png)
-
-### 2. In-Place Edit & Update Post Workflow
-* **Hover Controls**: Hovering any card on the board reveals a quick **`Edit`** button, a subtle hairline divider, and the 3-dots action button.
-* **Update State**: Clicking `Edit` mounts the post into the active composer with existing title, body, section, color, and custom field values. The submit button switches to **`Update`** in hot-pink `#ff1f6d`, saving modifications directly in place.
-
-### 3. Card 3-Dots Context Menu & Color Circles
-* **Inline 6 Pastel Color Circles**: Row of White, Red, Yellow, Green, Blue, and Purple swatches with an active checkmark indicator. Clicking any circle instantly recolors the post on the board.
-* **14 Structured Menu Actions**:
-  1. `Open post` (Opens fullscreen theater modal)
-  2. `Open post in new tab`
-  3. `Copy link to post`
-  4. `Start slideshow from this post`
-  5. *Color Swatch Bar* (6 pastel circles)
-  6. `Edit post`
-  7. `Add post before`
-  8. `Add post after`
-  9. `Duplicate post`
-  10. `Copy to another padlet`
-  11. `Transfer to another padlet`
-  12. `Pin / Unpin post`
-  13. `Delete post` (Danger red styling)
-
-![Card Context Menu](docs/screenshots/post_workflow_2_context_menu.png)
-
-### 4. Expanded Post Theater View Modal
-* **Media Canvas (Left / Center)**: Fullscreen dark overlay with subtle radial dot-grid (`background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px)`), floating close button, and media player/presentation canvas.
-* **Sidebar (Right, 360px)**: Top-right folded corner accent in cyan, board & section metadata, custom fields chips, smiley reaction counter, and an interactive **Comments thread** with real-time comment adding.
-* **Navigation Strip (Far-Right, 48px)**: `Post X of Y` counter with Next and Previous buttons to cycle through posts across the board.
-
-![Theater View Modal](docs/screenshots/post_workflow_3_theater.png)
-
-### 5. Slot-Based Multiple Drafts Dock
-* **Zero Tab Reordering**: Drafts maintain fixed chronological order. Opening Draft 3 out of 5 expands Draft 3 in place, while Draft 1 and 2 remain on the left and Draft 4 and 5 remain on the right.
-* **Speech Bubble Bulk Menu**: Overlapping cards SVG button with pointer tail containing `Publish all drafts` and `Delete all drafts`.
-* **Undo Snackbar**: 10-second restoration toast with `Ctrl + Z` keyboard support for accidentally discarded drafts.
-
-### 6. Dual-Scrollbar Section Architecture
-* Horizontal scrolling for the multi-column sections track.
-* Independent vertical scrolling inside individual section columns, matching Padlet's real layout engine.
+![Padles Overview](docs/screenshots/padles_overview.png)
 
 ---
 
-## 🚀 Quick Start
+## What is Padles?
 
-Padles runs directly in any modern browser without npm, node, or build servers.
+Padles is a self-hostable, web-based bulletin board. It organizes content into vertical sections (columns) on a horizontal board, making it easy to brainstorm, collect resources, take notes, or run interactive discussions.
+
+### Key Features
+
+* **Multi-column Shelf Layout**: Add and organize sections horizontally, each with independent vertical scrolling.
+* **Post Composer**:
+  * Rich editor with title, body, and custom post fields.
+  * Card colors (white, red, yellow, green, blue, purple) and section assignment.
+  * Attachment support for images, videos, audio recordings, links, drawings, and files.
+  * Multi-draft dock at the bottom to switch between drafts without losing work.
+* **Card Actions & Context Menu**:
+  * Quick edit button on hover.
+  * Right-click context menu: color picker, duplicate, pin/unpin, transfer, delete.
+  * Expanded theater view modal with media viewer and comments thread.
+  * Emoji reactions with counters.
+* **Zero Build Setup**: Written in pure browser-compatible code. Open `index.html` in any browser to get started immediately.
+* **Optional Backend**: Runs out of the box with `localStorage`, with an optional Supabase integration for multi-user sync and persistence.
+
+---
+
+## Getting Started
+
+No build tools, Node.js, or package managers required.
 
 1. Clone the repository:
    ```bash
    git clone https://github.com/fluffykitten/padles.git
    cd padles
    ```
-2. Open `index.html` in your browser:
+
+2. Open `index.html` directly in your browser:
    * **Windows**: Double-click `index.html` or run `start index.html`
    * **macOS**: `open index.html`
    * **Linux**: `xdg-open index.html`
 
 ---
 
-## 📁 Repository Structure
+## File Structure
 
 ```
 padles/
-├── index.html                                                  # Core semantic markup, modals & SVG icons
-├── styles.css                                                  # Comprehensive Padlet design system & tokens
-├── app.js                                                      # Application logic, state management & UI handlers
-├── start-edge-debug.bat                                        # One-click launcher for Edge Remote Debugging (port 9222)
-├── padles_pixel_perfect_clone_specification_antigravity_blueprint.md  # Detailed feature blueprint specification
+├── index.html                                 # Main markup, modal templates, and icons
+├── styles.css                                 # App layout, typography, and theme styling
+├── app.js                                     # Core board state, rendering, and event handlers
+├── supabase-service.js                        # Optional Supabase client for remote sync
+├── start-edge-debug.bat                       # Script to launch Edge with remote debugging
 ├── docs/
-│   ├── architecture_comparison_and_migration_plan.md          # Supabase (Postgres/Realtime/Auth) + Cloudflare R2 architecture
-│   ├── rea_and_edge_setup_guide.md                            # Setup guide for REA MCP & Edge Remote Debugging
-│   ├── post_workflow_iteration_report.md                      # Post features parity verification report
-│   └── screenshots/                                           # High-resolution verification captures
+│   ├── architecture_comparison_and_migration_plan.md   # Supabase & Cloudflare R2 backend spec
+│   ├── padles_tools_revamp_plan.md                    # Roadmap for AV Studio & composer tools
+│   ├── rea_and_edge_setup_guide.md                    # Edge debugging setup guide
+│   ├── post_workflow_iteration_report.md             # Post feature test report
+│   └── screenshots/                                  # UI screenshots
 └── README.md
 ```
 
 ---
 
-## 📐 Plans & Architecture Roadmap
+## Documentation & Roadmap
 
-* **[Production Architecture & Implementation Plan](docs/architecture_comparison_and_migration_plan.md)**: Deep-dive production engineering architecture detailing **Supabase** (PostgreSQL DDL schema, Realtime multiplayer sync, Anonymous/OAuth authentication, Row-Level Security) and **Cloudflare R2** (zero-egress object storage, presigned upload pipeline, OpenGraph link preview workers) along with a 5-phase migration roadmap.
-* **[REA & Microsoft Edge DevTools Setup Guide](docs/rea_and_edge_setup_guide.md)**: Complete guide on installing REA MCP (`rea-agents`) and launching Microsoft Edge on remote debugging port `9222` for live reverse engineering and browser automation on a new computer.
-* **[Post Workflow Iteration & Parity Report](docs/post_workflow_iteration_report.md)**: Verification documentation covering tests across post creation, in-place update, context menu actions, and theater view.
-* **[Blueprint Specification](padles_pixel_perfect_clone_specification_antigravity_blueprint.md)**: Complete functional and behavioral specification derived from live Padlet reverse engineering.
-
----
-
-## 🛠️ Built With
-
-* **HTML5**: Semantic markup, dialogs, accessibility roles (`role="dialog"`, `role="menu"`).
-* **CSS3**: Custom design tokens, glassmorphism, flexbox/grid layout, smooth bezier transitions.
-* **Vanilla JavaScript (ES6+)**: Zero framework dependencies, reactive DOM event delegation, `localStorage` caching.
+* **[Tools Revamp Plan](docs/padles_tools_revamp_plan.md)**: Plan for implementing native camera, video, voice recording, and drawing tools.
+* **[Backend & Architecture Plan](docs/architecture_comparison_and_migration_plan.md)**: Optional roadmap for Supabase database schemas and Cloudflare R2 file storage.
+* **[DevTools Setup Guide](docs/rea_and_edge_setup_guide.md)**: How to run Edge in debug mode for inspecting and testing UI parity.
 
 ---
 
-## 📄 License
+## Tech Stack
 
-MIT License. Created by Salman Madani.
+* **HTML5**: Semantic markup and accessible dialog elements.
+* **CSS3**: Custom properties, flexbox, grid, and dark mode support.
+* **JavaScript**: Modern ES6+ with no runtime dependencies.
+
+---
+
+## License
+
+MIT License.

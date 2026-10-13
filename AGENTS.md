@@ -7,20 +7,32 @@
 
 ---
 
-## 1. Absolute Behavioral Rules
+## 1. Absolute Behavioral Rules & Zero-Guessing Policy
 
 1. **Zero Guesswork & Zero Hallucinated Designs**
    - **Never guess colors, themes, or layouts.** In previous sessions, an agent hallucinated a dark theme (`#1f2125`) for the Edit Post modal, claiming it was "pixel perfect", which was false and rejected by the user. Real Padlet uses clean `#ffffff` surfaces with `#de3163` Padlet Pink accents.
+   - You MUST NOT guess CSS rules, colors, layout dimensions, paddings, margins, border radii, typography metrics, or SVG icon paths.
+   - You MUST NOT use generic placeholders or approximate components (e.g., generic toggle switches, standard HTML dialogs).
    - Every CSS property, font size, border radius, padding, and box-shadow must come directly from computed styles extracted from live Padlet.
 
 2. **Reverse Engineering Anything (REA) as Ground Truth**
-   - Live Padlet running in Microsoft Edge with remote debugging (`--remote-debugging-port=9222`) is the **single source of truth**.
-   - Whenever building, fixing, or checking a component, query `http://127.0.0.1:9222/json` to connect to the live Padlet tab and extract the actual DOM structure and computed styles.
+   - Live Padlet running in Microsoft Edge with remote debugging (`--remote-debugging-port=9222`) or through REA MCP tools (`inspect_web_page`, `observe_web_execution`, `list_browser_targets`) is the **single source of truth**.
+   - Whenever building, fixing, or checking a component, query `http://127.0.0.1:9222/json` to connect to the live Padlet tab and extract actual `getComputedStyle()` metrics, bounding client rects, exact SVG markup, and DOM tree structures directly from Padlet's live DOM.
 
-3. **Mandatory Visual Screenshot Verification Before Reporting**
+3. **100% Clone Fidelity Checklist**
+   - **Typography**: Exact font families (`Inter var`, `Inter`), weights, sizes, line heights, and letter spacings.
+   - **Colors**: Exact RGB/RGBA hex color codes and alpha transparencies.
+   - **Geometry**: Matching container heights, widths, scroll gutters (`color-scheme: dark`), padding, and margins.
+   - **Physics & States**: Authentic micro-interactions, focus outlines (e.g. Canary `#fec006`), toggle transitions (`translateX(16px)`), subpanel slides, and keyboard bindings (<kbd>Escape</kbd>).
+
+4. **Mandatory Automated Proof & Visual Screenshot Verification**
    - **Never claim parity or completion without proof.** You are strictly forbidden from reporting "pixel-perfect" or "task complete" without first capturing screenshot artifacts of the local app (`Page.captureScreenshot`), viewing them via `view_file`, and verifying side-by-side with live Padlet reference screenshots.
+   - Before completing any cloning or UI feature task, write and execute an automated CDP verification script comparing Padlet vs. Padles.
+   - Diff tolerance: **0 strict diffs**.
+   - If diffs exist, adjust CSS tokens or DOM structure until 0 diffs remain.
+   - Execute interactive scenario testing and visual side-by-side screenshot verification.
 
-4. **Preserve Documentation & Parity Core**
+5. **Preserve Documentation & Parity Core**
    - Maintain documentation integrity and preserve working features.
    - Do not break the multiple drafts docking system, drag-and-drop, or Supabase backend sync.
 

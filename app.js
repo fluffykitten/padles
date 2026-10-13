@@ -17,8 +17,8 @@ const PALETTES = [
 
 // 21 Built-In Media Tools (Blueprint Section 5.1)
 const ALL_TOOLS = [
-  { id: 'padlet', name: 'Padlet', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
-  { id: 'arcade', name: 'Padlet Arcade', isNew: true, icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m8-2h.01m3 0h.01"/></svg>' },
+  { id: 'padles', name: 'Padles', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
+  { id: 'arcade', name: 'Padles Arcade', isNew: true, icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m8-2h.01m3 0h.01"/></svg>' },
   { id: 'upload', name: 'Upload', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' },
   { id: 'link', name: 'Link', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' },
   { id: 'camera', name: 'Camera', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' },
@@ -158,7 +158,7 @@ class PadlesShelfApp {
     this.lastDiscardedDraft = null;
     this.draftUndoTimeout = null;
 
-    // Card Context Menu (Padlet Authentic 14-Item Menu & 6 Swatches)
+    // Card Context Menu (Padles Authentic 14-Item Menu & 6 Swatches)
     this.cardContextMenu = document.getElementById('cardContextMenu');
     this.cardMenuColorRow = document.getElementById('cardMenuColorRow');
     this.pinActionLabel = document.getElementById('pinActionLabel');
@@ -205,6 +205,7 @@ class PadlesShelfApp {
     this.initPaletteSwatches();
     this.initSectionContextMenu();
     this.initCardContextMenu();
+    this.initEmojiPicker();
     this.initCardDetailModal();
     this.initScheduleModal();
     this.initAllToolsModal();
@@ -213,6 +214,7 @@ class PadlesShelfApp {
     this.initSlideshow();
     this.initShareDrawer();
     this.initSettingsDrawer();
+    this.applyLoadedSettings();
     this.initMoreDrawer();
     this.attachEventListeners();
 
@@ -409,6 +411,27 @@ class PadlesShelfApp {
       state.customFields = [];
     }
 
+    if (!state.settings) {
+      state.settings = {
+        title: state.title || 'Physics Audio Reflections: I see, I think, I wonder',
+        description: state.description || '',
+        icon: state.icon || '',
+        wallpaper: state.wallpaperTheme || 'aurora',
+        colorScheme: 'dark',
+        font: 'niagara',
+        postSize: 'standard',
+        layoutFormat: 'columns',
+        sortBy: 'manual',
+        newPostPosition: 'last',
+        showAuthorAndTime: true,
+        commentsEnabled: true,
+        reactionsPreset: 'all',
+        moderation: 'auto',
+        copyProtection: 'none',
+        url: window.location.href
+      };
+    }
+
     return state;
   }
 
@@ -487,6 +510,8 @@ class PadlesShelfApp {
     el.id = card.id;
     el.dataset.color = card.color || 'default';
     el.draggable = true;
+    el.addEventListener('mouseenter', () => el.classList.add('is-hovered'));
+    el.addEventListener('mouseleave', () => el.classList.remove('is-hovered'));
 
     // Apply custom palette if not default/blue
     if (card.color && card.color !== 'blue' && card.color !== 'white' && card.color !== 'default') {
@@ -508,10 +533,18 @@ class PadlesShelfApp {
       `;
     }
 
-    const dotsBtnHtml = `
-      <button type="button" class="card-dots-btn" title="More post actions" aria-label="More post actions" data-testid="surfacePostMoreActionsButton">
-        <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor"><path d="M16 10a3.143 3.143 0 1 1 0-6.286A3.143 3.143 0 0 1 16 10m0 9.143a3.143 3.143 0 1 1 0-6.286 3.143 3.143 0 0 1 0 6.286m-3.143 6a3.143 3.143 0 1 0 6.286 0 3.143 3.143 0 0 0-6.286 0"/></svg>
-      </button>
+    const cornerActionsHtml = `
+      <div class="card-corner-actions" data-testid="surfacePostCornerActions">
+        <div class="card-edit-btn-wrapper">
+          <button type="button" class="card-edit-btn" title="Edit" aria-label="Edit this post" data-testid="surfacePostEditButton">
+            <span>Edit</span>
+          </button>
+        </div>
+        <div class="card-actions-divider"></div>
+        <button type="button" class="card-dots-btn" title="More post actions" aria-label="More post actions" data-testid="surfacePostMoreActionsButton">
+          <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor"><path d="M16 10a3.143 3.143 0 1 1 0-6.286A3.143 3.143 0 0 1 16 10m0 9.143a3.143 3.143 0 1 1 0-6.286 3.143 3.143 0 0 1 0 6.286m-3.143 6a3.143 3.143 0 1 0 6.286 0 3.143 3.143 0 0 0-6.286 0"/></svg>
+        </button>
+      </div>
     `;
 
     let attachmentHtml = '';
@@ -576,28 +609,61 @@ class PadlesShelfApp {
       customFieldsHtml += '</div>';
     }
 
+    // Render post emoji reactions pills + Add reaction button
+    const emojiReactions = card.emojiReactions || {};
+    let reactionPillsHtml = '';
+    const emojiEntries = Object.entries(emojiReactions);
+
+    emojiEntries.forEach(([emoji, info]) => {
+      if (info && info.count > 0) {
+        const hex = emoji.codePointAt(0).toString(16);
+        reactionPillsHtml += `
+          <button type="button" class="reaction-pill ${info.userReacted ? 'is-reacted' : ''}" data-emoji="${this.escapeHtml(emoji)}" data-testid="surfacePostReactionEmojiAccumulatedReactionsButton-${hex}" aria-label="Reaction ${emoji} count ${info.count}">
+            <span class="reaction-pill-emoji">${emoji}</span>
+            <span class="reaction-pill-count">${info.count}</span>
+          </button>
+        `;
+      }
+    });
+
+    // If card.reactions > 0 but emojiReactions is empty (legacy data)
+    if (emojiEntries.length === 0 && card.reactions > 0) {
+      reactionPillsHtml += `
+        <button type="button" class="reaction-pill ${card.hasReacted ? 'is-reacted' : ''}" data-emoji="❤️" data-testid="surfacePostReactionEmojiAccumulatedReactionsButton-2764" aria-label="Reaction ❤️ count ${card.reactions}">
+          <span class="reaction-pill-emoji">❤️</span>
+          <span class="reaction-pill-count">${card.reactions}</span>
+        </button>
+      `;
+    }
+
+    const addReactionSvg = `
+      <svg viewBox="0 0 24 24" height="18" width="18" fill="currentColor">
+        <path d="M11.168 3c0.657 0 1.299 0.064 1.92 0.188-0.171 0.455-0.287 0.937-0.342 1.437-0.511-0.098-1.038-0.151-1.578-0.151-4.616 0-8.359 3.743-8.359 8.359s3.743 8.358 8.359 8.358c4.616 0 8.358-3.742 8.358-8.358 0-0.54-0.053-1.068-0.151-1.579 0.5-0.055 0.982-0.172 1.437-0.342 0.123 0.622 0.189 1.264 0.189 1.922-0 5.431-4.403 9.833-9.833 9.833s-9.833-4.402-9.833-9.833c0-5.431 4.402-9.833 9.833-9.833z"/>
+        <path d="M6.654 15.447c0.32-0.252 0.783-0.196 1.035 0.124 0.835 1.059 2.105 1.689 3.479 1.689 1.373-0 2.64-0.628 3.475-1.685 0.252-0.32 0.717-0.375 1.037-0.122s0.373 0.717 0.121 1.036c-1.112 1.407-2.804 2.246-4.633 2.246-1.831 0-3.525-0.841-4.637-2.251-0.252-0.32-0.197-0.784 0.122-1.036z"/>
+        <path d="M8.219 9.638c0.678 0 1.228 0.551 1.228 1.229s-0.55 1.228-1.228 1.228-1.228-0.55-1.228-1.228c0-0.678 0.549-1.229 1.228-1.229z"/>
+        <path d="M14.119 9.638c0.26 0 0.501 0.081 0.699 0.219 0.050 0.043 0.101 0.085 0.152 0.126 0.232 0.223 0.376 0.537 0.376 0.884-0 0.678-0.55 1.228-1.228 1.228s-1.229-0.55-1.229-1.228c0-0.678 0.551-1.229 1.229-1.229z"/>
+        <path d="M19.163 7.111c0.61 0.85 1.089 1.8 1.404 2.823-0.452 0.181-0.936 0.298-1.441 0.34-0.155-0.481-0.351-0.944-0.586-1.383 0.026 0.010 0.051 0.023 0.078 0.029l0.092 0.009c0.251-0 0.453-0.204 0.453-0.454v-1.363z"/>
+        <path d="M17.981 5.746c0.093 0.090 0.185 0.18 0.275 0.273v2.383c-0.673-1.074-1.583-1.983-2.658-2.656h2.383z"/>
+        <path d="M14.067 3.434c1.023 0.315 1.972 0.795 2.823 1.405h-1.362l-0.091 0.008c-0.207 0.042-0.363 0.226-0.363 0.445 0 0.059 0.011 0.115 0.031 0.167-0.437-0.234-0.898-0.429-1.378-0.583 0.042-0.506 0.159-0.99 0.34-1.441z"/>
+        <path d="M18.667 0.333c-2.761 0-5 2.239-5 5s2.239 5 5 5c2.761 0 5-2.239 5-5s-2.239-5-5-5zM18.667 1.697c0.251 0 0.455 0.204 0.455 0.455v2.727h2.727c0.251 0 0.454 0.204 0.454 0.455s-0.204 0.455-0.454 0.455h-2.727v2.727c0 0.251-0.204 0.455-0.455 0.455s-0.455-0.204-0.455-0.455v-2.727h-2.727c-0.251 0-0.455-0.204-0.455-0.455s0.204-0.455 0.455-0.455h2.727v-2.727c0-0.251 0.204-0.455 0.455-0.455z"/>
+      </svg>
+    `;
+
     const bottomBarHtml = `
       <div class="card-bottom-bar">
-        <button class="reaction-btn ${card.hasReacted ? 'has-reacted' : ''}" title="Add reaction" aria-label="Add reaction">
-          <svg viewBox="0 0 24 24" height="18" width="18" fill="currentColor">
-            <path d="M11.168 3c0.657 0 1.299 0.064 1.92 0.188-0.171 0.455-0.287 0.937-0.342 1.437-0.511-0.098-1.038-0.151-1.578-0.151-4.616 0-8.359 3.743-8.359 8.359s3.743 8.358 8.359 8.358c4.616 0 8.358-3.742 8.358-8.358 0-0.54-0.053-1.068-0.151-1.579 0.5-0.055 0.982-0.172 1.437-0.342 0.123 0.622 0.189 1.264 0.189 1.922-0 5.431-4.403 9.833-9.833 9.833s-9.833-4.402-9.833-9.833c0-5.431 4.402-9.833 9.833-9.833z"/>
-            <path d="M6.654 15.447c0.32-0.252 0.783-0.196 1.035 0.124 0.835 1.059 2.105 1.689 3.479 1.689 1.373-0 2.64-0.628 3.475-1.685 0.252-0.32 0.717-0.375 1.037-0.122s0.373 0.717 0.121 1.036c-1.112 1.407-2.804 2.246-4.633 2.246-1.831 0-3.525-0.841-4.637-2.251-0.252-0.32-0.197-0.784 0.122-1.036z"/>
-            <path d="M8.219 9.638c0.678 0 1.228 0.551 1.228 1.229s-0.55 1.228-1.228 1.228-1.228-0.55-1.228-1.228c0-0.678 0.549-1.229 1.228-1.229z"/>
-            <path d="M14.119 9.638c0.26 0 0.501 0.081 0.699 0.219 0.050 0.043 0.101 0.085 0.152 0.126 0.232 0.223 0.376 0.537 0.376 0.884-0 0.678-0.55 1.228-1.228 1.228s-1.229-0.55-1.229-1.228c0-0.678 0.551-1.229 1.229-1.229z"/>
-            <path d="M19.163 7.111c0.61 0.85 1.089 1.8 1.404 2.823-0.452 0.181-0.936 0.298-1.441 0.34-0.155-0.481-0.351-0.944-0.586-1.383 0.026 0.010 0.051 0.023 0.078 0.029l0.092 0.009c0.251-0 0.453-0.204 0.453-0.454v-1.363z"/>
-            <path d="M17.981 5.746c0.093 0.090 0.185 0.18 0.275 0.273v2.383c-0.673-1.074-1.583-1.983-2.658-2.656h2.383z"/>
-            <path d="M14.067 3.434c1.023 0.315 1.972 0.795 2.823 1.405h-1.362l-0.091 0.008c-0.207 0.042-0.363 0.226-0.363 0.445 0 0.059 0.011 0.115 0.031 0.167-0.437-0.234-0.898-0.429-1.378-0.583 0.042-0.506 0.159-0.99 0.34-1.441z"/>
-            <path d="M18.667 0.333c-2.761 0-5 2.239-5 5s2.239 5 5 5c2.761 0 5-2.239 5-5s-2.239-5-5-5zM18.667 1.697c0.251 0 0.455 0.204 0.455 0.455v2.727h2.727c0.251 0 0.454 0.204 0.454 0.455s-0.204 0.455-0.454 0.455h-2.727v2.727c0 0.251-0.204 0.455-0.455 0.455s-0.455-0.204-0.455-0.455v-2.727h-2.727c-0.251 0-0.455-0.204-0.455-0.455s0.204-0.455 0.455-0.455h2.727v-2.727c0-0.251 0.204-0.455 0.455-0.455z"/>
-          </svg>
-          ${card.reactions > 0 ? `<span>${card.reactions}</span>` : ''}
-        </button>
+        <div class="card-reactions-group" data-testid="surfacePostReactionEmoji">
+          ${reactionPillsHtml}
+          <button type="button" class="reaction-btn reaction-add-btn" title="Add reaction" aria-label="Add reaction" data-testid="surfacePostReactionEmojiAddReactionButton">
+            ${addReactionSvg}
+          </button>
+        </div>
       </div>
     `;
 
     el.innerHTML = `
       ${pinnedHtml}
       <div class="card-inner-surface">
-        ${dotsBtnHtml}
+        ${cornerActionsHtml}
         ${attachmentHtml}
         ${captionHtml}
         ${subjectHtml}
@@ -607,7 +673,15 @@ class PadlesShelfApp {
       </div>
     `;
 
-    // 3-dots Context Menu click handler
+    // Corner Edit and 3-dots actions
+    const editBtn = el.querySelector('.card-edit-btn');
+    if (editBtn) {
+      editBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.editPost(card.id);
+      });
+    }
+
     const dotsBtn = el.querySelector('.card-dots-btn');
     if (dotsBtn) {
       dotsBtn.addEventListener('click', (e) => {
@@ -616,34 +690,30 @@ class PadlesShelfApp {
       });
     }
 
-    // Reaction click handler
-    const reactBtn = el.querySelector('.reaction-btn');
-    reactBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      card.hasReacted = !card.hasReacted;
-      card.reactions = (card.reactions || 0) + (card.hasReacted ? 1 : -1);
-      reactBtn.classList.toggle('has-reacted', card.hasReacted);
-      const span = reactBtn.querySelector('span');
-      if (card.reactions > 0) {
-        if (!span) {
-          const s = document.createElement('span');
-          s.textContent = card.reactions;
-          reactBtn.appendChild(s);
-        } else {
-          span.textContent = card.reactions;
-        }
-      } else if (span) {
-        span.remove();
-      }
-      this.saveState();
-      this.showToast(card.hasReacted ? 'Reaction added' : 'Reaction removed');
+    // Reaction pill clicks (toggles specific emoji reaction)
+    el.querySelectorAll('.reaction-pill').forEach(pill => {
+      pill.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const emoji = pill.dataset.emoji;
+        if (emoji) this.toggleCardEmojiReaction(card.id, emoji);
+      });
     });
 
-    // Clicking card opens expanded theater view
-    el.addEventListener('click', (e) => {
-      if (!e.target.closest('button') && !e.target.closest('a') && !e.target.closest('.play-overlay-btn')) {
-        this.openCardDetailModal(card.id);
-      }
+    // Add reaction button click (opens 336px x 377px authentic Padlet emoji picker)
+    const addReactBtn = el.querySelector('.reaction-add-btn');
+    if (addReactBtn) {
+      addReactBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openEmojiPicker(addReactBtn, card.id);
+      });
+    }
+
+    // In Padles, left clicking a card does nothing (detail view opened via context menu / actions)
+    // Right clicking a card opens post actions context menu at cursor position
+    el.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.openCardContextMenu(card, el, e);
     });
 
     // Drag start
@@ -694,7 +764,7 @@ class PadlesShelfApp {
   }
 
   /* ========================================================================
-     Padlet-Authentic Multiple Drafts & Composer Management
+     Padles-Authentic Multiple Drafts & Composer Management
      ======================================================================== */
 
   openComposer(targetSectionId = null) {
@@ -728,7 +798,7 @@ class PadlesShelfApp {
     this.state.drafts.push(newDraft);
     this.activeDraftId = newDraft.id;
     this.editingCardId = null;
-    this.publishBtn.textContent = 'Submit';
+    this.publishBtn.textContent = 'Publish';
     this.publishBtn.classList.remove('is-update');
     this.saveState();
     this.openDraftInComposer(newDraft);
@@ -743,7 +813,7 @@ class PadlesShelfApp {
     this.composerState.selectedSectionId = draft.sectionId || this.state.sections[0]?.id;
     this.composerState.attachment = draft.attachment || null;
 
-    this.publishBtn.textContent = 'Submit';
+    this.publishBtn.textContent = 'Publish';
     this.publishBtn.classList.remove('is-update');
     this.updateColorPickerUI();
     this.updateSectionSelectorUI();
@@ -815,13 +885,13 @@ class PadlesShelfApp {
   adjustBodyTextareaHeight() {
     if (!this.bodyInput) return;
     this.bodyInput.style.height = 'auto';
-    const newHeight = Math.max(160, Math.min(420, this.bodyInput.scrollHeight));
+    const newHeight = Math.max(38, this.bodyInput.scrollHeight);
     this.bodyInput.style.height = `${newHeight}px`;
   }
 
   cancelEditPost() {
     this.editingCardId = null;
-    this.publishBtn.textContent = 'Submit';
+    this.publishBtn.textContent = 'Publish';
     this.publishBtn.classList.remove('is-update');
     this.composerCard.className = 'composer-card';
     this.composerCard.hidden = true;
@@ -887,7 +957,7 @@ class PadlesShelfApp {
     this.editingCardId = null;
 
     // Clean up UI & return composer card to dock
-    this.publishBtn.textContent = 'Submit';
+    this.publishBtn.textContent = 'Publish';
     this.publishBtn.classList.remove('is-update');
     this.composerCard.className = 'composer-card';
     this.composerCard.hidden = true;
@@ -1054,7 +1124,9 @@ class PadlesShelfApp {
     this.dockedTabsTrack.innerHTML = '';
 
     const totalDrafts = this.state.drafts.length;
-    this.dockBulkActionWrapper.hidden = totalDrafts === 0;
+    if (this.dockBulkActionWrapper) {
+      this.dockBulkActionWrapper.hidden = totalDrafts < 2;
+    }
 
     if (totalDrafts === 0) {
       if (this.composerCardWrapper) {
@@ -1245,7 +1317,7 @@ class PadlesShelfApp {
       this.publishBtn.setAttribute('aria-label', 'Update post');
       this.publishBtn.classList.add('is-update');
     } else {
-      this.publishBtn.textContent = 'Submit';
+      this.publishBtn.textContent = 'Publish';
       this.publishBtn.title = 'Submit post';
       this.publishBtn.setAttribute('aria-label', 'Submit post');
       this.publishBtn.classList.remove('is-update');
@@ -1391,6 +1463,511 @@ class PadlesShelfApp {
     if (this.colorPaletteDropdown) this.colorPaletteDropdown.hidden = true;
     if (this.sectionContextMenu) this.sectionContextMenu.hidden = true;
     if (this.cardContextMenu) this.cardContextMenu.hidden = true;
+    this.closeEmojiPicker();
+  }
+
+  /* ========================================================================
+     Padlet-Authentic 336px x 377px Emoji Picker Popover (8 Categories & Reactions)
+     ======================================================================== */
+
+  initEmojiPicker() {
+    this.emojiPickerPopover = document.getElementById('emojiPickerPopover');
+    this.emojiSearchInput = document.getElementById('emojiSearchInput');
+    this.emojiSearchClearBtn = document.getElementById('emojiSearchClearBtn');
+    this.emojiPickerContent = document.getElementById('emojiPickerContent');
+    this.emojiCategoryTabs = document.getElementById('emojiCategoryTabs');
+
+    if (!this.emojiPickerPopover) return;
+
+    this.emojiKeywords = {
+      '😀': 'grinning face happy smile laugh',
+      '😃': 'smiling face big eyes happy joy',
+      '😄': 'smiling face open mouth laughing',
+      '😁': 'beaming face teeth smile grin',
+      '😆': 'grinning squinting laughing lol',
+      '😅': 'sweat smile nervous relief',
+      '😂': 'tears joy laughing haha funny lol',
+      '🤣': 'rofl rolling floor laughing lol',
+      '😊': 'smiling blush warm kind happy',
+      '😇': 'halo angel innocent blessed',
+      '🙂': 'slightly smiling smile fine okay',
+      '🙃': 'upside down silly sarcasm irony',
+      '😉': 'winking wink flirt playful',
+      '😌': 'relieved calm peaceful relaxed',
+      '😍': 'heart eyes in love adore crush',
+      '🥰': 'smiling hearts loved affectionate',
+      '😘': 'blow kiss kissing love romantic',
+      '😗': 'kissing kiss whistle',
+      '😙': 'kissing smiling eyes kiss blush',
+      '😚': 'kissing closed eyes blush kiss',
+      '😋': 'yum delicious tasty licking food',
+      '😛': 'tongue playful cheeky silly',
+      '😝': 'squinting tongue lol funny tease',
+      '😜': 'winking tongue crazy wink wacky',
+      '🤪': 'zany face wild crazy goofy',
+      '🤨': 'raised eyebrow skeptic doubt suspicious',
+      '🧐': 'monocle classy curious inspect study',
+      '🤓': 'nerd geek glasses smart study',
+      '😎': 'sunglasses cool stylish shades awesome',
+      '🥸': 'disguise mustache glasses undercover incognito',
+      '🤩': 'star struck excited amazed awesome',
+      '🥳': 'partying party celebration happy birthday celebrate',
+      '😏': 'smirk smirking smug flirt suggestive',
+      '😒': 'unamused annoyed displeased unimpressed',
+      '😞': 'disappointed sad down upset regret',
+      '😔': 'pensive thoughtful sad mournful',
+      '😟': 'worried concerned anxious nervous',
+      '😕': 'confused puzzled hesitant unsure',
+      '🙁': 'slightly frowning sad frown',
+      '☹️': 'frowning sad sorrow unhappy',
+      '😣': 'persevering struggle upset pain',
+      '😖': 'confounded upset distressed irritated',
+      '😫': 'tired weary exhausted stressed',
+      '😩': 'weary crying upset tired despair',
+      '🥺': 'pleading begging cute puppy eyes please',
+      '😢': 'crying tear sad upset grief',
+      '😭': 'loudly crying sob bawling tears upset',
+      '😤': 'triumph steam angry determined pride',
+      '😠': 'angry mad annoyed furious irritated',
+      '😡': 'pouting rage furious mad red',
+      '🤬': 'cursing swearing angry symbols mad',
+      '🤯': 'exploding head mind blown shocked amazed',
+      '😳': 'flushed embarrassed surprised blush wide eyes',
+      '🥵': 'hot face sweat heat summer warm',
+      '🥶': 'cold face freezing ice winter frost',
+      '😱': 'screaming fear scream terrified scared shock',
+      '😨': 'fearful scared worried anxious afraid',
+      '😰': 'anxious sweat scared worried blue',
+      '😥': 'sad relieved whew phew close call',
+      '😓': 'downcast sweat discouraged overwhelmed',
+      '🤗': 'hugging hug warm embrace welcome open',
+      '🤔': 'thinking ponder wonder consider hmm question',
+      '🫣': 'peeking eye scared curious hiding peek',
+      '🤭': 'hand mouth giggle oops chuckle shy',
+      '🫢': 'open eyes hand mouth gasp shocked surprised',
+      '🫡': 'saluting salute respect yes sir honor',
+      '🤫': 'shushing quiet secret whisper silence shh',
+      '🫠': 'melting melt hot sarcasm dissolving',
+      '🤥': 'lying liar pinocchio nose deception',
+      '😶': 'no mouth silent blank speechless mute',
+      '🫥': 'dotted face invisible disappearing unseen fade',
+      '😐': 'neutral poker straight face deadpan fine',
+      '🫤': 'diagonal mouth skeptical unsure confused meh',
+      '😑': 'expressionless blank emotionless flat done',
+      '🫨': 'shaking vibrating shock earthquake tremble',
+      '😬': 'grimacing awkward yikes tense nervous',
+      '🙄': 'rolling eyes annoyed Whatever bored sarcasm',
+      '😯': 'hushed surprised gasp astonishment',
+      '😦': 'frowning open mouth stunned surprise',
+      '😧': 'anguished shocked alarmed hurt',
+      '😮': 'open mouth wow oh surprise gasp',
+      '😲': 'astonished shocked amazed stunned',
+      '🥱': 'yawning yawn tired sleepy boring bedtime',
+      '😴': 'sleeping sleep zzz tired goodnight bedtime',
+      '🤤': 'drooling drool hungry delicious desire craving',
+      '😪': 'sleepy tired snot bubble resting dozing',
+      '😵': 'dizzy knocked out stunned dead unconscious',
+      '😵‍💫': 'spiral eyes dizzy disoriented hypnotized confused',
+      '🤐': 'zipper mouth secret quiet silent locked',
+      '🥴': 'woozy drunk tipsy dizzy confused dazed',
+      '🤢': 'nauseated sick gross disgust ill green',
+      '🤮': 'vomiting vomit puke throw up barf sick',
+      '🤧': 'sneezing sneeze tissue cold sick allergy',
+      '😷': 'medical mask sick covid illness virus doctor',
+      '🤒': 'thermometer sick fever temperature ill',
+      '🤕': 'bandage head hurt injured pain wound',
+      '🤑': 'money face rich cash wealthy dollar profit',
+      '🤠': 'cowboy hat western yeehaw ranch sheriff',
+      '😈': 'devil purple horns evil mischievous smirk',
+      '👿': 'angry devil demon upset bad furious',
+      '👹': 'ogre oni monster japanese mask folklore',
+      '👺': 'goblin tengu red mask long nose japanese',
+      '🤡': 'clown circus funny scary party joke',
+      '💩': 'poop pile poo brown stinky funny smiling',
+      '👻': 'ghost spooky halloween spirit boo phantom',
+      '💀': 'skull dead skeleton dying lol dead funny',
+      '☠️': 'skull crossbones poison danger death pirate',
+      '👽': 'alien ufo extraterrestrial martian sci fi space',
+      '👾': 'alien monster video game 8bit pixel retro arcade',
+      '🤖': 'robot android sci fi tech machine cyber',
+      '🎃': 'jack o lantern pumpkin halloween fall spooky autumn',
+      '😺': 'grinning cat smiling kitty meow feline pet',
+      '😸': 'grinning cat smiling eyes meow joyful kitty',
+      '😹': 'cat tears joy laughing kitty lol funny',
+      '😻': 'heart eyes cat love kitten crush feline',
+      '😼': 'cat wry smile smirk kitty cheeky sly',
+      '😽': 'kissing cat kiss kitty feline sweet',
+      '🙀': 'weary cat scream scared shock frightened horror',
+      '😿': 'crying cat sad tear kitten unhappy weep',
+      '😾': 'pouting cat grumpy mad angry upset feline',
+      '👋': 'wave waving hello goodbye bye hi greeting',
+      '🤚': 'raised back hand stop talk to hand pause',
+      '🖐️': 'hand splayed five fingers stop high five',
+      '✋': 'raised hand stop halt high five question answer',
+      '🖖': 'vulcan salute spock star trek live long prosper',
+      '👌': 'ok okay hand perfect excellent correct nice',
+      '🤌': 'pinched fingers italian chef kiss what do you mean',
+      '🤏': 'pinching hand small little tiny bit amount',
+      '✌️': 'victory hand peace two signs deuces v sign',
+      '🤞': 'crossed fingers good luck hope wish promise',
+      '🫰': 'finger heart love kpop korean heart snap',
+      '🤟': 'love you hand gesture sign language ily rock',
+      '🤘': 'sign horns rock on metal concert party music',
+      '🤙': 'call me hang loose shaka surfing phone chill',
+      '👈': 'point left pointer finger left direction west',
+      '👉': 'point right pointer finger right direction east',
+      '👆': 'point up pointing finger top up north look',
+      '🖕': 'middle finger rude insult offensive gesture',
+      '👇': 'point down pointing finger bottom down south',
+      '☝️': 'index pointing up finger one attention listen point',
+      '🫵': 'pointing index viewer you point target choice',
+      '👍': 'thumbs up good like approve yes agree great positive',
+      '👎': 'thumbs down bad dislike disapprove no negative poor',
+      '✊': 'raised fist solidarity power protest punch strength',
+      '👊': 'oncoming fist bump bro punch fight hit impact',
+      '🤛': 'left facing fist bump punch greeting hit',
+      '🤜': 'right facing fist bump punch greeting hit',
+      '👏': 'clapping hands applause bravo praise good job celebrate',
+      '🙌': 'raising hands celebrate praise hooray yay hallelujah',
+      '🫶': 'heart hands love care affection support kindness',
+      '👐': 'open hands hug welcome jazz hands honest care',
+      '🤲': 'palms up together pray prayer ask blessing hold',
+      '🤝': 'handshake agreement deal partnership greeting meet shaking',
+      '🙏': 'folded hands pray thank you please gratitude namaste hope',
+      '❤️': 'red heart love passion romance affection favorite like',
+      '🧡': 'orange heart care friendship warm energy love',
+      '💛': 'yellow heart friendship happy bright kindness joy',
+      '💚': 'green heart nature health envy eco friendly luck',
+      '💙': 'blue heart trust peace loyalty calm harmony cold',
+      '💜': 'purple heart royalty luxury compassion affection kpop',
+      '🖤': 'black heart dark gothic sorrow grief edgy style',
+      '🤍': 'white heart pure peace angel innocence clean calm',
+      '🤎': 'brown heart chocolate warmth earth cocoa skin',
+      '💔': 'broken heart breakup sad hurt heartbreak divorce grief',
+      '❤️‍🔥': 'heart on fire passionate love burning desire intense',
+      '❤️‍🩹': 'mending heart healing recovery better bandage heal',
+      '❣️': 'heart exclamation love punctuation point emphasis',
+      '💕': 'two hearts love sweet floating pink romance couple',
+      '💞': 'revolving hearts love affection revolving swirling spin',
+      '💓': 'beating heart pulse heartbeat alive excite vibration',
+      '💗': 'growing heart expanding love flutter affection triple',
+      '💖': 'sparkling heart shiny love glitter magical sweet',
+      '💘': 'heart with arrow cupid romance love crush Valentine',
+      '💝': 'heart with ribbon gift present wrapped love surprise',
+      '💟': 'heart decoration square badge purple motif sign',
+      '✨': 'sparkles stars magic shiny clean glitter twinkle bright',
+      '⭐': 'star gold favorite rating celestial yellow space review',
+      '🌟': 'glowing star shine bright sparkle special award achievement',
+      '🔥': 'fire flame hot lit viral burn trend heat passion',
+      '💥': 'collision explosion bang boom crash hit impact blast',
+      '💯': 'hundred points 100 perfect score keep it real complete',
+      '🎉': 'party popper celebration congrats celebrate congrats tada',
+      '🎊': 'confetti ball celebration party festival joy fun',
+      '💡': 'light bulb idea inspiration smart solution electric bright',
+      '🚀': 'rocket ship launch space fast speed startup boost crypto moon',
+      '🏆': 'trophy winner first place gold champion achievement award prize',
+      '🎯': 'bullseye direct hit target goal focus aim accurate darts',
+      '👀': 'eyes looking see watch peep curious look examine inspect',
+      '🌈': 'rainbow pride colorful weather hope nature sky spectrum',
+      '☀️': 'sun sunny summer bright warm daylight weather morning',
+      '⚡': 'high voltage lightning bolt zap shock thunder power fast energy',
+      '☕': 'coffee hot drink tea morning breakfast cafe espresso mug',
+      '🍕': 'pizza slice pepperoni cheese italian food snack lunch fast food',
+      '🍔': 'hamburger burger fast food beef cheeseburger snack meal',
+      '🐶': 'dog puppy pet canine animal cute best friend barking',
+      '🐱': 'cat kitten feline pet animal cute meow purr kitty'
+    };
+
+    this.emojiCategories = [
+      {
+        id: 'people',
+        name: 'Smileys & People',
+        emojis: [
+          '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰',
+          '😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳',
+          '😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤',
+          '😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🫣','🤭',
+          '🫢','🫡','🤫','🫠','🤥','😶','🫥','😐','🫤','😑','🫨','😬','🙄','😯','😦','😧',
+          '😮','😲','🥱','😴','🤤','😪','😵','😵‍💫','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕',
+          '🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','☠️','👽','👾','🤖','🎃','😺',
+          '😸','😹','😻','😼','😽','🙀','😿','😾','👋','🤚','🖐️','✋','🖖','👌','🤌','🤏',
+          '✌️','🤞','🫰','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','🫵','👍','👎','✊',
+          '👊','🤛','🤜','👏','🙌','🫶','👐','🤲','🤝','🙏'
+        ]
+      },
+      {
+        id: 'nature',
+        name: 'Animals & Nature',
+        emojis: [
+          '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐽','🐸','🐵',
+          '🙈','🙉','🙊','🐒','🐔','🐧','🐦','🐤','🐣','🐥','🦆','🦅','🦉','🦇','🐺','🐗',
+          '🐴','🦄','🐝','🪱','🐛','🦋','🐌','🐞','🐜','🪰','🪲','🪳','🦟','🦗','🕷️','🕸️',
+          '🦂','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳',
+          '🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🦧','🐘','🦛','🦏','🐪','🐫','🦒','🦘',
+          '🌲','🌳','🌴','🌱','🌿','☘️','🍀','🪴','🎋','🍃','🍂','🍁','🍄','🌾','💐','🌷',
+          '🌹','🥀','🌺','🌸','🌼','🌻','🌞','🌝','⭐','🌟','✨','⚡','💥','🔥','🌈','☀️',
+          '🌤️','⛅','☁️','🌧️','⛈️','🌩️','🌨️','❄️','⛄','💨','💧','🫧','🌊'
+        ]
+      },
+      {
+        id: 'food',
+        name: 'Food & Drinks',
+        emojis: [
+          '🍏','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥',
+          '🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶️','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐',
+          '🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🌭','🍔',
+          '🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟',
+          '🍤','🍙','🍚','🍘','🍥','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭',
+          '🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','☕','🍵','🧃','🥤','🧋','🍺','🍻',
+          '🥂','🍷','🍸','🍹','🍾','🧊'
+        ]
+      },
+      {
+        id: 'activity',
+        name: 'Activities',
+        emojis: [
+          '⚽','🏀','🏈','⚾','🥎','🎾','🏐','🏉','🎱','🏓','🏸','🏒','🏏','🥅','⛳','🪁',
+          '🏹','🎣','🤿','🥊','🥋','🛹','🛼','⛸️','🎿','⛷️','🏂','🏋️','🤸','⛹️','🤺','🤾',
+          '🏌️','🏇','🧘','🏄','🏊','🤽','🚣','🧗','🚴','🏆','🥇','🥈','🥉','🏅','🎖️','🎫',
+          '🎟️','🎪','🎭','🎨','🎬','🎤','🎧','🎼','🎹','🥁','🎷','🎺','🎸','🎻','🎲','♟️',
+          '🎯','🎳','🎮','🎰','🧩'
+        ]
+      },
+      {
+        id: 'travel',
+        name: 'Travel & Places',
+        emojis: [
+          '🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🚚','🚛','🚜','🛴','🚲','🛵',
+          '🏍️','🚨','🚔','🚍','🚘','🚠','🚃','🚋','🚂','🚆','🚇','🚊','🚁','✈️','🛫','🛬',
+          '🚀','🛸','⛵','🚤','🛳️','⛴️','🚢','⚓','⛽','🚧','🚥','🚦','🗿','🗽','🗼','🏰',
+          '🏟️','🎡','🎢','🏖️','🏝️','🌋','⛰️','🏔️','🏕️','⛺','🏠','🏡','🏢','🏬',
+          '🏥','🏦','🏨','🏪','🏫','🏛️','⛪','🕌','⛩️'
+        ]
+      },
+      {
+        id: 'objects',
+        name: 'Objects',
+        emojis: [
+          '⌚','📱','📲','💻','⌨️','🖥️','🖨️','🖱️','🕹️','💾','💿','📀','📷','📸','📹','🎥',
+          '📽️','📞','☎️','📟','📠','📺','📻','🎙️','⏰','🕰️','⌛','⏳','📡','🔋','🔌','💡',
+          '🔦','🕯️','💸','💵','💴','💶','💷','🪙','💰','💳','💎','⚖️','🪜','🧰','🔧','🔨',
+          '⚒️','🛠️','⛏️','🔩','⚙️','🧱','⛓️','🧲','🔫','💣','🧨','🔪','🗡️','⚔️','🛡️','🔮',
+          '📿','💈','⚗️','🔭','🔬','🩹','🩺','💊','💉','🧬','🧹','🧺','🧻','🚽','🚿','🛁',
+          '🧼','🪥','🪒','🧽','🧴','🔑','🗝️','🚪','🪑','🛏️','🧸','🖼️','🛍️','🛒','🎁','🎈',
+          '🎀','🎉','🎊','✉️','📩','📨','📧','💌','📦','🏷️','📜','📃','📄','📑','🧾','📊',
+          '📈','📉','📋','📁','📂','🗂️','📰','📓','📕','📗','📘','📙','📚','📖','🔖','🔗',
+          '📎','🖇️','📐','📏','📌','📍','✂️','🖊️','🖋️','✒️','🖌️','🖍️','📝','✏️','🔍','🔎',
+          '🔒','🔓'
+        ]
+      },
+      {
+        id: 'symbols',
+        name: 'Symbols',
+        emojis: [
+          '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓',
+          '💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','☦️','🛐',
+          '♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓','🆔','⚛️','☢️','☣️','📴',
+          '📳','🈶','🈚','🆚','💮','🉐','㊙️','㊗️','🈴','🈵','🈹','🈲','🅰️','🅱️','🆎','🅾️',
+          '🆘','❌','⭕','🛑','⛔','📛','🚫','💯','💢','♨️','❗️','❕','❓','❔','‼️','⁉️',
+          '⚠️','🚸','🔱','⚜️','🔰','♻️','✅','❇️','✳️','❎','🌐','💠','🌀','💤','🏧','🚾',
+          '♿','🅿️','🈳','🈂️','🛂','🛃','🛄','🛅','🚹','🚺','🚼','🚻','🚮','🎦','📶','🈁',
+          '🆖','🆗','🆙','🆒','🆕','🆓','0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣',
+          '🔟','🔢','#️⃣','*️⃣','▶️','⏸️','⏯️','⏹️','⏺️','⏭️','⏮️','⏩','⏪','⏫','⏬','◀️',
+          '🔼','🔽','➡️','⬅️','⬆️','⬇️','↗️','↘️','↙️','↖️','↕️','↔️','🔄','↪️','↩️','⤴️',
+          '⤵️','🔀','🔁','🔂','🎵','🎶','➕','➖','➗','✖️','🟰','♾️','💲','💱','™️','©️',
+          '®️','✔️','☑️','🔘','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🟤','🔺','🔻','🔸',
+          '🔹','🔶','🔷','▫️','▪️','◽','◾','◻️','◼️','🟥','🟧','🟨','🟩','🟦','🟪','⬛',
+          '⬜','🟫','🔈','🔇','🔉','🔊','🔔','🔕','📣','📢','💬','💭','🗯️','♠️','♣️','♥️',
+          '♦️','🃏'
+        ]
+      },
+      {
+        id: 'flags',
+        name: 'Flags',
+        emojis: [
+          '🚩','🎌','🏁','🏴','🏳️','🏳️‍🌈','🏳️‍⚧️','🏴‍☠️','🇦🇺','🇧🇷','🇨🇦','🇨🇳','🇩🇪','🇪🇸','🇫🇷','🇬🇧',
+          '🇮🇳','🇮🇩','🇮🇹','🇯🇵','🇰🇷','🇲🇽','🇳🇱','🇵🇭','🇷🇺','🇸🇦','🇸🇬','🇺🇸','🇻🇳','🇿🇦'
+        ]
+      }
+    ];
+
+    this.renderEmojiPickerGrid('');
+
+    // Tab buttons
+    this.emojiCategoryTabs.querySelectorAll('.emoji-cat-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const catId = tab.dataset.cat;
+        this.selectEmojiCategory(catId);
+      });
+    });
+
+    // Search filter
+    this.emojiSearchInput.addEventListener('input', () => {
+      const q = this.emojiSearchInput.value.trim().toLowerCase();
+      this.emojiSearchClearBtn.hidden = !q;
+      this.renderEmojiPickerGrid(q);
+    });
+
+    // Clear search
+    this.emojiSearchClearBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.emojiSearchInput.value = '';
+      this.emojiSearchClearBtn.hidden = true;
+      this.renderEmojiPickerGrid('');
+    });
+
+    // Prevent clicks inside picker from bubbling
+    this.emojiPickerPopover.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  }
+
+  renderEmojiPickerGrid(filterText = '') {
+    if (!this.emojiPickerContent) return;
+    let html = '';
+    const q = filterText.toLowerCase();
+
+    this.emojiCategories.forEach(cat => {
+      let filtered = cat.emojis;
+      if (q) {
+        filtered = cat.emojis.filter(em => {
+          const kw = this.emojiKeywords && this.emojiKeywords[em] ? this.emojiKeywords[em] : '';
+          return cat.name.toLowerCase().includes(q) || kw.toLowerCase().includes(q) || em === q;
+        });
+      }
+
+      if (filtered.length > 0) {
+        html += `<div class="emoji-category-section" id="emojiSec_${cat.id}">`;
+        html += `<div class="emoji-category-title">${this.escapeHtml(cat.name)}</div>`;
+        html += `<div class="emoji-grid">`;
+        filtered.forEach(em => {
+          const hex = em.codePointAt(0).toString(16);
+          html += `<button type="button" class="emoji-item-btn" data-emoji="${this.escapeHtml(em)}" data-testid="emoji-icon-${hex}" aria-label="Emoji ${em}">${em}</button>`;
+        });
+        html += `</div></div>`;
+      }
+    });
+
+    if (!html) {
+      html = `<div style="text-align: center; color: #9ca3af; padding: 40px 16px; font-size: 13px;">No emojis found</div>`;
+    }
+
+    this.emojiPickerContent.innerHTML = html;
+
+    // Attach click listeners to all emoji buttons
+    this.emojiPickerContent.querySelectorAll('.emoji-item-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const em = btn.dataset.emoji;
+        if (em && this.activeEmojiCardId) {
+          this.toggleCardEmojiReaction(this.activeEmojiCardId, em);
+          this.closeEmojiPicker();
+        }
+      });
+    });
+  }
+
+  selectEmojiCategory(catId) {
+    if (!this.emojiCategoryTabs) return;
+    this.emojiCategoryTabs.querySelectorAll('.emoji-cat-tab').forEach(t => {
+      t.classList.toggle('is-active', t.dataset.cat === catId);
+    });
+    const sec = document.getElementById(`emojiSec_${catId}`);
+    if (sec && this.emojiPickerContent) {
+      sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  openEmojiPicker(anchorElement, cardId) {
+    if (!this.emojiPickerPopover) return;
+    this.closeAllPopovers();
+
+    this.activeEmojiCardId = cardId;
+    if (this.emojiSearchInput) {
+      this.emojiSearchInput.value = '';
+    }
+    if (this.emojiSearchClearBtn) {
+      this.emojiSearchClearBtn.hidden = true;
+    }
+    this.renderEmojiPickerGrid('');
+
+    // Position popover intelligently relative to anchorElement
+    const rect = anchorElement.getBoundingClientRect();
+    const popoverWidth = 336;
+    const popoverHeight = 377;
+    const margin = 8;
+
+    let left = rect.left;
+    if (left + popoverWidth > window.innerWidth - margin) {
+      left = window.innerWidth - popoverWidth - margin;
+    }
+    if (left < margin) left = margin;
+
+    let top = rect.bottom + 6;
+    if (top + popoverHeight > window.innerHeight - margin) {
+      top = rect.top - popoverHeight - 6;
+    }
+    if (top < margin) top = margin;
+
+    this.emojiPickerPopover.style.left = `${Math.round(left)}px`;
+    this.emojiPickerPopover.style.top = `${Math.round(top)}px`;
+    this.emojiPickerPopover.hidden = false;
+  }
+
+  closeEmojiPicker() {
+    if (this.emojiPickerPopover) {
+      this.emojiPickerPopover.hidden = true;
+      this.activeEmojiCardId = null;
+    }
+  }
+
+  toggleCardEmojiReaction(cardId, emoji) {
+    const card = this.findCardById(cardId);
+    if (!card) return;
+
+    if (!card.emojiReactions || typeof card.emojiReactions !== 'object') {
+      card.emojiReactions = {};
+      if (card.reactions > 0) {
+        card.emojiReactions['❤️'] = { count: card.reactions, userReacted: !!card.hasReacted };
+      }
+    }
+
+    if (card.emojiReactions[emoji]) {
+      if (card.emojiReactions[emoji].userReacted) {
+        card.emojiReactions[emoji].count -= 1;
+        card.emojiReactions[emoji].userReacted = false;
+        if (card.emojiReactions[emoji].count <= 0) {
+          delete card.emojiReactions[emoji];
+        }
+      } else {
+        card.emojiReactions[emoji].count += 1;
+        card.emojiReactions[emoji].userReacted = true;
+      }
+    } else {
+      card.emojiReactions[emoji] = { count: 1, userReacted: true };
+    }
+
+    // Update aggregate reactions count & user reacted state
+    const allCounts = Object.values(card.emojiReactions).map(r => r.count || 0);
+    card.reactions = allCounts.reduce((a, b) => a + b, 0);
+    card.hasReacted = Object.values(card.emojiReactions).some(r => r.userReacted);
+
+    this.saveState();
+    this.renderBoard();
+    if (this.cardDetailModal && !this.cardDetailModal.hidden && this.activeDetailCardId === cardId) {
+      if (this.detailReactionBtn) {
+        this.detailReactionBtn.classList.toggle('has-reacted', !!card.hasReacted);
+      }
+      if (this.detailReactionCount) {
+        this.detailReactionCount.textContent = card.reactions > 0 ? card.reactions : '+';
+      }
+    }
+    this.showToast('Reaction updated');
+
+    if (this.backend && this.backend.addReaction) {
+      this.backend.addReaction(card.id);
+    }
   }
 
   /* ========================================================================
@@ -1643,10 +2220,10 @@ class PadlesShelfApp {
     });
   }
 
-  openCardContextMenu(card, targetEl) {
+  openCardContextMenu(card, targetEl, mouseEvent = null) {
     this.closeAllPopovers();
     this.activeContextCard = card;
-    if (!this.cardContextMenu || !targetEl) return;
+    if (!this.cardContextMenu) return;
 
     this.renderCardMenuColors(card);
 
@@ -1654,29 +2231,44 @@ class PadlesShelfApp {
       this.pinActionLabel.textContent = card.pinned ? 'Unpin post' : 'Pin post';
     }
 
-    const rect = targetEl.getBoundingClientRect();
     const menuWidth = 256;
-    let left = rect.right - menuWidth;
-    if (left < 12) left = 12;
-    if (left + menuWidth > window.innerWidth - 12) {
-      left = window.innerWidth - menuWidth - 12;
-    }
-
-    // Measure height accurately
     this.cardContextMenu.style.visibility = 'hidden';
     this.cardContextMenu.hidden = false;
     const menuHeight = this.cardContextMenu.offsetHeight || 440;
     this.cardContextMenu.style.visibility = 'visible';
 
-    let top = rect.bottom + 6;
-    if (top + menuHeight > window.innerHeight - 12) {
-      const topAbove = rect.top - menuHeight - 6;
-      if (topAbove >= 12 && topAbove + menuHeight <= window.innerHeight - 12) {
-        top = topAbove;
-      } else {
-        top = Math.max(12, window.innerHeight - menuHeight - 12);
+    let left, top;
+    if (mouseEvent && typeof mouseEvent.clientX === 'number') {
+      left = mouseEvent.clientX;
+      top = mouseEvent.clientY;
+      if (left + menuWidth > window.innerWidth - 12) {
+        left = Math.max(12, window.innerWidth - menuWidth - 12);
       }
+      if (top + menuHeight > window.innerHeight - 12) {
+        top = Math.max(12, mouseEvent.clientY - menuHeight);
+      }
+    } else if (targetEl) {
+      const rect = targetEl.getBoundingClientRect();
+      left = rect.right - menuWidth;
+      if (left < 12) left = 12;
+      if (left + menuWidth > window.innerWidth - 12) {
+        left = window.innerWidth - menuWidth - 12;
+      }
+      top = rect.bottom + 6;
+      if (top + menuHeight > window.innerHeight - 12) {
+        const topAbove = rect.top - menuHeight - 6;
+        if (topAbove >= 12 && topAbove + menuHeight <= window.innerHeight - 12) {
+          top = topAbove;
+        } else {
+          top = Math.max(12, window.innerHeight - menuHeight - 12);
+        }
+      }
+    } else {
+      left = 12;
+      top = 12;
     }
+
+    left = Math.max(12, Math.min(left, window.innerWidth - menuWidth - 12));
     top = Math.max(12, Math.min(top, window.innerHeight - menuHeight - 12));
 
     this.cardContextMenu.style.top = `${top}px`;
@@ -1751,22 +2343,11 @@ class PadlesShelfApp {
     });
 
     if (this.detailReactionBtn) {
-      this.detailReactionBtn.addEventListener('click', () => {
+      this.detailReactionBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const card = this.findCardById(this.activeDetailCardId);
         if (!card) return;
-        card.hasReacted = !card.hasReacted;
-        card.reactions = (card.reactions || 0) + (card.hasReacted ? 1 : -1);
-        this.detailReactionBtn.classList.toggle('has-reacted', card.hasReacted);
-        if (this.detailReactionCount) {
-          this.detailReactionCount.textContent = card.reactions > 0 ? card.reactions : '+';
-        }
-        this.saveState();
-        this.renderBoard();
-        this.showToast(card.hasReacted ? 'Reaction added' : 'Reaction removed');
-
-        if (this.backend && this.backend.isConnected && card.hasReacted) {
-          this.backend.addReaction(card.id);
-        }
+        this.openEmojiPicker(this.detailReactionBtn, card.id);
       });
     }
 
@@ -2126,15 +2707,84 @@ class PadlesShelfApp {
 
   triggerToolAction(toolId) {
     switch (toolId) {
+      case 'padles':
+      case 'padlet':
+        this.composerState.attachment = {
+          type: 'padles',
+          provider: 'Padles Board',
+          title: 'Quantum Mechanics Lab — Padles',
+          domain: 'padles.com',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1507413245164-6160d8298b31?w=600',
+          url: '#'
+        };
+        this.updateAttachmentPreviewUI();
+        this.showToast('Padles board linked!');
+        break;
       case 'upload':
         this.handleToolAction('upload');
         break;
       case 'camera':
         this.handleToolAction('camera');
         break;
+      case 'video':
+        this.composerState.attachment = {
+          type: 'video',
+          provider: 'Video Recorder',
+          title: 'Physics Lab Experiment Video (0:45)',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600',
+          url: '#'
+        };
+        this.updateAttachmentPreviewUI();
+        this.showToast('Video recording attached!');
+        break;
+      case 'audio':
+        this.composerState.attachment = {
+          type: 'audio',
+          provider: 'Audio Recorder',
+          title: 'Voice Reflection Memo (1:20)',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=600',
+          url: '#'
+        };
+        this.updateAttachmentPreviewUI();
+        this.showToast('Audio recording attached!');
+        break;
+      case 'screen':
+        this.composerState.attachment = {
+          type: 'video',
+          provider: 'Screen Recorder',
+          title: 'Screen Demo: Kinetic Energy Simulation (2:15)',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600',
+          url: '#'
+        };
+        this.updateAttachmentPreviewUI();
+        this.showToast('Screen recording attached!');
+        break;
       case 'ai-image':
       case 'arcade':
         this.handleToolAction('ai');
+        break;
+      case 'ai-speech':
+        this.composerState.attachment = {
+          type: 'audio',
+          provider: 'AI Speech',
+          title: 'Voice: "Welcome to Quantum Mechanics Lab"',
+          domain: 'padles.ai',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1589254065878-42c9da997008?w=600',
+          url: '#'
+        };
+        this.updateAttachmentPreviewUI();
+        this.showToast('AI speech generated & attached!');
+        break;
+      case 'album':
+        this.composerState.attachment = {
+          type: 'album',
+          provider: 'Photo Album',
+          title: 'Lab Gallery (4 photos)',
+          thumbnailUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600',
+          url: '#'
+        };
+        this.updateAttachmentPreviewUI();
+        this.showToast('Photo album attached!');
         break;
       case 'link':
         this.handleToolAction('link');
@@ -2161,7 +2811,7 @@ class PadlesShelfApp {
       case 'poll':
         this.composerState.attachment = {
           type: 'poll',
-          provider: 'Padlet Poll',
+          provider: 'Padles Poll',
           title: 'Interactive Poll: What do you see, think, and wonder?',
           thumbnailUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=600',
           url: '#'
@@ -2459,12 +3109,70 @@ class PadlesShelfApp {
   }
 
   updateAttachmentPreviewUI() {
-    if (this.composerState.attachment) {
-      this.previewTypeBadge.textContent = this.composerState.attachment.provider || this.composerState.attachment.type;
-      this.previewTitleText.textContent = this.composerState.attachment.title || this.composerState.attachment.caption;
-      this.activeAttachmentPreview.hidden = false;
+    const att = this.composerState.attachment;
+    if (att) {
+      const isVideo = att.provider === 'YouTube' || att.category === 'YouTube' || att.type === 'video';
+      const hasThumb = !!att.thumbnailUrl;
+
+      let frameHtml = '';
+      if (hasThumb) {
+        frameHtml = `
+          <div class="composer-attachment-media-frame">
+            <img src="${this.escapeHtml(att.thumbnailUrl)}" class="composer-attachment-media-thumb" alt="${this.escapeHtml(att.title || att.caption || 'Attachment')}" />
+            ${isVideo ? `
+              <div class="composer-media-play-btn">
+                <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor"><path d="M7 23.54V8.46c0-2.017 2.152-3.304 3.929-2.349l14.033 7.54c1.873 1.006 1.873 3.692 0 4.698l-14.033 7.54C9.152 26.844 7 25.557 7 23.54"/></svg>
+              </div>
+              <div class="composer-media-category-badge">${this.escapeHtml(att.provider || att.category || 'YouTube')}</div>
+            ` : ''}
+            <button type="button" class="remove-attachment-btn" id="removeAttachmentBtn" title="Remove attachment" aria-label="Remove attachment">&times;</button>
+          </div>
+        `;
+      }
+
+      const metaHtml = `
+        <div class="attachment-preview-badge">
+          <span id="previewTypeBadge">${this.escapeHtml(att.provider || att.category || att.type || 'Media')}</span>
+          <span id="previewTitleText">${this.escapeHtml(att.title || att.caption || 'Attachment attached')}</span>
+          ${!hasThumb ? `<button type="button" class="remove-attachment-btn" id="removeAttachmentBtn" title="Remove attachment" aria-label="Remove attachment">&times;</button>` : ''}
+        </div>
+      `;
+
+      if (this.activeAttachmentPreview) {
+        this.activeAttachmentPreview.innerHTML = frameHtml + metaHtml;
+        this.activeAttachmentPreview.hidden = false;
+        this.activeAttachmentPreview.style.display = 'flex';
+
+        // Rebind remove button click
+        const rmBtn = this.activeAttachmentPreview.querySelector('#removeAttachmentBtn');
+        if (rmBtn) {
+          rmBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.composerState.attachment = null;
+            if (this.activeDraftId) {
+              const draft = this.state.drafts.find(d => d.id === this.activeDraftId);
+              if (draft) draft.attachment = null;
+            }
+            if (this.editingCardId) {
+              const card = this.findCardById(this.editingCardId);
+              if (card) {
+                card.attachment = null;
+                card.type = 'text';
+              }
+            }
+            this.updateAttachmentPreviewUI();
+            this.syncActiveDraftFromInputs();
+            this.saveState();
+          });
+        }
+      }
     } else {
-      this.activeAttachmentPreview.hidden = true;
+      if (this.activeAttachmentPreview) {
+        this.activeAttachmentPreview.innerHTML = '';
+        this.activeAttachmentPreview.hidden = true;
+        this.activeAttachmentPreview.style.display = 'none';
+      }
     }
     this.updatePublishButtonState();
   }
@@ -2489,9 +3197,19 @@ class PadlesShelfApp {
         const desc = col.dataset.desc || '';
         const shortcut = col.dataset.shortcut || '';
 
+        const TOOL_TEXT_COLORS = {
+          upload: '#e11d48',
+          camera: '#0284c7',
+          ai: '#7c3aed',
+          link: '#059669',
+          search: '#d97706',
+          all: '#4f46e5'
+        };
+        const activeColor = TOOL_TEXT_COLORS[col.dataset.tool] || '#7c3aed';
+
         if (promptTick) promptTick.classList.add('is-visible');
         if (promptText) {
-          promptText.innerHTML = `<strong style="color: #c084fc; font-weight: 700;">${this.escapeHtml(title)}</strong> <span style="color: rgba(255, 255, 255, 0.65); margin-left: 4px;">${this.escapeHtml(desc)}</span>`;
+          promptText.innerHTML = `<strong style="color: ${activeColor}; font-weight: 700;">${this.escapeHtml(title)}</strong> <span style="color: rgba(255, 255, 255, 0.65); margin-left: 4px;">${this.escapeHtml(desc)}</span>`;
         }
         if (promptShortcut) {
           promptShortcut.textContent = shortcut;
@@ -2770,15 +3488,28 @@ class PadlesShelfApp {
     });
 
     // Yellow "+ Post" button opens Composer
-    document.getElementById('mainPostBtn')?.addEventListener('click', () => {
-      this.createNewDraft(this.state.sections[0]?.id);
-    });
+    const mainPostBtn = document.getElementById('mainPostBtn');
+    if (mainPostBtn) {
+      mainPostBtn.addEventListener('click', () => {
+        this.createNewDraft(this.state.sections[0]?.id);
+      });
+      mainPostBtn.addEventListener('mousedown', () => mainPostBtn.classList.add('is-pressed'));
+      mainPostBtn.addEventListener('mouseup', () => mainPostBtn.classList.remove('is-pressed'));
+      mainPostBtn.addEventListener('mouseleave', () => mainPostBtn.classList.remove('is-pressed'));
+      mainPostBtn.addEventListener('touchstart', () => mainPostBtn.classList.add('is-pressed'), { passive: true });
+      mainPostBtn.addEventListener('touchend', () => mainPostBtn.classList.remove('is-pressed'), { passive: true });
+      mainPostBtn.addEventListener('touchcancel', () => mainPostBtn.classList.remove('is-pressed'), { passive: true });
+    }
 
     // Title & Body typing state for Publish button
     this.titleInput.addEventListener('input', () => this.updatePublishButtonState());
     this.bodyInput.addEventListener('input', () => {
       this.updatePublishButtonState();
       this.adjustBodyTextareaHeight();
+      const scrollArea = document.querySelector('.composer-scroll-area');
+      if (scrollArea && scrollArea.scrollHeight > scrollArea.clientHeight) {
+        scrollArea.scrollTop = scrollArea.scrollHeight;
+      }
     });
 
     // Publish click
@@ -2872,6 +3603,20 @@ class PadlesShelfApp {
           this.closeCardContextMenu();
         }
       }
+      if (this.emojiPickerPopover && !this.emojiPickerPopover.hidden) {
+        if (!this.emojiPickerPopover.contains(e.target) && !e.target.closest('.reaction-add-btn') && !e.target.closest('.reaction-pill')) {
+          this.closeEmojiPicker();
+        }
+      }
+    });
+
+    // Dismiss context menu on right click outside
+    document.addEventListener('contextmenu', (e) => {
+      if (this.cardContextMenu && !this.cardContextMenu.hidden && !this.cardContextMenu.contains(e.target)) {
+        if (!e.target.closest('.padlet-card')) {
+          this.closeCardContextMenu();
+        }
+      }
     });
 
     // Global Keydown: Escape key and Ctrl+Z Undo
@@ -2879,6 +3624,7 @@ class PadlesShelfApp {
       if (e.key === 'Escape') {
         this.closeSectionContextMenu();
         this.closeCardContextMenu();
+        this.closeEmojiPicker();
         this.closeCardDetailModal();
         this.closeScheduleModal();
         this.closeAllToolsModal();
@@ -2902,9 +3648,24 @@ class PadlesShelfApp {
     });
 
     // Remove attachment badge button
-    this.removeAttachmentBtn.addEventListener('click', () => {
+    this.removeAttachmentBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       this.composerState.attachment = null;
+      if (this.activeDraftId) {
+        const draft = this.state.drafts.find(d => d.id === this.activeDraftId);
+        if (draft) draft.attachment = null;
+      }
+      if (this.editingCardId) {
+        const card = this.findCardById(this.editingCardId);
+        if (card) {
+          card.attachment = null;
+          card.type = 'text';
+        }
+      }
       this.updateAttachmentPreviewUI();
+      this.syncActiveDraftFromInputs();
+      this.saveState();
     });
 
     // Initialize Padlet Striped Multi-Tool Toolbar & Shortcuts
@@ -3265,68 +4026,799 @@ class PadlesShelfApp {
   }
 
   /* ========================================================================
-     3. Settings Drawer & Theme Switcher
+     3. Padlet Authentic Settings Panel (surfaceSettingsMainPanel)
      ======================================================================== */
 
   initSettingsDrawer() {
-    this.settingsDrawer = document.getElementById('settingsDrawer');
+    this.settingsPanel = document.getElementById('surfaceSettingsMainPanel');
+    this.settingsDrawer = this.settingsPanel;
+
+    // Open button triggers (both topbar button and any legacy trigger)
+    document.getElementById('surfaceSettingsButton')?.addEventListener('click', () => this.openSettingsDrawer());
     document.getElementById('settingsBtn')?.addEventListener('click', () => this.openSettingsDrawer());
-    document.getElementById('closeSettingsDrawerBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
-    this.settingsDrawer?.addEventListener('click', (e) => {
-      if (e.target === this.settingsDrawer) this.closeSettingsDrawer();
+
+    // Close button triggers
+    document.getElementById('settingsMainPanelCloseButton')?.addEventListener('click', () => this.closeSettingsDrawer());
+    document.getElementById('settingsWallpaperCloseBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
+    document.getElementById('settingsIconCloseBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
+    document.getElementById('settingsFormatCloseBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
+    document.getElementById('settingsSortCloseBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
+    document.getElementById('settingsReactionsCloseBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
+    document.getElementById('settingsCommentsCloseBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
+
+    // Backdrop click closes settings
+    this.settingsPanel?.addEventListener('click', (e) => {
+      if (e.target === this.settingsPanel) this.closeSettingsDrawer();
     });
 
-    // Theme Switcher Cards
-    document.querySelectorAll('.wallpaper-card').forEach(card => {
-      card.addEventListener('click', () => {
-        document.querySelectorAll('.wallpaper-card').forEach(c => c.classList.remove('is-active'));
-        card.classList.add('is-active');
-        const theme = card.dataset.theme;
-        this.setWallpaperTheme(theme);
+    // Escape key closes settings
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.settingsPanel && !this.settingsPanel.hidden) {
+        this.closeSettingsDrawer();
+      }
+    });
+
+    // Subview Back Buttons
+    document.getElementById('settingsWallpaperBackBtn')?.addEventListener('click', () => this.backToMainSettings());
+    document.getElementById('settingsIconBackBtn')?.addEventListener('click', () => this.backToMainSettings());
+    document.getElementById('settingsFormatBackBtn')?.addEventListener('click', () => this.backToMainSettings());
+    document.getElementById('settingsSortBackBtn')?.addEventListener('click', () => this.backToMainSettings());
+    document.getElementById('settingsReactionsBackBtn')?.addEventListener('click', () => this.backToMainSettings());
+    document.getElementById('settingsCommentsBackBtn')?.addEventListener('click', () => this.backToMainSettings());
+
+    // Navigation Tabs with smooth anchor scroll & sliding indicator
+    const tabItems = document.querySelectorAll('.settings-tab-item');
+    tabItems.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabItems.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        this.updateTabIndicator(tab);
+
+        const targetId = tab.dataset.target;
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       });
     });
 
-    // Save Settings Button
-    document.getElementById('saveSettingsBtn')?.addEventListener('click', () => {
-      const titleInput = document.getElementById('settingTitleInput');
-      const descInput = document.getElementById('settingDescInput');
-      if (titleInput && titleInput.value.trim()) {
-        this.state.boardTitle = titleInput.value.trim();
-        const titleEl = document.querySelector('.board-title') || document.querySelector('h1');
-        if (titleEl) titleEl.textContent = this.state.boardTitle;
-      }
-      if (descInput && descInput.value.trim()) {
-        this.state.boardAuthor = descInput.value.trim();
-        const authorEl = document.querySelector('.board-author');
-        if (authorEl) authorEl.textContent = this.state.boardAuthor;
+    // 1. Heading Section Inputs
+    const titleInput = document.getElementById('wall-title-input');
+    titleInput?.addEventListener('input', (e) => {
+      const val = e.target.value;
+      this.state.title = val;
+      if (!this.state.settings) this.state.settings = {};
+      this.state.settings.title = val;
+      const titleEl = document.getElementById('boardTitle');
+      if (titleEl) titleEl.textContent = val || 'Untitled Padles';
+      document.title = `${val || 'Untitled Padles'} — Padles`;
+      this.saveState();
+      this.syncSettingsToCloud();
+    });
+
+    const descInput = document.getElementById('wall-desc-input');
+    descInput?.addEventListener('input', (e) => {
+      const val = e.target.value;
+      this.state.description = val;
+      if (!this.state.settings) this.state.settings = {};
+      this.state.settings.description = val;
+      const descEl = document.getElementById('boardDescription');
+      if (descEl) {
+        descEl.textContent = val;
+        descEl.style.display = val ? 'block' : 'none';
       }
       this.saveState();
-      this.closeSettingsDrawer();
-      this.showToast('Settings saved!');
+      this.syncSettingsToCloud();
     });
+
+    // Icon row opens Icon Picker subpanel
+    document.getElementById('settingRowIcon')?.addEventListener('click', () => {
+      this.showSettingsSubview('settingsIconSubview');
+    });
+
+    // 2. Appearance Section
+    document.getElementById('settingRowWallpaper')?.addEventListener('click', () => {
+      this.showSettingsSubview('settingsWallpaperSubview');
+    });
+
+    document.getElementById('colorSchemeDarkBtn')?.addEventListener('click', () => {
+      this.applyColorScheme('dark');
+      this.saveState();
+      this.syncSettingsToCloud();
+    });
+
+    document.getElementById('colorSchemeLightBtn')?.addEventListener('click', () => {
+      this.applyColorScheme('light');
+      this.saveState();
+      this.syncSettingsToCloud();
+    });
+
+    document.getElementById('fontBtnNiagara')?.addEventListener('click', () => { this.applyFont('niagara'); this.saveState(); this.syncSettingsToCloud(); });
+    document.getElementById('fontBtnThames')?.addEventListener('click', () => { this.applyFont('thames'); this.saveState(); this.syncSettingsToCloud(); });
+    document.getElementById('fontBtnFuji')?.addEventListener('click', () => { this.applyFont('fuji'); this.saveState(); this.syncSettingsToCloud(); });
+    document.getElementById('fontBtnAlps')?.addEventListener('click', () => { this.applyFont('alps'); this.saveState(); this.syncSettingsToCloud(); });
+
+    document.getElementById('postSizeStandardBtn')?.addEventListener('click', () => { this.applyPostSize('standard'); this.saveState(); this.syncSettingsToCloud(); });
+    document.getElementById('postSizeWideBtn')?.addEventListener('click', () => { this.applyPostSize('wide'); this.saveState(); this.syncSettingsToCloud(); });
+
+    // 3. Layout Section
+    document.getElementById('settingRowFormat')?.addEventListener('click', () => {
+      this.showSettingsSubview('settingsFormatSubview');
+    });
+
+    document.getElementById('settingRowSort')?.addEventListener('click', () => {
+      this.showSettingsSubview('settingsSortSubview');
+    });
+
+    document.getElementById('newPostFirstBtn')?.addEventListener('click', () => { this.applyNewPostPosition('first'); this.saveState(); this.syncSettingsToCloud(); });
+    document.getElementById('newPostLastBtn')?.addEventListener('click', () => { this.applyNewPostPosition('last'); this.saveState(); this.syncSettingsToCloud(); });
+
+    // 4. Posts Section
+    document.getElementById('settingRowPostFields')?.addEventListener('click', () => {
+      this.closeSettingsDrawer();
+      this.openPostFieldsModal();
+    });
+
+    document.getElementById('settingAuthorTimeToggle')?.addEventListener('click', () => {
+      const current = !(this.state.settings?.showAuthorAndTime === false);
+      this.applyAttribution(!current);
+      this.saveState();
+      this.syncSettingsToCloud();
+    });
+
+    // 5. Engagement Section
+    document.getElementById('settingRowComments')?.addEventListener('click', () => {
+      this.showSettingsSubview('settingsCommentsSubview');
+    });
+
+    document.getElementById('settingRowEmojiPreset')?.addEventListener('click', () => {
+      this.showSettingsSubview('settingsReactionsSubview');
+    });
+
+    // 6. Content Section
+    document.getElementById('settingModerationBtn')?.addEventListener('click', () => {
+      const modes = ['auto', 'manual', 'none'];
+      const curr = this.state.settings?.moderation || 'auto';
+      const next = modes[(modes.indexOf(curr) + 1) % modes.length];
+      if (!this.state.settings) this.state.settings = {};
+      this.state.settings.moderation = next;
+      const lbl = document.getElementById('currentModerationLabel');
+      if (lbl) lbl.textContent = next.charAt(0).toUpperCase() + next.slice(1);
+      this.saveState();
+      this.syncSettingsToCloud();
+      this.showToast(`Moderation set to ${next}`);
+    });
+
+    document.getElementById('settingCopyProtectionBtn')?.addEventListener('click', () => {
+      const curr = this.state.settings?.copyProtection || 'none';
+      const next = curr === 'none' ? 'protected' : 'none';
+      if (!this.state.settings) this.state.settings = {};
+      this.state.settings.copyProtection = next;
+      const lbl = document.getElementById('currentCopyProtectionLabel');
+      if (lbl) lbl.textContent = next === 'none' ? 'None' : 'Protected';
+      this.saveState();
+      this.syncSettingsToCloud();
+      this.showToast(`Copy protection: ${next === 'none' ? 'Disabled' : 'Enabled'}`);
+    });
+
+    // 7. Advanced Section
+    document.getElementById('surfaceUrlCopyButton')?.addEventListener('click', () => {
+      const url = window.location.href;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+          this.showToast('Board URL copied to clipboard!');
+        });
+      } else {
+        const inp = document.getElementById('surfaceSettingsChangeUrlInput');
+        if (inp) {
+          inp.select();
+          document.execCommand('copy');
+          this.showToast('Board URL copied to clipboard!');
+        }
+      }
+    });
+
+    // Initialize subpanels
+    this.initWallpaperSubview();
+    this.initIconSubview();
+    this.initFormatSubview();
+    this.initSortSubview();
+    this.initReactionsSubview();
+    this.initCommentsSubview();
   }
 
   openSettingsDrawer() {
     this.closeAllDrawers();
-    const titleInput = document.getElementById('settingTitleInput');
-    const descInput = document.getElementById('settingDescInput');
-    if (titleInput) titleInput.value = this.state.boardTitle || 'Physics Audio Reflections: I see, I think, I wonder';
-    if (descInput) descInput.value = this.state.boardAuthor || 'Salman Madani • 6d';
-    if (this.settingsDrawer) this.settingsDrawer.hidden = false;
+    this.backToMainSettings();
+
+    // Populate current values in inputs
+    const s = this.state.settings || {};
+    const titleInput = document.getElementById('wall-title-input');
+    if (titleInput) titleInput.value = s.title || this.state.title || 'Physics Audio Reflections: I see, I think, I wonder';
+
+    const descInput = document.getElementById('wall-desc-input');
+    if (descInput) descInput.value = s.description !== undefined ? s.description : (this.state.description || '');
+
+    const urlInput = document.getElementById('surfaceSettingsChangeUrlInput');
+    if (urlInput) urlInput.value = window.location.href;
+
+    const urlCaption = document.getElementById('currentUrlCaption');
+    if (urlCaption) urlCaption.textContent = window.location.href;
+
+    if (this.settingsPanel) this.settingsPanel.hidden = false;
+
+    // Update tab indicator on first visible tab
+    requestAnimationFrame(() => {
+      const activeTab = document.querySelector('.settings-tab-item.active') || document.querySelector('.settings-tab-item');
+      if (activeTab) this.updateTabIndicator(activeTab);
+    });
   }
 
   closeSettingsDrawer() {
-    if (this.settingsDrawer) this.settingsDrawer.hidden = true;
+    if (this.settingsPanel) this.settingsPanel.hidden = true;
   }
 
-  setWallpaperTheme(themeName) {
-    document.body.classList.remove('theme-aurora', 'theme-midnight', 'theme-blueprint', 'theme-corkboard');
-    if (themeName !== 'aurora') {
-      document.body.classList.add(`theme-${themeName}`);
+  showSettingsSubview(subviewId) {
+    document.querySelectorAll('.padlet-settings-container .settings-subview').forEach(v => {
+      v.classList.remove('active');
+    });
+    const target = document.getElementById(subviewId);
+    if (target) target.classList.add('active');
+  }
+
+  backToMainSettings() {
+    this.showSettingsSubview('settingsMainView');
+    requestAnimationFrame(() => {
+      const activeTab = document.querySelector('.settings-tab-item.active');
+      if (activeTab) this.updateTabIndicator(activeTab);
+    });
+  }
+
+  updateTabIndicator(tabEl) {
+    const indicator = document.getElementById('settingsTabIndicator');
+    if (indicator && tabEl) {
+      indicator.style.left = `${tabEl.offsetLeft}px`;
+      indicator.style.width = `${tabEl.offsetWidth}px`;
     }
-    this.state.wallpaperTheme = themeName;
-    this.saveState();
-    this.showToast(`Wallpaper changed to ${themeName}`);
+  }
+
+  applyLoadedSettings() {
+    const s = this.state.settings || {};
+    
+    // 1. Title
+    const title = s.title || this.state.title || 'Physics Audio Reflections: I see, I think, I wonder';
+    const titleEl = document.getElementById('boardTitle');
+    if (titleEl) titleEl.textContent = title;
+    document.title = `${title} — Padles`;
+    const titleInput = document.getElementById('wall-title-input');
+    if (titleInput) titleInput.value = title;
+
+    // 2. Description
+    const desc = s.description !== undefined ? s.description : (this.state.description || '');
+    const descEl = document.getElementById('boardDescription');
+    if (descEl) {
+      descEl.textContent = desc;
+      descEl.style.display = desc ? 'block' : 'none';
+    }
+    const descInput = document.getElementById('wall-desc-input');
+    if (descInput) descInput.value = desc;
+
+    // 3. Icon
+    const icon = s.icon || '';
+    const iconEl = document.getElementById('boardIcon');
+    if (iconEl) {
+      iconEl.textContent = icon;
+      iconEl.style.display = icon ? 'inline-block' : 'none';
+    }
+    const iconDisplay = document.getElementById('settingCurrentIconDisplay');
+    if (iconDisplay) iconDisplay.textContent = icon || 'None';
+
+    // 4. Wallpaper
+    this.applyWallpaper(s.wallpaper || 'aurora');
+
+    // 5. Color Scheme
+    this.applyColorScheme(s.colorScheme || 'dark');
+
+    // 6. Font
+    this.applyFont(s.font || 'niagara');
+
+    // 7. Post Size
+    this.applyPostSize(s.postSize || 'standard');
+
+    // 8. Layout Format
+    this.applyLayoutFormat(s.layoutFormat || 'columns');
+
+    // 9. Attribution
+    this.applyAttribution(s.showAuthorAndTime !== false);
+
+    // 10. Comments
+    this.applyComments(s.commentsEnabled !== false);
+
+    // 11. Reactions Preset
+    this.applyReactionsPreset(s.reactionsPreset || 'all');
+
+    // 12. Sort & New Post Position
+    this.applySort(s.sortBy || 'manual');
+    this.applyNewPostPosition(s.newPostPosition || 'last');
+
+    // Moderation & Copy Protection
+    const modLbl = document.getElementById('currentModerationLabel');
+    if (modLbl) modLbl.textContent = (s.moderation || 'auto').charAt(0).toUpperCase() + (s.moderation || 'auto').slice(1);
+
+    const cpLbl = document.getElementById('currentCopyProtectionLabel');
+    if (cpLbl) cpLbl.textContent = s.copyProtection === 'protected' ? 'Protected' : 'None';
+  }
+
+  applyWallpaper(wpId) {
+    const classesToRemove = Array.from(document.body.classList).filter(c => c.startsWith('wallpaper-') || c.startsWith('theme-'));
+    classesToRemove.forEach(c => document.body.classList.remove(c));
+
+    if (wpId.startsWith('http://') || wpId.startsWith('https://') || wpId.startsWith('data:image')) {
+      document.body.style.backgroundImage = `url("${wpId}")`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center';
+      document.body.classList.add('aurora-theme');
+    } else {
+      document.body.style.backgroundImage = '';
+      if (wpId === 'aurora') {
+        document.body.classList.add('aurora-theme');
+      } else {
+        document.body.classList.add(`wallpaper-${wpId}`);
+      }
+    }
+
+    const thumb = document.getElementById('settingWallpaperThumbPreview');
+    if (thumb) {
+      if (wpId.startsWith('http') || wpId.startsWith('data:')) {
+        thumb.style.backgroundImage = `url("${wpId}")`;
+        thumb.className = 'wallpaper-thumb-preview';
+      } else {
+        thumb.className = `wallpaper-thumb-preview ${wpId === 'aurora' ? 'theme-swatch-aurora' : 'wallpaper-' + wpId}`;
+        thumb.style.backgroundImage = '';
+      }
+    }
+
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.wallpaper = wpId;
+  }
+
+  applyColorScheme(scheme) {
+    document.body.classList.toggle('light-theme', scheme === 'light');
+    document.body.classList.toggle('dark-theme', scheme === 'dark');
+
+    document.getElementById('colorSchemeDarkBtn')?.classList.toggle('active', scheme === 'dark');
+    document.getElementById('colorSchemeLightBtn')?.classList.toggle('active', scheme === 'light');
+
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.colorScheme = scheme;
+  }
+
+  applyFont(fontName) {
+    document.body.dataset.boardFont = fontName;
+    ['fontBtnNiagara', 'fontBtnThames', 'fontBtnFuji', 'fontBtnAlps'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.classList.toggle('active', (id === 'fontBtnNiagara' && fontName === 'niagara') ||
+                                        (id === 'fontBtnThames' && fontName === 'thames') ||
+                                        (id === 'fontBtnFuji' && fontName === 'fuji') ||
+                                        (id === 'fontBtnAlps' && fontName === 'alps'));
+      }
+    });
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.font = fontName;
+  }
+
+  applyPostSize(size) {
+    document.body.dataset.postSize = size;
+    document.getElementById('postSizeStandardBtn')?.classList.toggle('active', size === 'standard');
+    document.getElementById('postSizeWideBtn')?.classList.toggle('active', size === 'wide');
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.postSize = size;
+  }
+
+  applyLayoutFormat(format) {
+    document.body.dataset.layoutFormat = format;
+    const formatName = format.charAt(0).toUpperCase() + format.slice(1);
+    const label = document.getElementById('currentFormatLabel');
+    if (label) label.textContent = format === 'columns' ? 'Columns' : formatName;
+    const caption = document.getElementById('currentFormatCaption');
+    if (caption) caption.textContent = format === 'columns' ? 'Columns' : formatName;
+
+    document.querySelectorAll('.format-card-btn').forEach(card => {
+      card.classList.toggle('active', card.dataset.format === format);
+    });
+
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.layoutFormat = format;
+  }
+
+  applyAttribution(show) {
+    document.body.classList.toggle('hide-post-attribution', !show);
+    const toggle = document.getElementById('settingAuthorTimeToggle');
+    if (toggle) {
+      toggle.classList.toggle('active', show);
+      toggle.setAttribute('aria-checked', show ? 'true' : 'false');
+      const thumb = toggle.querySelector('.switch-thumb');
+      if (thumb) {
+        thumb.innerHTML = show
+          ? `<svg class="switch-icon" viewBox="0 0 32 32" height="12" width="12" fill="currentColor"><path d="M11.667 25.333a1.333 1.333 0 0 1-.943-.39l-6.667-6.667a1.333 1.333 0 1 1 1.886-1.886l5.724 5.724 13.057-13.057a1.333 1.333 0 1 1 1.886 1.886l-14 14a1.333 1.333 0 0 1-.943.39z"/></svg>`
+          : `<svg class="switch-icon" viewBox="0 0 32 32" height="12" width="12" fill="currentColor"><path d="M23.891 6.667a1.4 1.4 0 0 0-.984.434L16 14.008 9.093 7.101a1.41 1.41 0 0 0-1.798-.186A1.41 1.41 0 0 0 7.1 9.094l6.907 6.907L7.1 22.908a1.399 1.399 0 0 0-.33 1.549 1.42 1.42 0 0 0 .772.772 1.41 1.41 0 0 0 1.55-.33l6.907-6.907 6.907 6.907a1.399 1.399 0 0 0 1.549.33 1.405 1.405 0 0 0 .877-1.319 1.4 1.4 0 0 0-.434-1.002l-6.907-6.907 6.907-6.907a1.411 1.411 0 0 0-1.009-2.427z"/></svg>`;
+      }
+    }
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.showAuthorAndTime = show;
+  }
+
+  applyComments(enabled) {
+    document.body.classList.toggle('comments-disabled', !enabled);
+    const statusText = document.getElementById('settingCommentsStatus');
+    if (statusText) statusText.textContent = enabled ? 'On' : 'Off';
+    const toggle = document.getElementById('settingAllowCommentsToggle');
+    if (toggle) {
+      toggle.classList.toggle('active', enabled);
+      toggle.setAttribute('aria-checked', enabled ? 'true' : 'false');
+    }
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.commentsEnabled = enabled;
+  }
+
+  applyReactionsPreset(preset) {
+    const labels = {
+      all: 'All emojis',
+      heart: 'Heart (❤️)',
+      thumbs_up: 'Thumbs up (👍)',
+      classic: 'Classic (4 emojis)',
+      off: 'Off'
+    };
+    const lbl = labels[preset] || 'All emojis';
+    const btnLabel = document.getElementById('currentEmojiPresetLabel');
+    if (btnLabel) btnLabel.textContent = lbl;
+    const caption = document.getElementById('currentEmojiPresetCaption');
+    if (caption) caption.textContent = lbl;
+
+    document.querySelectorAll('#settingsReactionsSubview .selection-option-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.reactions === preset);
+    });
+
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.reactionsPreset = preset;
+  }
+
+  applySort(sortType) {
+    const labels = {
+      manual: 'Drag and drop',
+      date_desc: 'Date published (Newest)',
+      date_asc: 'Date published (Oldest)',
+      subject_asc: 'Post subject (A to Z)',
+      random: 'Random'
+    };
+    const sortLabel = document.getElementById('currentSortLabel');
+    if (sortLabel) sortLabel.textContent = labels[sortType] || 'Drag and drop';
+
+    document.querySelectorAll('#settingsSortSubview .selection-option-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.sort === sortType);
+    });
+
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.sortBy = sortType;
+
+    if (sortType === 'subject_asc') {
+      this.state.sections.forEach(sec => {
+        sec.cards.sort((a, b) => (a.title || a.subject || '').localeCompare(b.title || b.subject || ''));
+      });
+      this.renderBoard();
+    } else if (sortType === 'random') {
+      this.state.sections.forEach(sec => {
+        sec.cards.sort(() => Math.random() - 0.5);
+      });
+      this.renderBoard();
+    }
+  }
+
+  applyNewPostPosition(pos) {
+    document.getElementById('newPostFirstBtn')?.classList.toggle('active', pos === 'first');
+    document.getElementById('newPostLastBtn')?.classList.toggle('active', pos === 'last');
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.newPostPosition = pos;
+  }
+
+  syncSettingsToCloud() {
+    if (this.backend && this.backend.isConnected && this.state.settings) {
+      this.backend.updateBoardSettings?.(this.state.settings);
+    }
+  }
+
+  initWallpaperSubview() {
+    const wallpapers = [
+      // Colors
+      { id: 'pitch-black', name: 'Pitch Black', cat: 'colors', color: '#0a0a0a' },
+      { id: 'slate-charcoal', name: 'Slate Charcoal', cat: 'colors', color: '#1e293b' },
+      { id: 'pure-white', name: 'Pure White', cat: 'colors', color: '#f8fafc' },
+      { id: 'soft-cream', name: 'Soft Cream', cat: 'colors', color: '#fef3c7' },
+      { id: 'midnight-blue', name: 'Midnight Blue', cat: 'colors', color: '#0f172a' },
+      { id: 'emerald-forest-solid', name: 'Emerald Forest', cat: 'colors', color: '#064e3b' },
+      { id: 'crimson-wine', name: 'Crimson Wine', cat: 'colors', color: '#881337' },
+      { id: 'royal-purple', name: 'Royal Purple', cat: 'colors', color: '#581c87' },
+
+      // Gradients
+      { id: 'aurora', name: 'Aurora Glow', cat: 'gradients', gradient: 'linear-gradient(135deg, rgb(1, 40, 50) 0%, #0d9488 50%, #0284c7 100%)' },
+      { id: 'sunset-gradient', name: 'Sunset Horizon', cat: 'gradients', gradient: 'linear-gradient(135deg, #f97316 0%, #e11d48 50%, #7c3aed 100%)' },
+      { id: 'neon-gradient', name: 'Neon Cyberpunk', cat: 'gradients', gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #06b6d4 100%)' },
+      { id: 'lavender-gradient', name: 'Lavender Mist', cat: 'gradients', gradient: 'linear-gradient(135deg, #e0e7ff 0%, #fae8ff 50%, #fce7f3 100%)' },
+      { id: 'ocean-gradient', name: 'Ocean Depths', cat: 'gradients', gradient: 'linear-gradient(135deg, #022c43 0%, #053f5c 50%, #115173 100%)' },
+      { id: 'emerald-gradient', name: 'Mint Emerald', cat: 'gradients', gradient: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #10b981 100%)' },
+
+      // Textures & Patterns
+      { id: 'brick-wall', name: 'Brick Wall', cat: 'textures', color: '#7f1d1d' },
+      { id: 'blackboard', name: 'Blackboard', cat: 'textures', color: '#1c2826' },
+      { id: 'corkboard', name: 'Corkboard', cat: 'textures', color: '#b45309' },
+      { id: 'blueprint', name: 'Blueprint Grid', cat: 'textures', color: '#1e3a8a' },
+      { id: 'dotgrid', name: 'Dot Grid', cat: 'textures', color: '#0f172a' },
+      { id: 'graphpaper', name: 'Graph Paper', cat: 'textures', color: '#ffffff' },
+
+      // Photos
+      { id: 'starry-night', name: 'Starry Night', cat: 'photos', img: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=300&q=80' },
+      { id: 'mountains', name: 'Mountains', cat: 'photos', img: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=300&q=80' },
+      { id: 'ocean', name: 'Ocean Beach', cat: 'photos', img: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=300&q=80' },
+      { id: 'cherry-blossom', name: 'Cherry Blossom', cat: 'photos', img: 'https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=300&q=80' },
+      { id: 'city-lights', name: 'City Lights', cat: 'photos', img: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=300&q=80' }
+    ];
+
+    const container = document.getElementById('wallpaperCardsContainer');
+    if (!container) return;
+
+    const renderGrid = (filterCat = 'all') => {
+      container.innerHTML = '';
+
+      if (filterCat === 'custom') {
+        const customBox = document.createElement('div');
+        customBox.className = 'custom-wallpaper-panel';
+        customBox.innerHTML = `
+          <div class="settings-form-group">
+            <label class="settings-field-label">Upload image file</label>
+            <input type="file" id="customWpFileUpload" accept="image/*" class="settings-text-input" style="padding: 6px;" />
+          </div>
+          <div class="settings-form-group">
+            <label class="settings-field-label">Or paste image URL</label>
+            <div class="settings-input-wrapper with-action">
+              <input type="url" id="customWpUrlInput" placeholder="https://example.com/wallpaper.jpg" class="settings-textarea" style="height: 32px;" />
+              <button type="button" id="applyCustomWpUrlBtn" class="settings-inline-action-btn">Apply</button>
+            </div>
+          </div>
+        `;
+        container.appendChild(customBox);
+
+        // Bind upload
+        customBox.querySelector('#customWpFileUpload')?.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (re) => {
+              const dataUrl = re.target.result;
+              this.applyWallpaper(dataUrl);
+              this.saveState();
+              this.syncSettingsToCloud();
+              this.showToast('Custom wallpaper uploaded!');
+              this.backToMainSettings();
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+
+        // Bind URL apply
+        customBox.querySelector('#applyCustomWpUrlBtn')?.addEventListener('click', () => {
+          const url = customBox.querySelector('#customWpUrlInput')?.value?.trim();
+          if (url) {
+            this.applyWallpaper(url);
+            this.saveState();
+            this.syncSettingsToCloud();
+            this.showToast('Custom image applied!');
+            this.backToMainSettings();
+          }
+        });
+
+        return;
+      }
+
+      const grid = document.createElement('div');
+      grid.className = 'wallpaper-grid';
+
+      const filtered = filterCat === 'all' ? wallpapers : wallpapers.filter(w => w.cat === filterCat);
+      const currentWp = this.state.settings?.wallpaper || 'aurora';
+
+      filtered.forEach(w => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `wallpaper-card-btn ${currentWp === w.id ? 'active' : ''}`;
+        
+        const preview = document.createElement('div');
+        preview.className = 'wp-card-preview';
+        if (w.gradient) preview.style.background = w.gradient;
+        else if (w.img) preview.style.backgroundImage = `url("${w.img}")`;
+        else if (w.color) preview.style.backgroundColor = w.color;
+
+        const name = document.createElement('div');
+        name.className = 'wp-card-name';
+        name.textContent = w.name;
+
+        btn.appendChild(preview);
+        btn.appendChild(name);
+
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.wallpaper-card-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          this.applyWallpaper(w.id);
+          this.saveState();
+          this.syncSettingsToCloud();
+          this.showToast(`Wallpaper changed to ${w.name}`);
+          this.backToMainSettings();
+        });
+
+        grid.appendChild(btn);
+      });
+
+      container.appendChild(grid);
+    };
+
+    // Category Buttons Filter
+    document.querySelectorAll('.wp-cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.wp-cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderGrid(btn.dataset.wpCat);
+      });
+    });
+
+    renderGrid('all');
+  }
+
+  initIconSubview() {
+    const emojiCategories = [
+      {
+        title: 'Smileys & Emotion',
+        emojis: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😋', '😛', '😜', '🤪', '🤓', '😎', '🥳', '🤗', '🤔', '🤐', '🤫', '🤭', '😴', '🥺', '😳']
+      },
+      {
+        title: 'Animals & Nature',
+        emojis: ['🌸', '🌹', '🌺', '🌻', '🌼', '🌷', '🌱', '🌲', '🌳', '🌴', '🍀', '🍁', '🍂', '🍄', '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🦋', '🐝', '🦄']
+      },
+      {
+        title: 'Science & Study',
+        emojis: ['💡', '📚', '📖', '🔬', '🔭', '🧪', '🧲', '⚡', '🪐', '🚀', '🛸', '🛰️', '📐', '📏', '📊', '📈', '💻', '🖥️', '⌨️', '🔋', '⚙️', '🧰', '📝', '✏️', '✒️', '🔍', '🔎', '✨', '⭐', '🌟', '💥', '🔥']
+      },
+      {
+        title: 'Food & Activities',
+        emojis: ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🍍', '🍕', '🍔', '🍟', '🥪', '🌮', '🍣', '🍩', '🍪', '🎂', '☕', '🍵', '🧃', '⚽', '🏀', '🏈', '🎾', '🎮', '🎯', '🎨', '🎬']
+      },
+      {
+        title: 'Hearts & Symbols',
+        emojis: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '⚛️', '✅', '❇️', '✳️', '🌐', '🌀', '💫', '🌈', '☀️', '🌙', '⭐', '💯']
+      }
+    ];
+
+    const gridContainer = document.getElementById('iconPickerGrid');
+    if (!gridContainer) return;
+
+    const renderEmojis = (searchFilter = '') => {
+      gridContainer.innerHTML = '';
+      const filter = searchFilter.toLowerCase().trim();
+
+      emojiCategories.forEach(cat => {
+        const filtered = filter ? cat.emojis.filter(e => e.includes(filter)) : cat.emojis;
+        if (filtered.length === 0) return;
+
+        const block = document.createElement('div');
+        block.className = 'emoji-category-block';
+
+        const title = document.createElement('div');
+        title.className = 'emoji-cat-title';
+        title.textContent = cat.title;
+        block.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.className = 'emoji-grid';
+
+        filtered.forEach(emoji => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'emoji-item-btn';
+          btn.textContent = emoji;
+
+          btn.addEventListener('click', () => {
+            if (!this.state.settings) this.state.settings = {};
+            this.state.settings.icon = emoji;
+            const iconEl = document.getElementById('boardIcon');
+            if (iconEl) {
+              iconEl.textContent = emoji;
+              iconEl.style.display = 'inline-block';
+            }
+            const iconDisplay = document.getElementById('settingCurrentIconDisplay');
+            if (iconDisplay) iconDisplay.textContent = emoji;
+            this.saveState();
+            this.syncSettingsToCloud();
+            this.showToast(`Board icon set to ${emoji}`);
+            this.backToMainSettings();
+          });
+
+          grid.appendChild(btn);
+        });
+
+        block.appendChild(grid);
+        gridContainer.appendChild(block);
+      });
+    };
+
+    // None button clears icon
+    document.getElementById('iconPickerNoneBtn')?.addEventListener('click', () => {
+      if (!this.state.settings) this.state.settings = {};
+      this.state.settings.icon = '';
+      const iconEl = document.getElementById('boardIcon');
+      if (iconEl) {
+        iconEl.textContent = '';
+        iconEl.style.display = 'none';
+      }
+      const iconDisplay = document.getElementById('settingCurrentIconDisplay');
+      if (iconDisplay) iconDisplay.textContent = 'None';
+      this.saveState();
+      this.syncSettingsToCloud();
+      this.showToast('Board icon removed');
+      this.backToMainSettings();
+    });
+
+    // Search filter
+    document.getElementById('iconPickerSearchInput')?.addEventListener('input', (e) => {
+      renderEmojis(e.target.value);
+    });
+
+    renderEmojis('');
+  }
+
+  initFormatSubview() {
+    document.querySelectorAll('.format-card-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const format = btn.dataset.format;
+        this.applyLayoutFormat(format);
+        this.saveState();
+        this.syncSettingsToCloud();
+        this.showToast(`Layout format changed to ${format}`);
+        this.backToMainSettings();
+      });
+    });
+  }
+
+  initSortSubview() {
+    document.querySelectorAll('#settingsSortSubview .selection-option-card').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sort = btn.dataset.sort;
+        this.applySort(sort);
+        this.saveState();
+        this.syncSettingsToCloud();
+        this.showToast('Sort order updated');
+        this.backToMainSettings();
+      });
+    });
+  }
+
+  initReactionsSubview() {
+    document.querySelectorAll('#settingsReactionsSubview .selection-option-card').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = btn.dataset.reactions;
+        this.applyReactionsPreset(preset);
+        this.saveState();
+        this.syncSettingsToCloud();
+        this.showToast('Reactions preset updated');
+        this.backToMainSettings();
+      });
+    });
+  }
+
+  initCommentsSubview() {
+    document.getElementById('settingAllowCommentsToggle')?.addEventListener('click', () => {
+      const current = !(this.state.settings?.commentsEnabled === false);
+      this.applyComments(!current);
+      this.saveState();
+      this.syncSettingsToCloud();
+    });
   }
 
   /* ========================================================================

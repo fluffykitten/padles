@@ -648,6 +648,34 @@ class PadlesSupabaseService {
 
     return true;
   }
+
+  // ==========================================================================
+  // Board Settings Synchronization
+  // ==========================================================================
+
+  async updateBoardSettings(settings, boardId = this.activeBoardId) {
+    if (!this.client || !this.isConnected) return false;
+
+    try {
+      // Upsert/update board metadata
+      const updatePayload = {
+        title: settings.title || 'Physics Audio Reflections'
+      };
+      
+      const { error } = await this.client
+        .from('boards')
+        .update(updatePayload)
+        .eq('id', boardId);
+
+      if (error) {
+        console.warn('[Supabase] updateBoardSettings note:', error.message);
+      }
+      return true;
+    } catch (err) {
+      console.warn('[Supabase] updateBoardSettings caught:', err);
+      return false;
+    }
+  }
 }
 
 // Global Singleton Instance
