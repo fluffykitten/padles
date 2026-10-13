@@ -74,15 +74,46 @@
       <!-- Collaborators Presence Strip -->
       <div id="collaboratorsStrip" class="collaborators-strip" style="display: none;" title="Active collaborators"></div>
 
-      <!-- Sign up for Padles CTA -->
-      <a href="https://padles.com/auth/signup" class="topbar-signup-btn" data-testid="surfaceHeaderSignupButton">
-        <span>Sign up for Padles</span>
-      </a>
-
-      <!-- Guest Avatar Anchor -->
-      <button id="guest-id-card-avatar-anchor" class="topbar-avatar-btn" data-testid="appBarAccountAvatar" title="Anonymous">
-        <img width="24" height="24" alt="Anonymous" src="https://padlet.net/identicons/6461510121x24.png" />
+      <!-- Log in CTA -->
+      <button id="topbarLoginBtn" class="topbar-login-pill-btn" data-testid="surfaceHeaderLoginButton" title="Log in">
+        <span>Log in</span>
       </button>
+
+      <!-- Sign up for Padles CTA -->
+      <button id="topbarSignupBtn" class="topbar-signup-btn" data-testid="surfaceHeaderSignupButton" title="Sign up for Padles">
+        <span>Sign up for Padles</span>
+      </button>
+
+      <!-- Guest / User Avatar Anchor -->
+      <button id="guest-id-card-avatar-anchor" class="topbar-avatar-btn" data-testid="appBarAccountAvatar" title="Anonymous">
+        <img id="topbarAvatarImg" width="24" height="24" alt="User avatar" src="https://padlet.net/identicons/6461510121x24.png" />
+      </button>
+
+      <!-- User Account Dropdown Menu -->
+      <div id="userAccountDropdown" class="user-account-dropdown" hidden>
+        <div class="user-account-header">
+          <img id="accountDropdownAvatar" class="account-dropdown-avatar" width="40" height="40" src="https://padlet.net/identicons/6461510121x24.png" alt="Avatar" />
+          <div class="account-dropdown-info">
+            <div id="accountDropdownName" class="account-dropdown-name">Salman Madani</div>
+            <div id="accountDropdownEmail" class="account-dropdown-email">salman@padles.dev</div>
+            <div class="account-dropdown-tier"><span class="tier-pill">Personal · Free</span></div>
+          </div>
+        </div>
+        <div class="user-account-divider"></div>
+        <button type="button" class="account-menu-item" id="accountMenuProfileBtn">
+          <svg viewBox="0 0 32 32" width="18" height="18" fill="currentColor"><path d="M16 2.667C8.648 2.667 2.667 8.648 2.667 16S8.648 29.333 16 29.333 29.333 23.352 29.333 16 23.352 2.667 16 2.667m0 2c6.271 0 11.333 5.062 11.333 11.333S22.271 27.333 16 27.333 4.667 22.271 4.667 16 9.729 4.667 16 4.667m0 2.666a2 2 0 1 0 .001 4.001A2 2 0 0 0 16 7.333m6.367 3.99q-.158 0-.309.049l-4.533 1.294h-3.052L9.94 11.372a.99.99 0 0 0-.95.209 1.001 1.001 0 0 0 .401 1.713l4.608 1.318v2.874l-1.936 5.163a1 1 0 0 0 .019.77q.082.183.228.32c.146.137.21.161.334.208a1 1 0 0 0 .77-.028 1 1 0 0 0 .522-.568L16 17.847l2.064 5.504a1 1 0 0 0 .522.568 1 1 0 0 0 .77.028 1 1 0 0 0 .562-.528 1 1 0 0 0 .019-.77l-1.936-5.163v-2.874l4.608-1.318a1.003 1.003 0 0 0 .755-1.093 1 1 0 0 0-.995-.878z"/></svg>
+          <span>Profile & Settings</span>
+        </button>
+        <button type="button" class="account-menu-item" id="accountMenuCloudBtn">
+          <svg viewBox="0 0 32 32" width="18" height="18" fill="currentColor"><path d="M24 12a7.98 7.98 0 0 0-7.333-4.8c-3.733 0-6.8 2.533-7.733 6A8 8 0 0 0 2 20.8 7.2 7.2 0 0 0 9.2 28h14.4A8.4 8.4 0 0 0 32 19.6 7.6 7.6 0 0 0 24 12z"/></svg>
+          <span>Cloud Settings (Supabase)</span>
+        </button>
+        <div class="user-account-divider"></div>
+        <button type="button" class="account-menu-item account-menu-logout" id="accountMenuLogoutBtn">
+          <svg viewBox="0 0 32 32" width="18" height="18" fill="currentColor"><path d="M6 4h10v2.667H6v21.333h10V30H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm15.414 7.086l5.5 5.5a1 1 0 0 1 0 1.414l-5.5 5.5-1.828-1.828 3.086-3.086H12v-2.666h10.672l-3.086-3.086 1.828-1.828z"/></svg>
+          <span>Log out</span>
+        </button>
+      </div>
     </div>
   </nav>
 
@@ -2159,6 +2190,251 @@
         <p style="font-size: 13.5px; color: #94a3b8; margin: 0;">Point your phone camera to open this board instantly.</p>
       </div>
     </div>
+  </div>
+
+  <!-- Authentic Padlet Auth System (Modal Dialog + Standalone Fullscreen) -->
+  <div id="authModal" class="padlet-auth-modal-backdrop" hidden>
+    <div class="padlet-auth-modal-container">
+      <button type="button" id="closeAuthModalBtn" class="padlet-auth-modal-close" aria-label="Close" title="Close">
+        <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor">
+          <path d="M7.05 5.636 5.636 7.05 14.586 16l-8.95 8.95 1.414 1.414L16 17.414l8.95 8.95 1.414-1.414L17.414 16l8.95-8.95-1.414-1.414L16 14.586z"/>
+        </svg>
+      </button>
+
+      <!-- Embedded Auth Card -->
+      <div class="padlet-auth-card" id="authModalCard">
+        <!-- Header Toggle Line -->
+        <div class="padlet-auth-top-switch">
+          <span id="authModalSwitchText">Not a member?</span>
+          <button type="button" id="authModalSwitchBtn" class="padlet-auth-link-btn">Sign up</button>
+        </div>
+
+        <!-- Heading & Subtitle -->
+        <div class="padlet-auth-header-text">
+          <h1 id="authModalHeading" class="padlet-auth-heading">Log in</h1>
+          <h2 id="authModalSubtitle" class="padlet-auth-subtitle">Welcome back to where you belong</h2>
+        </div>
+
+        <!-- Social SSO Buttons -->
+        <div class="padlet-auth-sso-group">
+          <button type="button" class="padlet-sso-btn sso-google" id="ssoGoogleModalBtn">
+            <svg class="sso-icon" viewBox="0 0 24 24" width="22" height="22">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+            </svg>
+            <span id="ssoGoogleModalLabel">Log in with Google</span>
+          </button>
+
+          <button type="button" class="padlet-sso-btn sso-ms" id="ssoMsModalBtn">
+            <svg class="sso-icon" viewBox="0 0 24 24" width="20" height="20">
+              <path fill="#F25022" d="M1 1h10v10H1z"/>
+              <path fill="#7FBA00" d="M13 1h10v10H13z"/>
+              <path fill="#00A4EF" d="M1 13h10v10H1z"/>
+              <path fill="#FFB900" d="M13 13h10v10H13z"/>
+            </svg>
+            <span id="ssoMsModalLabel">Log in with Microsoft</span>
+          </button>
+
+          <button type="button" class="padlet-sso-btn sso-apple" id="ssoAppleModalBtn">
+            <svg class="sso-icon" viewBox="0 0 32 32" height="22" width="22" fill="currentColor">
+              <path d="M28.111 22.032c-.659 1.427-.975 2.065-1.821 3.324-1.183 1.761-2.855 3.958-4.92 3.974-1.836.014-2.311-1.172-4.804-1.153-2.492.013-3.011 1.175-4.851 1.154-2.064-.017-3.646-1.997-4.83-3.754-3.313-4.931-3.661-10.708-1.615-13.783 1.447-2.18 3.739-3.46 5.889-3.46 2.191 0 3.568 1.178 5.379 1.178 1.759 0 2.83-1.18 5.364-1.18 1.916 0 3.943 1.021 5.391 2.781-4.737 2.537-3.967 9.149.818 10.919"/>
+              <path d="M20.304 6.056c.987-1.227 1.736-2.959 1.464-4.723-1.609.107-3.493 1.103-4.593 2.392-.997 1.174-1.824 2.918-1.502 4.606 1.757.054 3.575-.959 4.631-2.275"/>
+            </svg>
+            <span id="ssoAppleModalLabel">Log in with Apple</span>
+          </button>
+
+          <button type="button" class="padlet-sso-more-btn" id="ssoMoreModalBtn">
+            <span>More options</span>
+            <svg viewBox="0 0 32 32" height="14" width="14" fill="currentColor">
+              <path d="M16 23.522a1.44 1.44 0 0 0 1.048-.474l8.568-8.771c.248-.248.383-.564.383-.936 0-.744-.586-1.342-1.33-1.342-.361 0-.71.147-.969.406l-7.689 7.903L8.3 12.405a1.4 1.4 0 0 0-.97-.406c-.744 0-1.33.598-1.33 1.342 0 .372.135.688.383.936l8.579 8.771c.304.316.643.474 1.037.474z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="padlet-auth-divider-caption" id="authModalDividerCaption">Or, log in with email/username</div>
+
+        <!-- Form Fields -->
+        <div class="padlet-auth-fields">
+          <!-- Full Name (Signup mode) -->
+          <div class="padlet-input-pill-wrapper" id="authModalNameGroup" style="display: none;">
+            <input type="text" id="authModalNameInput" class="padlet-auth-input" placeholder="Your full name" autocomplete="name" />
+          </div>
+
+          <!-- Email Input -->
+          <div class="padlet-input-pill-wrapper" id="authModalEmailGroup">
+            <input type="email" id="authModalEmailInput" class="padlet-auth-input" placeholder="harrypotter@hogwarts.edu" autocomplete="email" />
+            <div id="authModalErrorBadge" class="padlet-input-floating-error" style="display: none;">User not found</div>
+          </div>
+
+          <!-- Password Input (Revealed) -->
+          <div class="padlet-input-pill-wrapper" id="authModalPasswordGroup" style="display: none;">
+            <input type="password" id="authModalPasswordInput" class="padlet-auth-input" placeholder="Enter password" autocomplete="current-password" />
+            <button type="button" id="authModalTogglePwBtn" class="padlet-auth-eye-btn" title="Toggle password visibility">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Continue / Action Button -->
+          <button type="button" id="authModalSubmitBtn" class="padlet-auth-continue-btn" disabled>
+            Continue
+          </button>
+
+          <!-- Magic Link Alternative -->
+          <button type="button" id="authModalMagicLinkBtn" class="padlet-auth-magiclink-btn" style="display: none;">
+            Send magic link instead
+          </button>
+        </div>
+
+        <!-- Signup Terms Humor Notice -->
+        <div id="authModalTermsNotice" class="padlet-auth-terms" style="display: none;">
+          By signing up, you agree to our <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>. You also admit that you are beautiful.
+        </div>
+
+        <!-- Login Workspace Notice -->
+        <div id="authModalWorkspaceNotice" class="padlet-auth-workspace">
+          Logging in to a workspace? <a href="#" id="authModalWorkspaceLink">Log in here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Standalone Fullscreen Auth View (Accessible via ?view=login or ?view=signup) -->
+  <div id="authStandaloneView" class="padlet-auth-standalone-view" hidden>
+    <!-- Top Bar -->
+    <header class="padlet-auth-standalone-header">
+      <div class="padlet-auth-standalone-logo">
+        <a class="padlet-logo-link padles-logo-link" href="/" title="Padles dashboard" aria-label="Padles dashboard">
+          <span class="padles-logo-text" style="color: #ffffff; font-size: 22px; font-weight: 800; letter-spacing: -0.6px;">Padles</span>
+        </a>
+      </div>
+      <div class="padlet-auth-standalone-nav">
+        <span id="authStandaloneSwitchText">Not a member?</span>
+        <button type="button" id="authStandaloneSwitchBtn" class="padlet-auth-link-btn">Sign up</button>
+      </div>
+    </header>
+
+    <!-- Main Centered Container -->
+    <main class="padlet-auth-standalone-main">
+      <div class="padlet-auth-card" id="authStandaloneCard">
+        <!-- Heading & Subtitle -->
+        <div class="padlet-auth-header-text">
+          <h1 id="authStandaloneHeading" class="padlet-auth-heading">Log in</h1>
+          <h2 id="authStandaloneSubtitle" class="padlet-auth-subtitle">Welcome back to where you belong</h2>
+        </div>
+
+        <!-- Social SSO Buttons -->
+        <div class="padlet-auth-sso-group">
+          <button type="button" class="padlet-sso-btn sso-google" id="ssoGoogleStandaloneBtn">
+            <svg class="sso-icon" viewBox="0 0 24 24" width="22" height="22">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.35 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.35 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+            </svg>
+            <span id="ssoGoogleStandaloneLabel">Log in with Google</span>
+          </button>
+
+          <button type="button" class="padlet-sso-btn sso-ms" id="ssoMsStandaloneBtn">
+            <svg class="sso-icon" viewBox="0 0 24 24" width="20" height="20">
+              <path fill="#F25022" d="M1 1h10v10H1z"/>
+              <path fill="#7FBA00" d="M13 1h10v10H13z"/>
+              <path fill="#00A4EF" d="M1 13h10v10H1z"/>
+              <path fill="#FFB900" d="M13 13h10v10H13z"/>
+            </svg>
+            <span id="ssoMsStandaloneLabel">Log in with Microsoft</span>
+          </button>
+
+          <button type="button" class="padlet-sso-btn sso-apple" id="ssoAppleStandaloneBtn">
+            <svg class="sso-icon" viewBox="0 0 32 32" height="22" width="22" fill="currentColor">
+              <path d="M28.111 22.032c-.659 1.427-.975 2.065-1.821 3.324-1.183 1.761-2.855 3.958-4.92 3.974-1.836.014-2.311-1.172-4.804-1.153-2.492.013-3.011 1.175-4.851 1.154-2.064-.017-3.646-1.997-4.83-3.754-3.313-4.931-3.661-10.708-1.615-13.783 1.447-2.18 3.739-3.46 5.889-3.46 2.191 0 3.568 1.178 5.379 1.178 1.759 0 2.83-1.18 5.364-1.18 1.916 0 3.943 1.021 5.391 2.781-4.737 2.537-3.967 9.149.818 10.919"/>
+              <path d="M20.304 6.056c.987-1.227 1.736-2.959 1.464-4.723-1.609.107-3.493 1.103-4.593 2.392-.997 1.174-1.824 2.918-1.502 4.606 1.757.054 3.575-.959 4.631-2.275"/>
+            </svg>
+            <span id="ssoAppleStandaloneLabel">Log in with Apple</span>
+          </button>
+
+          <button type="button" class="padlet-sso-more-btn" id="ssoMoreStandaloneBtn">
+            <span>More options</span>
+            <svg viewBox="0 0 32 32" height="14" width="14" fill="currentColor">
+              <path d="M16 23.522a1.44 1.44 0 0 0 1.048-.474l8.568-8.771c.248-.248.383-.564.383-.936 0-.744-.586-1.342-1.33-1.342-.361 0-.71.147-.969.406l-7.689 7.903L8.3 12.405a1.4 1.4 0 0 0-.97-.406c-.744 0-1.33.598-1.33 1.342 0 .372.135.688.383.936l8.579 8.771c.304.316.643.474 1.037.474z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Divider -->
+        <div class="padlet-auth-divider-caption" id="authStandaloneDividerCaption">Or, log in with email/username</div>
+
+        <!-- Form Fields -->
+        <div class="padlet-auth-fields">
+          <!-- Full Name (Signup mode) -->
+          <div class="padlet-input-pill-wrapper" id="authStandaloneNameGroup" style="display: none;">
+            <input type="text" id="authStandaloneNameInput" class="padlet-auth-input" placeholder="Your full name" autocomplete="name" />
+          </div>
+
+          <!-- Email Input -->
+          <div class="padlet-input-pill-wrapper" id="authStandaloneEmailGroup">
+            <input type="email" id="authStandaloneEmailInput" class="padlet-auth-input" placeholder="harrypotter@hogwarts.edu" autocomplete="email" />
+            <div id="authStandaloneErrorBadge" class="padlet-input-floating-error" style="display: none;">User not found</div>
+          </div>
+
+          <!-- Password Input (Revealed) -->
+          <div class="padlet-input-pill-wrapper" id="authStandalonePasswordGroup" style="display: none;">
+            <input type="password" id="authStandalonePasswordInput" class="padlet-auth-input" placeholder="Enter password" autocomplete="current-password" />
+            <button type="button" id="authStandaloneTogglePwBtn" class="padlet-auth-eye-btn" title="Toggle password visibility">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Continue / Action Button -->
+          <button type="button" id="authStandaloneSubmitBtn" class="padlet-auth-continue-btn" disabled>
+            Continue
+          </button>
+
+          <!-- Return to Board Button -->
+          <button type="button" id="authStandaloneBackBtn" class="padlet-auth-back-btn">
+            Back to board
+          </button>
+        </div>
+
+        <!-- Signup Terms Humor Notice -->
+        <div id="authStandaloneTermsNotice" class="padlet-auth-terms" style="display: none;">
+          By signing up, you agree to our <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>. You also admit that you are beautiful.
+        </div>
+
+        <!-- Login Workspace Notice -->
+        <div id="authStandaloneWorkspaceNotice" class="padlet-auth-workspace">
+          Logging in to a workspace? <a href="#" id="authStandaloneWorkspaceLink">Log in here</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom Footer Tools -->
+    <footer class="padlet-auth-standalone-footer">
+      <div class="padlet-auth-footer-left">
+        <button type="button" class="auth-footer-icon-btn" title="Help">
+          <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+            <path d="M16 2.667C8.648 2.667 2.667 8.648 2.667 16S8.648 29.333 16 29.333 29.333 23.352 29.333 16 23.352 2.667 16 2.667m0 2c6.271 0 11.333 5.062 11.333 11.333S22.271 27.333 16 27.333 4.667 22.271 4.667 16 9.729 4.667 16 4.667m0 4c-2.197 0-4 1.803-4 4V13a1 1 0 0 0 .614.936A1 1 0 0 0 14 13v-.333c0-1.116.884-2 2-2s2 .884 2 2c0 1.561-.406 1.756-1.117 2.315-.356.279-.822.602-1.22 1.145S15 17.427 15 18.334a1 1 0 0 0 .614.936A1 1 0 0 0 17 18.334c0-.569.111-.8.275-1.023s.448-.445.842-.755c.789-.62 1.883-1.782 1.883-3.888 0-2.197-1.803-4-4-4zm0 12.666a1.333 1.333 0 1 0-.002 2.665A1.333 1.333 0 0 0 16 21.333"/>
+          </svg>
+        </button>
+        <button type="button" class="auth-footer-icon-btn" title="Accessibility">
+          <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+            <path d="M16 2.667C8.648 2.667 2.667 8.648 2.667 16S8.648 29.333 16 29.333 29.333 23.352 29.333 16 23.352 2.667 16 2.667m0 2c6.271 0 11.333 5.062 11.333 11.333S22.271 27.333 16 27.333 4.667 22.271 4.667 16 9.729 4.667 16 4.667m0 2.666a2 2 0 1 0 .001 4.001A2 2 0 0 0 16 7.333m6.367 3.99q-.158 0-.309.049l-4.533 1.294h-3.052L9.94 11.372a.99.99 0 0 0-.95.209 1.001 1.001 0 0 0 .401 1.713l4.608 1.318v2.874l-1.936 5.163a1 1 0 0 0 .019.77q.082.183.228.32c.146.137.21.161.334.208a1 1 0 0 0 .77-.028 1 1 0 0 0 .522-.568L16 17.847l2.064 5.504a1 1 0 0 0 .522.568 1 1 0 0 0 .77.028 1 1 0 0 0 .562-.528 1 1 0 0 0 .019-.77l-1.936-5.163v-2.874l4.608-1.318a1.003 1.003 0 0 0 .755-1.093 1 1 0 0 0-.995-.878z"/>
+          </svg>
+        </button>
+        <button type="button" class="auth-footer-lang-btn">
+          <span>English (US)</span>
+          <svg viewBox="0 0 32 32" height="14" width="14" fill="currentColor">
+            <path d="M16 23.522a1.44 1.44 0 0 0 1.048-.474l8.568-8.771c.248-.248.383-.564.383-.936 0-.744-.586-1.342-1.33-1.342-.361 0-.71.147-.969.406l-7.689 7.903L8.3 12.405a1.4 1.4 0 0 0-.97-.406c-.744 0-1.33.598-1.33 1.342 0 .372.135.688.383.936l8.579 8.771c.304.316.643.474 1.037.474z"/>
+          </svg>
+        </button>
+      </div>
+    </footer>
   </div>
 
   <div id="toast" class="toast"></div>

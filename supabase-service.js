@@ -16,21 +16,36 @@ class PadlesSupabaseService {
       boardUpdated: [],
       presenceUpdated: [],
       postChanged: [],
-      sectionChanged: []
+      sectionChanged: [],
+      authStateChange: []
     };
 
-    // Presence data
-    this.currentUser = {
-      id: this.getOrCreateUserId(),
-      name: 'Salman Madani',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces',
-      color: '#ff1f6d'
-    };
+    // Presence data and user authentication state
+    this.currentUser = this.loadInitialUser();
 
     this.envSource = null;
     this.envConfig = null;
     this.initCredentials();
   }
+
+  loadInitialUser() {
+    try {
+      const saved = localStorage.getItem('padles_auth_user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.id) return parsed;
+      }
+    } catch (_) {}
+    return {
+      id: this.getOrCreateUserId(),
+      name: 'Salman Madani',
+      email: '',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces',
+      color: '#ff1f6d',
+      isGuest: false
+    };
+  }
+
 
   getOrCreateUserId() {
     let id = localStorage.getItem('padles_user_id');
@@ -154,6 +169,7 @@ class PadlesSupabaseService {
 
       this.url = url;
       this.anonKey = anonKey;
+      this.setupAuthListener();
       return true;
     } catch (err) {
       console.error('Failed to initialize Supabase client:', err);
@@ -676,7 +692,222 @@ class PadlesSupabaseService {
       return false;
     }
   }
+
+  // ==========================================================================
+  // Authentication & User Profile Management (Supabase Auth + Cloudflare R2)
+  // ==========================================================================
+
+  setupAuthListener() {
+    if (!this.client) return;
+
+    this.client.auth.onAuthStateChange(async (event, session) => {
+      console.log(`[Supabase Auth] State changed: ${event}`, session?.user?.email);
+      if (session && session.user) {
+        const user = session.user;
+        const profile = await this.getProfile(user.id);
+        const name = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Salman Madani';
+        const avatar = profile?.avatar_url || user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces';
+        
+        this.currentUser = {
+          id: user.id,
+          name: name,
+          email: user.email,
+          avatar: avatar,
+          color: '#ff1f6d',
+          isGuest: false,
+          session: session
+        };
+        localStorage.setItem('padles_auth_user', JSON.stringify(this.currentUser));
+      } else if (event === 'SIGNED_OUT') {
+        this.currentUser = {
+          id: this.getOrCreateUserId(),
+          name: 'Anonymous',
+          email: '',
+          avatar: 'https://padlet.net/identicons/6461510121x24.png',
+          color: '#ff1f6d',
+          isGuest: true
+        };
+        localStorage.removeItem('padles_auth_user');
+      }
+      this.notifyAuthState(this.currentUser, session);
+    });
+
+    // Check existing session
+    this.client.auth.getSession().then(async ({ data: { session } }) => {
+      if (session && session.user) {
+        const user = session.user;
+        const profile = await this.getProfile(user.id);
+        const name = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Salman Madani';
+        const avatar = profile?.avatar_url || user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces';
+        this.currentUser = {
+          id: user.id,
+          name: name,
+          email: user.email,
+          avatar: avatar,
+          color: '#ff1f6d',
+          isGuest: false,
+          session: session
+        };
+        localStorage.setItem('padles_auth_user', JSON.stringify(this.currentUser));
+        this.notifyAuthState(this.currentUser, session);
+      }
+    });
+  }
+
+  notifyAuthState(user, session) {
+    this.eventListeners.authStateChange.forEach(cb => {
+      try { cb({ user, session }); } catch (e) { console.error(e); }
+    });
+  }
+
+  async signUp(email, password, fullName = '') {
+    if (this.client && this.isConnected) {
+      try {
+        const { data, error } = await this.client.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName || email.split('@')[0],
+              username: (email.split('@')[0] + '_' + Math.random().toString(36).substring(2, 6)).toLowerCase()
+            }
+          }
+        });
+        if (error) throw error;
+        return { success: true, user: data.user, session: data.session };
+      } catch (err) {
+        return { success: false, error: err.message };
+      }
+    }
+
+    // Local / Offline mode fallback simulation
+    const mockUser = {
+      id: 'local_user_' + Math.random().toString(36).substring(2, 10),
+      name: fullName || email.split('@')[0],
+      email: email,
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces',
+      color: '#ff1f6d',
+      isGuest: false
+    };
+    this.currentUser = mockUser;
+    localStorage.setItem('padles_auth_user', JSON.stringify(mockUser));
+    this.notifyAuthState(mockUser, null);
+    return { success: true, user: mockUser, isLocal: true };
+  }
+
+  async signIn(email, password) {
+    if (this.client && this.isConnected) {
+      try {
+        const { data, error } = await this.client.auth.signInWithPassword({
+          email,
+          password
+        });
+        if (error) throw error;
+        return { success: true, user: data.user, session: data.session };
+      } catch (err) {
+        return { success: false, error: err.message };
+      }
+    }
+
+    // Local / Offline mode fallback simulation
+    const mockUser = {
+      id: 'local_user_' + Math.random().toString(36).substring(2, 10),
+      name: email.split('@')[0],
+      email: email,
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces',
+      color: '#ff1f6d',
+      isGuest: false
+    };
+    this.currentUser = mockUser;
+    localStorage.setItem('padles_auth_user', JSON.stringify(mockUser));
+    this.notifyAuthState(mockUser, null);
+    return { success: true, user: mockUser, isLocal: true };
+  }
+
+  async signInWithOtp(email) {
+    if (this.client && this.isConnected) {
+      try {
+        const { data, error } = await this.client.auth.signInWithOtp({ email });
+        if (error) throw error;
+        return { success: true, message: 'Check your email for the magic link!' };
+      } catch (err) {
+        return { success: false, error: err.message };
+      }
+    }
+    return { success: true, message: 'Local mode: Magic link simulation.' };
+  }
+
+  async signOut() {
+    if (this.client && this.isConnected) {
+      try {
+        await this.client.auth.signOut();
+      } catch (err) {
+        console.warn('SignOut error:', err);
+      }
+    }
+    this.currentUser = {
+      id: this.getOrCreateUserId(),
+      name: 'Anonymous',
+      email: '',
+      avatar: 'https://padlet.net/identicons/6461510121x24.png',
+      color: '#ff1f6d',
+      isGuest: true
+    };
+    localStorage.removeItem('padles_auth_user');
+    this.notifyAuthState(this.currentUser, null);
+    return { success: true };
+  }
+
+  async getProfile(userId = this.currentUser?.id) {
+    if (!this.client || !this.isConnected || !userId) return null;
+    try {
+      const { data, error } = await this.client
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.warn('Could not load profile:', err.message);
+      return null;
+    }
+  }
+
+  async updateProfile(updates) {
+    if (!this.currentUser) return false;
+    if (this.client && this.isConnected) {
+      try {
+        const { data, error } = await this.client
+          .from('user_profiles')
+          .update(updates)
+          .eq('id', this.currentUser.id)
+          .select()
+          .maybeSingle();
+        if (error) throw error;
+        if (updates.full_name) this.currentUser.name = updates.full_name;
+        if (updates.avatar_url) this.currentUser.avatar = updates.avatar_url;
+        localStorage.setItem('padles_auth_user', JSON.stringify(this.currentUser));
+        this.notifyAuthState(this.currentUser, this.currentUser.session);
+        return true;
+      } catch (err) {
+        console.error('Update profile error:', err);
+        return false;
+      }
+    }
+
+    if (updates.full_name) this.currentUser.name = updates.full_name;
+    if (updates.avatar_url) this.currentUser.avatar = updates.avatar_url;
+    localStorage.setItem('padles_auth_user', JSON.stringify(this.currentUser));
+    this.notifyAuthState(this.currentUser, null);
+    return true;
+  }
+
+  isAuthenticated() {
+    return !!(this.currentUser && !this.currentUser.isGuest && this.currentUser.email);
+  }
 }
+
 
 // Global Singleton Instance
 window.padlesBackend = new PadlesSupabaseService();

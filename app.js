@@ -289,6 +289,21 @@ class PadlesShelfApp {
     this.guideAccordionContent = document.getElementById('guideAccordionContent');
     this.copySchemaPathBtn = document.getElementById('copySchemaPathBtn');
 
+    // Auth & User Profile Elements
+    this.topbarLoginBtn = document.getElementById('topbarLoginBtn');
+    this.topbarSignupBtn = document.getElementById('topbarSignupBtn');
+    this.topbarAvatarImg = document.getElementById('topbarAvatarImg');
+    this.guestAvatarAnchor = document.getElementById('guest-id-card-avatar-anchor');
+    this.userAccountDropdown = document.getElementById('userAccountDropdown');
+    this.accountDropdownAvatar = document.getElementById('accountDropdownAvatar');
+    this.accountDropdownName = document.getElementById('accountDropdownName');
+    this.accountDropdownEmail = document.getElementById('accountDropdownEmail');
+    this.accountMenuProfileBtn = document.getElementById('accountMenuProfileBtn');
+    this.accountMenuCloudBtn = document.getElementById('accountMenuCloudBtn');
+    this.accountMenuLogoutBtn = document.getElementById('accountMenuLogoutBtn');
+    this.authModal = document.getElementById('authModal');
+    this.authStandaloneView = document.getElementById('authStandaloneView');
+
     // Section Context Menu (Blueprint Section 2.2)
     this.sectionContextMenu = document.getElementById('sectionContextMenu');
     this.activeSectionContextId = null;
@@ -479,6 +494,7 @@ class PadlesShelfApp {
     this.initLocationModal();
     this.initCustomFieldBuilder();
     this.initCloudBackendUI();
+    this.initAuthSystem();
     this.initSlideshow();
     this.initShareDrawer();
     this.initSettingsDrawer();
@@ -7303,6 +7319,374 @@ class PadlesShelfApp {
       this.saveState();
       this.renderBoard();
       this.updateSectionSelectorUI();
+    }
+  }
+
+  /* ========================================================================
+     Authentic Padlet Auth System (Modal Dialog + Standalone View)
+     ======================================================================== */
+
+  initAuthSystem() {
+    this.authMode = 'login'; // 'login' | 'signup'
+
+    // Update UI based on initial backend user
+    if (this.backend && this.backend.currentUser) {
+      this.updateAuthUI(this.backend.currentUser);
+    }
+
+    // Listen for auth state transitions
+    if (this.backend) {
+      this.backend.on('authStateChange', ({ user }) => {
+        this.updateAuthUI(user);
+      });
+    }
+
+    // Topbar Buttons
+    if (this.topbarLoginBtn) {
+      this.topbarLoginBtn.addEventListener('click', () => this.openAuthModal('login'));
+    }
+    if (this.topbarSignupBtn) {
+      this.topbarSignupBtn.addEventListener('click', () => this.openAuthModal('signup'));
+    }
+
+    // Avatar Button
+    if (this.guestAvatarAnchor) {
+      this.guestAvatarAnchor.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.backend && this.backend.isAuthenticated()) {
+          this.toggleUserAccountDropdown();
+        } else {
+          this.openAuthModal('login');
+        }
+      });
+    }
+
+    // Account Dropdown Buttons
+    if (this.accountMenuProfileBtn) {
+      this.accountMenuProfileBtn.addEventListener('click', () => {
+        this.toggleUserAccountDropdown(false);
+        const newName = prompt('Enter display name:', this.backend.currentUser?.name || '');
+        if (newName && newName.trim()) {
+          this.backend.updateProfile({ full_name: newName.trim() });
+          this.showToast('Profile updated!');
+        }
+      });
+    }
+
+    if (this.accountMenuCloudBtn) {
+      this.accountMenuCloudBtn.addEventListener('click', () => {
+        this.toggleUserAccountDropdown(false);
+        if (this.cloudSettingsModal) this.cloudSettingsModal.hidden = false;
+      });
+    }
+
+    if (this.accountMenuLogoutBtn) {
+      this.accountMenuLogoutBtn.addEventListener('click', async () => {
+        this.toggleUserAccountDropdown(false);
+        if (this.backend) await this.backend.signOut();
+        this.showToast('Logged out successfully');
+      });
+    }
+
+    // Close account dropdown on outside click
+    document.addEventListener('click', (e) => {
+      if (this.userAccountDropdown && !this.userAccountDropdown.hidden) {
+        if (!this.userAccountDropdown.contains(e.target) && e.target !== this.guestAvatarAnchor) {
+          this.userAccountDropdown.hidden = true;
+        }
+      }
+    });
+
+    // In-App Modal controls
+    const closeAuthBtn = document.getElementById('closeAuthModalBtn');
+    if (closeAuthBtn) closeAuthBtn.addEventListener('click', () => this.closeAuthModal());
+    if (this.authModal) {
+      this.authModal.addEventListener('click', (e) => {
+        if (e.target === this.authModal) this.closeAuthModal();
+      });
+    }
+
+    const authModalSwitchBtn = document.getElementById('authModalSwitchBtn');
+    if (authModalSwitchBtn) {
+      authModalSwitchBtn.addEventListener('click', () => {
+        this.setAuthMode(this.authMode === 'login' ? 'signup' : 'login', 'modal');
+      });
+    }
+
+    // Modal Form Inputs & Submit
+    this.bindAuthForm('modal');
+    this.bindAuthForm('standalone');
+
+    // Standalone View controls
+    const authStandaloneBackBtn = document.getElementById('authStandaloneBackBtn');
+    if (authStandaloneBackBtn) {
+      authStandaloneBackBtn.addEventListener('click', () => this.closeAuthStandalone());
+    }
+
+    const authStandaloneSwitchBtn = document.getElementById('authStandaloneSwitchBtn');
+    if (authStandaloneSwitchBtn) {
+      authStandaloneSwitchBtn.addEventListener('click', () => {
+        this.setAuthMode(this.authMode === 'login' ? 'signup' : 'login', 'standalone');
+      });
+    }
+
+    // Check URL parameters for standalone auth
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewParam = urlParams.get('view');
+    if (viewParam === 'login' || viewParam === 'signup' || window.location.hash === '#login' || window.location.hash === '#signup') {
+      this.openAuthStandalone(viewParam === 'signup' || window.location.hash === '#signup' ? 'signup' : 'login');
+    }
+  }
+
+  updateAuthUI(user) {
+    const isAuthed = this.backend && this.backend.isAuthenticated();
+    if (this.topbarLoginBtn) {
+      this.topbarLoginBtn.style.display = isAuthed ? 'none' : 'inline-flex';
+    }
+    if (this.topbarSignupBtn) {
+      this.topbarSignupBtn.style.display = isAuthed ? 'none' : 'inline-flex';
+    }
+    if (this.topbarAvatarImg && user) {
+      this.topbarAvatarImg.src = user.avatar || 'https://padlet.net/identicons/6461510121x24.png';
+      this.topbarAvatarImg.alt = user.name || 'User';
+      if (this.guestAvatarAnchor) {
+        this.guestAvatarAnchor.title = user.name || 'Account';
+      }
+    }
+    if (this.accountDropdownAvatar && user) {
+      this.accountDropdownAvatar.src = user.avatar || 'https://padlet.net/identicons/6461510121x24.png';
+    }
+    if (this.accountDropdownName && user) {
+      this.accountDropdownName.textContent = user.name || 'Salman Madani';
+    }
+    if (this.accountDropdownEmail && user) {
+      this.accountDropdownEmail.textContent = user.email || 'salman@padles.dev';
+    }
+  }
+
+  toggleUserAccountDropdown(force) {
+    if (!this.userAccountDropdown) return;
+    const shouldShow = typeof force === 'boolean' ? force : this.userAccountDropdown.hidden;
+    this.userAccountDropdown.hidden = !shouldShow;
+  }
+
+  setAuthMode(mode, target = 'modal') {
+    this.authMode = mode;
+    const isLogin = mode === 'login';
+    const prefix = target === 'modal' ? 'authModal' : 'authStandalone';
+
+    const switchText = document.getElementById(`${prefix}SwitchText`);
+    const switchBtn = document.getElementById(`${prefix}SwitchBtn`);
+    const heading = document.getElementById(`${prefix}Heading`);
+    const subtitle = document.getElementById(`${prefix}Subtitle`);
+    const googleLabel = document.getElementById(target === 'modal' ? 'ssoGoogleModalLabel' : 'ssoGoogleStandaloneLabel');
+    const msLabel = document.getElementById(target === 'modal' ? 'ssoMsModalLabel' : 'ssoMsStandaloneLabel');
+    const appleLabel = document.getElementById(target === 'modal' ? 'ssoAppleModalLabel' : 'ssoAppleStandaloneLabel');
+    const dividerCaption = document.getElementById(`${prefix}DividerCaption`);
+    const nameGroup = document.getElementById(`${prefix}NameGroup`);
+    const termsNotice = document.getElementById(`${prefix}TermsNotice`);
+    const workspaceNotice = document.getElementById(`${prefix}WorkspaceNotice`);
+    const passwordGroup = document.getElementById(`${prefix}PasswordGroup`);
+    const submitBtn = document.getElementById(`${prefix}SubmitBtn`);
+    const errorBadge = document.getElementById(`${prefix}ErrorBadge`);
+
+    if (switchText) switchText.textContent = isLogin ? 'Not a member?' : 'Already a member?';
+    if (switchBtn) switchBtn.textContent = isLogin ? 'Sign up' : 'Log in';
+    if (heading) heading.textContent = isLogin ? 'Log in' : 'Sign up';
+    if (subtitle) subtitle.textContent = isLogin ? 'Welcome back to where you belong' : 'You belong here';
+    if (googleLabel) googleLabel.textContent = isLogin ? 'Log in with Google' : 'Sign up with Google';
+    if (msLabel) msLabel.textContent = isLogin ? 'Log in with Microsoft' : 'Sign up with Microsoft';
+    if (appleLabel) appleLabel.textContent = isLogin ? 'Log in with Apple' : 'Sign up with Apple';
+    if (dividerCaption) dividerCaption.textContent = isLogin ? 'Or, log in with email/username' : 'Or, sign up with email';
+    if (nameGroup) nameGroup.style.display = isLogin ? 'none' : 'flex';
+    if (termsNotice) termsNotice.style.display = isLogin ? 'none' : 'block';
+    if (workspaceNotice) workspaceNotice.style.display = isLogin ? 'block' : 'none';
+    if (errorBadge) errorBadge.style.display = 'none';
+
+    // Reset password group on mode switch
+    if (passwordGroup) passwordGroup.style.display = 'none';
+    if (submitBtn) {
+      submitBtn.textContent = 'Continue';
+    }
+  }
+
+  openAuthModal(mode = 'login') {
+    if (!this.authModal) return;
+    this.setAuthMode(mode, 'modal');
+    this.authModal.hidden = false;
+    const emailInput = document.getElementById('authModalEmailInput');
+    if (emailInput) {
+      emailInput.focus();
+    }
+  }
+
+  closeAuthModal() {
+    if (!this.authModal) return;
+    this.authModal.hidden = true;
+  }
+
+  openAuthStandalone(mode = 'login') {
+    if (!this.authStandaloneView) return;
+    this.setAuthMode(mode, 'standalone');
+    this.authStandaloneView.hidden = false;
+    const emailInput = document.getElementById('authStandaloneEmailInput');
+    if (emailInput) {
+      emailInput.focus();
+    }
+  }
+
+  closeAuthStandalone() {
+    if (!this.authStandaloneView) return;
+    this.authStandaloneView.hidden = true;
+    const url = new URL(window.location);
+    url.searchParams.delete('view');
+    window.history.pushState({}, '', url.pathname + (url.search ? url.search : ''));
+  }
+
+  bindAuthForm(target) {
+    const prefix = target === 'modal' ? 'authModal' : 'authStandalone';
+    const emailInput = document.getElementById(`${prefix}EmailInput`);
+    const emailGroup = document.getElementById(`${prefix}EmailGroup`);
+    const passwordInput = document.getElementById(`${prefix}PasswordInput`);
+    const passwordGroup = document.getElementById(`${prefix}PasswordGroup`);
+    const nameInput = document.getElementById(`${prefix}NameInput`);
+    const submitBtn = document.getElementById(`${prefix}SubmitBtn`);
+    const errorBadge = document.getElementById(`${prefix}ErrorBadge`);
+    const togglePwBtn = document.getElementById(`${prefix}TogglePwBtn`);
+    const googleBtn = document.getElementById(target === 'modal' ? 'ssoGoogleModalBtn' : 'ssoGoogleStandaloneBtn');
+    const msBtn = document.getElementById(target === 'modal' ? 'ssoMsModalBtn' : 'ssoMsStandaloneBtn');
+    const appleBtn = document.getElementById(target === 'modal' ? 'ssoAppleModalBtn' : 'ssoAppleStandaloneBtn');
+
+    if (!emailInput || !submitBtn) return;
+
+    // Enable/disable submit button on input
+    emailInput.addEventListener('input', () => {
+      const val = emailInput.value.trim();
+      submitBtn.disabled = !val;
+      if (emailGroup) emailGroup.classList.remove('has-error');
+      if (errorBadge) errorBadge.style.display = 'none';
+    });
+
+    // Password visibility toggle
+    if (togglePwBtn && passwordInput) {
+      togglePwBtn.addEventListener('click', () => {
+        const isPw = passwordInput.type === 'password';
+        passwordInput.type = isPw ? 'text' : 'password';
+      });
+    }
+
+    // SSO Buttons handler
+    const handleSso = (provider) => {
+      const demoEmail = `${provider.toLowerCase()}user@gmail.com`;
+      this.handleAuthSubmission(demoEmail, 'demo123456', `${provider} User`, target);
+    };
+
+    if (googleBtn) googleBtn.addEventListener('click', () => handleSso('Google'));
+    if (msBtn) msBtn.addEventListener('click', () => handleSso('Microsoft'));
+    if (appleBtn) appleBtn.addEventListener('click', () => handleSso('Apple'));
+
+    // Form submission
+    const handleContinue = () => {
+      const email = emailInput.value.trim();
+      if (!email || !email.includes('@')) {
+        if (emailGroup) emailGroup.classList.add('has-error');
+        if (errorBadge) {
+          errorBadge.textContent = 'Invalid email';
+          errorBadge.style.display = 'block';
+        }
+        return;
+      }
+
+      // If password field is still hidden, reveal it!
+      if (passwordGroup && passwordGroup.style.display === 'none') {
+        passwordGroup.style.display = 'flex';
+        passwordInput.focus();
+        submitBtn.textContent = this.authMode === 'login' ? 'Log in' : 'Create account';
+        return;
+      }
+
+      const password = passwordInput ? passwordInput.value : '';
+      if (!password || password.length < 6) {
+        if (passwordGroup) passwordGroup.classList.add('has-error');
+        if (errorBadge) {
+          errorBadge.textContent = 'Password must be 6+ characters';
+          errorBadge.style.display = 'block';
+        }
+        return;
+      }
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      this.handleAuthSubmission(email, password, name, target);
+    };
+
+    submitBtn.addEventListener('click', handleContinue);
+
+    emailInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleContinue();
+      }
+    });
+
+    if (passwordInput) {
+      passwordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleContinue();
+        }
+      });
+    }
+  }
+
+  async handleAuthSubmission(email, password, fullName, target) {
+    const prefix = target === 'modal' ? 'authModal' : 'authStandalone';
+    const emailGroup = document.getElementById(`${prefix}EmailGroup`);
+    const errorBadge = document.getElementById(`${prefix}ErrorBadge`);
+    const submitBtn = document.getElementById(`${prefix}SubmitBtn`);
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Connecting...';
+    }
+
+    try {
+      let result;
+      if (this.authMode === 'login') {
+        result = await this.backend.signIn(email, password);
+      } else {
+        result = await this.backend.signUp(email, password, fullName);
+      }
+
+      if (!result.success) {
+        if (emailGroup) emailGroup.classList.add('has-error');
+        if (errorBadge) {
+          errorBadge.textContent = result.error || 'User not found';
+          errorBadge.style.display = 'block';
+        }
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = this.authMode === 'login' ? 'Log in' : 'Create account';
+        }
+        return;
+      }
+
+      // Success!
+      this.showToast(`Welcome back, ${this.backend.currentUser.name}!`);
+      if (target === 'modal') {
+        this.closeAuthModal();
+      } else {
+        this.closeAuthStandalone();
+      }
+    } catch (err) {
+      if (emailGroup) emailGroup.classList.add('has-error');
+      if (errorBadge) {
+        errorBadge.textContent = err.message || 'Error authenticating';
+        errorBadge.style.display = 'block';
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = this.authMode === 'login' ? 'Log in' : 'Create account';
+      }
     }
   }
 

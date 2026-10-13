@@ -280,3 +280,99 @@ values
   }'::jsonb
 )
 on conflict (id) do nothing;
+
+-- ============================================================================
+-- 11. Dashboard & User Profile Schema Extensions
+-- ============================================================================
+
+-- Add dashboard columns to boards table if they do not exist
+alter table public.boards add column if not exists is_trashed boolean default false;
+alter table public.boards add column if not exists trashed_at timestamptz default null;
+alter table public.boards add column if not exists thumbnail_url text default null;
+alter table public.boards add column if not exists format text default 'shelf';
+alter table public.boards add column if not exists wallpaper text default 'aurora';
+
+-- User Profiles Table (Linked to Supabase Auth, avatars stored on Cloudflare R2)
+create table if not exists public.user_profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text not null,
+  username text unique,
+  full_name text default 'Anonymous Padler',
+  avatar_url text default null, -- Stored in Cloudflare R2
+  tier text default 'free',
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- User Bookmarks Table (Starred boards)
+create table if not exists public.user_bookmarks (
+  user_id uuid references auth.users(id) on delete cascade,
+  board_id text references public.boards(id) on delete cascade,
+  created_at timestamptz default now(),
+  primary key (user_id, board_id)
+);
+
+-- User Recents Table (Recently visited boards)
+create table if not exists public.user_recents (
+  user_id uuid references auth.users(id) on delete cascade,
+  board_id text references public.boards(id) on delete cascade,
+  viewed_at timestamptz default now(),
+  primary key (user_id, board_id)
+);
+
+-- Indexes for performance
+create index if not exists idx_boards_author on public.boards(author_id);
+create index if not exists idx_boards_trashed on public.boards(is_trashed);
+create index if not exists idx_user_bookmarks_user on public.user_bookmarks(user_id);
+create index if not exists idx_user_recents_user on public.user_recents(user_id, viewed_at desc);
+
+-- RLS for new tables
+alter table public.user_profiles enable row level security;
+alter table public.user_bookmarks enable row level security;
+alter table public.user_recents enable row level security;
+
+drop policy if exists "Public read profiles" on public.user_profiles;
+drop policy if exists "Users update own profile" on public.user_profiles;
+drop policy if exists "Public manage bookmarks" on public.user_bookmarks;
+drop policy if exists "Public manage recents" on public.user_recents;
+
+create policy "Public read profiles" on public.user_profiles for select using (true);
+create policy "Users update own profile" on public.user_profiles for all using (true) with check (true);
+create policy "Public manage bookmarks" on public.user_bookmarks for all using (true) with check (true);
+create policy "Public manage recents" on public.user_recents for all using (true) with check (true);
+
+-- Realtime publication for profiles and bookmarks
+do $$
+begin
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'user_profiles') then
+    alter publication supabase_realtime add table public.user_profiles;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'user_bookmarks') then
+    alter publication supabase_realtime add table public.user_bookmarks;
+  end if;
+  if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = 'user_recents') then
+    alter publication supabase_realtime add table public.user_recents;
+  end if;
+end $$;
+
+-- Trigger to automatically create user_profile when user signs up
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.user_profiles (id, email, full_name, username)
+  values (
+    new.id,
+    new.email,
+    coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    coalesce(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1) || '_' || substr(new.id::text, 1, 6))
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+
