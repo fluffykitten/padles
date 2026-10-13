@@ -195,9 +195,11 @@ Follow these patterns to keep the codebase consistent:
 
 | Doc | Purpose |
 |---|---|
+| [`docs/dashboard_and_auth_plan.md`](docs/dashboard_and_auth_plan.md) | Dashboard & Auth System architecture and zero-leeway Padlet mirror plan |
 | [`docs/padles_tools_revamp_plan.md`](docs/padles_tools_revamp_plan.md) | Detailed implementation plan for AV Studio, Draw, Poll, Location, and All Tools Hub |
 | [`docs/architecture_comparison_and_migration_plan.md`](docs/architecture_comparison_and_migration_plan.md) | Supabase + Cloudflare R2 backend architecture |
 | [`docs/rea_and_edge_setup_guide.md`](docs/rea_and_edge_setup_guide.md) | Edge remote debugging setup guide |
 | [`.agents/skills/padlet-clone-verification/`](.agents/skills/padlet-clone-verification/SKILL.md) | Automated CDP verification scripts |
 | [`.agents/skills/strict-rea-clone/`](.agents/skills/strict-rea-clone/SKILL.md) | REA clone protocol (4-phase operational workflow) |
 | `docs/archive/` | Archived/stale specs (do not use as ground truth) |
+
