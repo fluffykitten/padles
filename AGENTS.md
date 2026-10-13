@@ -69,8 +69,8 @@ padles/
 | **Interactive poll creator** | ✅ Done | Question + dynamic options modal, single/multi-choice, live interactive in-card voting with animated progress bars & persistence. |
 | **Location map picker** | ✅ Done | OpenStreetMap geocoding search, interactive map preview, pin overlay, card embedding. |
 | **All Tools Hub (revamped)** | ✅ Done | Authentic 4 color-coded tile categories (Purple, Blue, Green, Orange), search/URL bar, responsive grid. |
-| **AI Art generator modal** | 🔲 TODO | Currently uses `window.prompt()`. Need in-app modal. |
-| **Link modal** | 🔲 TODO | Currently uses `window.prompt()`. Need in-app modal with URL preview. |
+| **AI Art generator modal** | ✅ Done | "I can't draw" in-app modal with prompt, style chips (Photo, Cyberpunk, Watercolor, etc.), inspirations, and live preview. |
+| **Link modal** | ✅ Done | Dedicated in-app modal with live URL validation, domain preview card, and clipboard paste. |
 
 > Complete implementation specifications and visual proof artifacts in [`docs/padles_tools_revamp_plan.md`](docs/padles_tools_revamp_plan.md).
 
