@@ -94,13 +94,16 @@ class PadlesR2Service {
           });
 
           if (uploadRes.ok) {
-            console.log('[PadlesR2] Upload complete! Public URL:', publicUrl);
+            const finalPublicUrl = (this.publicCdnBase && key)
+              ? `${this.publicCdnBase.replace(/\/+$/, '')}/${key}`
+              : publicUrl;
+            console.log('[PadlesR2] Upload complete! Public URL:', finalPublicUrl);
             if (window.padlesMediaDB) {
-              await window.padlesMediaDB.markAsSynced(storageId, publicUrl);
+              await window.padlesMediaDB.markAsSynced(storageId, finalPublicUrl);
             }
             return {
-              url: publicUrl,
-              thumbnailUrl: (type === 'image' || type === 'drawing') ? publicUrl : (localRecord?.thumbnailUrl || fallbackUrl),
+              url: finalPublicUrl,
+              thumbnailUrl: (type === 'image' || type === 'drawing') ? finalPublicUrl : (localRecord?.thumbnailUrl || fallbackUrl),
               storageId,
               size: blob.size,
               mimeType,

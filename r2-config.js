@@ -10,8 +10,8 @@
 
 window.PADLES_R2_CONFIG = {
   // Your Cloudflare Worker upload endpoint (e.g. 'https://padles-r2.yourname.workers.dev')
-  uploadEndpoint: '',
+  uploadEndpoint: 'https://padles-r2-uploader.fluffykitten-dev.workers.dev/',
 
   // Your Cloudflare R2 Public Domain or R2.dev URL (e.g. 'https://pub-xxxxxx.r2.dev' or 'https://media.padles.dev')
-  publicCdnBase: ''
+  publicCdnBase: 'https://pub-8c3155742d694d33b86fe889111806d4.r2.dev'
 };
