@@ -1,8 +1,10 @@
 # Padles Tools Revamp Implementation Plan: 100% Reverse-Engineered Parity with Supabase & Cloudflare R2
 
 > [!IMPORTANT]
-> **Production Parity Mandate**
-> This specification details the end-to-end architecture, UI contracts, data models, and storage pipelines to replace all stubbed composer attachment tools in Padles with fully functional, Padlet-authentic equivalents backed by **Supabase (Realtime, Postgres)**, **Cloudflare R2 (Zero-Egress Object Storage)**, and **IndexedDB (Offline Fallback)**.
+> **Production Parity Mandate & Backend Separation**
+> * **Supabase**: Strictly for **PostgreSQL Database** (tables, JSONB metadata, real-time WAL subscriptions) and **Auth & Login System** (email auth, magic links, sessions, guest auth). **NO Supabase Storage is used.**
+> * **Cloudflare R2**: **100% dedicated object storage** for all media binaries (photos, video recordings, audio reflections, screen recordings, drawing exports, file attachments) with zero-egress bandwidth costs delivered via Cloudflare CDN.
+> * **IndexedDB (`PadlesMediaDB`)**: Local browser binary cache and offline staging queue (zero-dependency).
 
 ---
 
@@ -28,59 +30,69 @@ Direct REA/CDP extraction from live Padlet (`padlet.com/ezzarscarlet/...`) ident
 
 ---
 
-## 2. Multi-Tier Media Storage & Backend Architecture
-
-To handle high-resolution photos, 1080p screen recordings, and audio reflection memos without running into storage limits or broken reloads, Padles uses a **three-tier storage pipeline**:
+## 2. Cloud Architecture: Clean Division of Responsibilities
 
 ```mermaid
 graph TD
-    Client[Padles Client (app.js)] --> MediaPicker[AV Studio / Draw / Upload]
-    MediaPicker --> BlobData[Binary Blob (JPEG / WebM / PNG)]
+    Client[Padles Client (app.js)] --> MediaTool[AV Studio / Draw / Upload]
+    MediaTool --> BlobData[Binary Blob (JPEG / WebM / PNG)]
 
-    BlobData --> Decision{Cloud Configured?}
-    
-    Decision -->|Yes: Supabase + R2| UploadPipeline[Storage Pipeline]
-    UploadPipeline --> PresignedCheck{R2 Function Available?}
-    PresignedCheck -->|Yes| EdgeFunc[Supabase Edge Function: get-r2-upload-url]
-    EdgeFunc -->|S3 Presigned PUT URL| Client
-    Client -->|Direct S3 PUT| R2[(Cloudflare R2 Bucket)]
-    R2 --> CDN[Cloudflare Edge CDN]
-    CDN -->|Public URL| PostRecord[Supabase Posts Table]
-    
-    PresignedCheck -->|No / Standby| SupaStorage[Supabase Storage: padles-attachments]
-    SupaStorage -->|Public Bucket URL| PostRecord
+    subgraph DedicatedStorage [Media Storage: 100% Cloudflare R2]
+        BlobData --> PresignedCheck{Cloud Connected?}
+        PresignedCheck -->|Yes| PresignReq[Request Presigned S3 PUT URL]
+        PresignReq --> R2Worker[Cloudflare Worker / Edge Presigner]
+        R2Worker -->|S3 Presigned PUT URL| Client
+        Client -->|Direct Binary PUT| R2[(Cloudflare R2 Bucket)]
+        R2 --> CDN[Cloudflare Edge CDN]
+        CDN -->|Public Media URL| AttachmentMeta[Attachment Metadata JSON]
+    end
 
-    Decision -->|No: Offline / Local| IDB[(IndexedDB: PadlesMediaDB)]
-    IDB -->|attachmentId| LocalState[localStorage State Pointer]
+    subgraph OfflineStaging [Offline & Local Cache]
+        PresignedCheck -->|Offline / No Cloud| IDB[(IndexedDB: PadlesMediaDB)]
+        IDB -->|attachmentId| AttachmentMeta
+        IDB -.->|Background Sync on Reconnect| R2
+    end
 
-    PostRecord --> Realtime[Supabase Realtime (WAL)]
-    Realtime --> OtherClients[All Active Collaborators]
+    subgraph SupabasePlatform [Database, Realtime & Auth: Supabase]
+        AttachmentMeta --> SupaPost[Supabase Database: posts.attachment JSONB]
+        SupaPost --> WAL[Postgres WAL Changes]
+        WAL --> Realtime[Supabase Realtime Channel]
+        Realtime --> OtherUsers[All Collaborators on Board]
+
+        AuthSys[Supabase Auth: Email & Login System] --> UserSession[Contributor Session & Identity]
+        UserSession --> SupaPost
+    end
 ```
 
-### 2.1 Tier 1: Cloudflare R2 (Primary Production Object Storage)
-* **Zero Egress Fees**: Essential for classroom/collaborative boards where hundreds of students stream audio memos and video demonstrations.
-* **Upload Flow**:
-  1. Client calls Supabase Edge Function `POST /functions/v1/get-r2-upload-url` with `{ fileName, contentType, boardId }`.
-  2. Edge Function verifies user access and generates a presigned S3 `PutObjectCommand` URL (5-minute expiry).
-  3. Client executes direct `fetch(presignedUrl, { method: 'PUT', body: fileBlob, headers: { 'Content-Type': mimeType } })`.
-  4. Public CDN URL (`https://cdn.padles.com/attachments/<id>.<ext>` or Cloudflare R2 public dev URL) is saved to `card.attachment.url`.
+### 2.1 Dedicated Roles Breakdown
+| Component | Provider | Scope of Responsibility |
+|---|---|---|
+| **Object Storage** | **Cloudflare R2** | **100% of all media storage.** Photos, videos, voice memos, screen captures, drawings, file uploads. $0 egress fees. |
+| **CDN Delivery** | **Cloudflare CDN** | Global edge caching and ultra-fast media streaming for board viewers. |
+| **Database** | **Supabase (PostgreSQL)** | Boards, sections, posts, comments, reactions, custom fields, poll vote counts, and attachment JSONB metadata. |
+| **Auth & Logins** | **Supabase Auth** | User authentication, email login, magic links, session management, and anonymous guest users. |
+| **Realtime Sync** | **Supabase Realtime** | Live WebSocket sync of board updates, card reordering, live poll percentages, and collaborator presence. |
+| **Offline Cache** | **Browser IndexedDB** | Local binary storage for offline recording and temporary draft attachments before R2 upload. |
 
-### 2.2 Tier 2: Supabase Storage (`padles-attachments` Bucket)
-* **Instant Fallback**: If Cloudflare R2 edge credentials are not yet configured in `.env.local`, client falls back seamlessly to Supabase Storage:
-  ```javascript
-  const { data, error } = await supabase.storage
-    .from('padles-attachments')
-    .upload(`${boardId}/${attachmentId}.${ext}`, blob, { contentType: mimeType, upsert: true });
-  const publicUrl = supabase.storage.from('padles-attachments').getPublicUrl(data.path).data.publicUrl;
-  ```
+### 2.2 Cloudflare R2 Upload Flow
+1. **Presigned URL Request**:
+   - Client calls upload endpoint with file metadata: `{ fileName, contentType, fileSize, boardId }`.
+   - Endpoint returns a presigned S3 `PutObjectCommand` URL (5-minute expiry) targeting the R2 bucket.
+2. **Direct Binary Upload**:
+   - Client uploads directly to R2 via `fetch(presignedUrl, { method: 'PUT', body: fileBlob, headers: { 'Content-Type': contentType } })`.
+   - Bypasses any application servers, eliminating bandwidth bottlenecks.
+3. **Public Delivery URL**:
+   - The permanent URL (`https://<custom-r2-domain>/attachments/<boardId>/<attachmentId>.<ext>`) is attached to `card.attachment.url`.
+4. **Metadata Persistence in Supabase**:
+   - The post record is inserted/updated in Supabase `posts` with the R2 URL and metadata stored in the `attachment` JSONB column.
+   - Supabase Realtime broadcasts the new post with its R2 media URL to all other collaborators instantly.
 
-### 2.3 Tier 3: IndexedDB Binary Store (`PadlesMediaDB` - Offline Fallback)
-* **Zero Dependency & High Capacity**: Uses native browser IndexedDB (`window.indexedDB`), which supports gigabytes of binary Blob storage without hitting `localStorage` 5MB limits.
-* **Mechanism**:
-  - Store Blobs in object store: `{ id: 'att_123', mimeType: 'audio/webm', blob: Blob, createdAt: timestamp }`.
-  - In `localStorage` state (`this.state`), only store: `{ type: 'audio', storageId: 'att_123', title: 'Voice Memo' }`.
-  - On app startup, `PadlesMediaDB.resolveUrl(storageId)` generates fresh, working `blob:` URLs for the current session.
-  - When cloud sync connects, an automatic background queue uploads cached IndexedDB blobs to R2 / Supabase Storage.
+### 2.3 IndexedDB Offline Fallback (`PadlesMediaDB`)
+* When offline or working in local mode:
+  - Binary blobs are saved to IndexedDB object store `media_attachments` keyed by `storageId`.
+  - On app load, `PadlesMediaDB.resolveUrl(storageId)` generates fresh working session URLs.
+  - `localStorage` only stores the lightweight metadata `{ type: 'audio', storageId: 'att_123', title: '...' }`, never exceeding the 5MB quota.
+  - Once the board connects to the cloud, queued IndexedDB attachments are automatically uploaded to Cloudflare R2, and their local URLs are updated to permanent R2 CDN URLs.
 
 ---
 
@@ -93,8 +105,8 @@ Every attachment stored in `composerState.attachment`, `card.attachment`, and Su
 {
   "type": "image",
   "category": "photo" | "ai" | "upload",
-  "url": "https://.../photo_abc.jpg",
-  "thumbnailUrl": "https://.../photo_abc.jpg",
+  "url": "https://r2.padles.com/attachments/board-1/photo_abc.jpg",
+  "thumbnailUrl": "https://r2.padles.com/attachments/board-1/photo_abc.jpg",
   "storageId": "att_photo_123",
   "title": "Camera Snapshot",
   "caption": "",
@@ -108,8 +120,8 @@ Every attachment stored in `composerState.attachment`, `card.attachment`, and Su
 {
   "type": "video",
   "category": "camera" | "screen" | "upload",
-  "url": "https://.../video_xyz.webm",
-  "thumbnailUrl": "https://.../thumb_xyz.jpg",
+  "url": "https://r2.padles.com/attachments/board-1/video_xyz.webm",
+  "thumbnailUrl": "https://r2.padles.com/attachments/board-1/thumb_xyz.jpg",
   "storageId": "att_video_456",
   "title": "Physics Lab Experiment (0:45)",
   "duration": 45,
@@ -122,7 +134,7 @@ Every attachment stored in `composerState.attachment`, `card.attachment`, and Su
 {
   "type": "audio",
   "category": "voice" | "upload",
-  "url": "https://.../audio_ref.webm",
+  "url": "https://r2.padles.com/attachments/board-1/audio_ref.webm",
   "storageId": "att_audio_789",
   "title": "I See, I Think, I Wonder Reflection",
   "duration": 82,
@@ -136,8 +148,8 @@ Every attachment stored in `composerState.attachment`, `card.attachment`, and Su
 {
   "type": "drawing",
   "category": "canvas",
-  "url": "https://.../drawing_sketch.png",
-  "thumbnailUrl": "https://.../drawing_sketch.png",
+  "url": "https://r2.padles.com/attachments/board-1/drawing_sketch.png",
+  "thumbnailUrl": "https://r2.padles.com/attachments/board-1/drawing_sketch.png",
   "storageId": "att_draw_321",
   "title": "Kinetic Diagram Sketch",
   "width": 1440,
@@ -201,7 +213,7 @@ Attachment support requires updates across **3 UI surfaces**:
 ### 4.3 Surface C: Expanded Theater View (`#cardDetailModal`)
 * **Media Canvas (`#detailMediaCanvas`)**:
   - Audio: Large central audio player with interactive seekbar and full-fidelity dynamic waveform visualization.
-  - Video: Native HTML5 `<video controls playsinline>` with playback rate selector.
+  - Video: Native HTML5 `<video controls playsinline>` with playback rate selector streaming directly from Cloudflare R2 CDN.
   - Drawing / Photo: Full-res lightbox canvas with zoom/pan.
   - Poll: Full-width live voting view with live avatar heads of voters (via Supabase Realtime).
   - Location: Interactive full-screen map with zoom controls and directions link.
@@ -241,13 +253,13 @@ cleanupAudioContext() {
 
 ## 6. Implementation Phasing & Step-by-Step Deliverables
 
-To avoid testing bottlenecks, phasing is ordered by **infrastructure & entry points first**, followed by tool subsystems:
+Phasing is ordered by **infrastructure & entry points first**, followed by tool subsystems:
 
 ```mermaid
 timeline
     title Padles Tools Implementation Phasing
-    Phase 1 : Storage Core & All Tools Hub : IndexedDB MediaStore + Supabase/R2 upload pipeline + 4-color All Tools Hub
-    Phase 2 : Unified AV Studio Modal : Photo, Video, Audio, Screen via WebRTC & Web Audio with R2 uploads
+    Phase 1 : Storage Core & All Tools Hub : IndexedDB MediaStore + Cloudflare R2 upload pipeline + 4-color All Tools Hub
+    Phase 2 : Unified AV Studio Modal : Photo, Video, Audio, Screen via WebRTC & Web Audio with direct R2 uploads
     Phase 3 : Whiteboard Drawing Canvas : High-DPI canvas, 10 palettes, undo/redo, PNG R2 export
     Phase 4 : Interactive Poll Creator : Poll modal + live in-card voting with Supabase Realtime sync
     Phase 5 : Location Map Picker : Interactive geocoding search, map layers, pin drop
@@ -257,7 +269,7 @@ timeline
 
 ### Phase 1: Storage Core & Revamped All Tools Hub
 * **1.1 IndexedDB Media Store (`PadlesMediaDB`)**: Local Blob persistence module.
-* **1.2 Supabase & R2 Storage Adapter (`supabase-service.js`)**: Direct upload helper for files and Blobs.
+* **1.2 Cloudflare R2 Storage Adapter (`r2-service.js` / `supabase-service.js`)**: Direct presigned S3 PUT upload pipeline for files and Blobs to Cloudflare R2.
 * **1.3 Revamped All Tools Modal (`#allToolsModal`)**:
   - Authentic Padlet dimensions and layout.
   - Top search input `"Search web or paste URL"` with instant URL preview parser.
@@ -268,19 +280,19 @@ timeline
     - **Orange (`#FFF5EF`)**: Image search, GIF, YouTube, Spotify, Web search, Location.
 
 ### Phase 2: Unified AV Studio Modal (`#avRecorderModal`)
-* **2.1 Photo (Camera)**: Viewfinder, shutter, 3s/10s timer, canvas capture, review screen, R2 upload.
-* **2.2 Video Recorder**: Live stream, 1080p recording, pause/resume, playback & trimmer review screen.
-* **2.3 Audio Recorder**: Live frequency waveform via Web Audio `AnalyserNode`, timer, seekbar review.
-* **2.4 Screen Recorder**: `getDisplayMedia`, microphone mix option, auto-stop on screen share termination.
+* **2.1 Photo (Camera)**: Viewfinder, shutter, 3s/10s timer, canvas capture, review screen, Cloudflare R2 upload.
+* **2.2 Video Recorder**: Live stream, 1080p recording, pause/resume, playback & trimmer review screen, direct R2 upload.
+* **2.3 Audio Recorder**: Live frequency waveform via Web Audio `AnalyserNode`, timer, seekbar review, direct R2 upload.
+* **2.4 Screen Recorder**: `getDisplayMedia`, microphone mix option, auto-stop on screen share termination, direct R2 upload.
 
 ### Phase 3: Whiteboard Canvas (`#drawModal`)
 * High-DPI `<canvas id="drawingCanvas">` with pointer event smoothing (Bezier curves).
-* 10 preset color swatches, White/Black canvas toggle, undo/redo stack, export to PNG Blob.
+* 10 preset color swatches, White/Black canvas toggle, undo/redo stack, export to PNG Blob and upload to Cloudflare R2.
 
 ### Phase 4: Interactive Poll Creator (`#pollModal`) & Multiplayer Voting
 * Creation modal with 2–8 dynamic options.
 * Real-time post card voting with animated percentage bars.
-* Supabase Realtime listener updating poll counts live across all open sessions.
+* Supabase Realtime listener updating poll counts live across all open sessions via PostgreSQL.
 
 ### Phase 5: Location Map Picker (`#locationModal`)
 * Search geocoding via OpenStreetMap Nominatim with 300ms debounce.

@@ -13,7 +13,10 @@
 - **Single-page app** — no framework, no build step, no bundler.
 - **3 core files**: `index.html` (~136 KB), `styles.css` (~143 KB), `app.js` (~234 KB).
 - **Font**: Google Fonts `Inter` (loaded via `<link>` in index.html).
-- **Backend**: Optional Supabase via `supabase-service.js` + `supabase-config.js`. Falls back to `localStorage` when offline or unconfigured. Schema: `supabase/schema.sql`.
+- **Backend**: 
+  - **Supabase**: Exclusively for PostgreSQL database (boards/sections/posts), Auth & Logins (email/sessions), and Realtime WebSocket sync via `supabase-service.js`. **No Supabase Storage is used.**
+  - **Cloudflare R2**: 100% dedicated object storage for all media attachments (photos, videos, audio reflections, screen recordings, drawings, uploads) with $0 egress fees.
+  - **Offline/Local**: Falls back to `localStorage` + `IndexedDB` (`PadlesMediaDB`) when offline or unconfigured. Schema: `supabase/schema.sql`.
 - **No npm / no node_modules**: The only `npx` usage is the dev server (`npx -y serve . -p 8080`).
 
 ### Code Organization (`app.js`)
@@ -183,13 +186,18 @@ These are extracted and verified from live Padlet. Use them as a reference, but 
 
 ---
 
-## 7. Supabase Backend Reference
+## 7. Supabase & Cloudflare R2 Backend Reference
 
-- **Schema**: `supabase/schema.sql` — tables: `boards`, `sections`, `posts`, `comments`, `reactions`, `custom_fields`.
-- **Config**: `.env.local` contains `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
-- **Service layer**: `supabase-service.js` handles CRUD, real-time subscriptions, and presence.
-- **Offline-first**: The app always works with `localStorage`. Supabase sync is opt-in via the cloud settings modal.
-- **When to touch Supabase**: Only when adding new data model fields (update schema + service). For pure UI work, `localStorage` is sufficient.
+- **Supabase (Database, Auth, Email)**:
+  - **Schema**: `supabase/schema.sql` — tables: `boards`, `sections`, `posts`, `comments`, `reactions`, `custom_fields`.
+  - **Config**: `.env.local` contains `SUPABASE_URL` and `SUPABASE_ANON_KEY`.
+  - **Service layer**: `supabase-service.js` handles CRUD, real-time subscriptions, presence, and auth.
+  - **No Storage**: Supabase is strictly for PostgreSQL, Auth/Logins, and Email. Do NOT use Supabase Storage.
+- **Cloudflare R2 (100% Media Storage)**:
+  - Dedicated zero-egress object storage for all photos, video recordings, audio reflections, screen recordings, drawings, and file attachments.
+  - Presigned S3 PUT URL pipeline for direct browser-to-bucket binary streaming.
+- **Offline-first**: The app always works with `localStorage` + `IndexedDB` (`PadlesMediaDB`). Cloud sync is opt-in via the cloud settings modal.
+- **When to touch Supabase**: Only when adding new data model fields (update schema + service). For pure UI work, local state is sufficient.
 
 ---
 
