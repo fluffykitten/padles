@@ -64,15 +64,15 @@ padles/
 | Top bar (share, settings, more) | ✅ Partial | Drawer shells exist. Full Padlet settings parity incomplete. |
 | Slideshow mode | ✅ Partial | Basic slideshow init exists. Full playback/controls need verification. |
 | Supabase cloud sync | ✅ Done | Real-time sync, cloud settings modal, push local → cloud |
-| **AV Studio** (Camera/Video/Audio/Screen) | 🔲 TODO | Stubs inject static images. Need real `getUserMedia` / `getDisplayMedia`. See `docs/padles_tools_revamp_plan.md` |
-| **Drawing whiteboard** | 🔲 TODO | Stub injects static card. Need canvas with strokes, colors, undo. |
-| **Interactive poll creator** | 🔲 TODO | Stub injects static poll. Need question/choice modal + voting UI. |
-| **Location map picker** | 🔲 TODO | Stub injects static text. Need Leaflet map + geocoding. |
-| **All Tools Hub (revamped)** | 🔲 TODO | Current modal doesn't match Padlet's 4 color-coded tile groups. |
+| **AV Studio** (Camera/Video/Audio/Screen) | ✅ Done | Viewfinder, countdown timer, mirroring, Web Audio AnalyserNode waveform visualizer, Cloudflare R2 / IndexedDB binary storage. |
+| **Drawing whiteboard** | ✅ Done | 10-color palette, 4 stroke sizes, pen/highlighter/eraser, undo/redo stack, dark/white board toggle, PNG export to R2. |
+| **Interactive poll creator** | ✅ Done | Question + dynamic options modal, single/multi-choice, live interactive in-card voting with animated progress bars & persistence. |
+| **Location map picker** | ✅ Done | OpenStreetMap geocoding search, interactive map preview, pin overlay, card embedding. |
+| **All Tools Hub (revamped)** | ✅ Done | Authentic 4 color-coded tile categories (Purple, Blue, Green, Orange), search/URL bar, responsive grid. |
 | **AI Art generator modal** | 🔲 TODO | Currently uses `window.prompt()`. Need in-app modal. |
 | **Link modal** | 🔲 TODO | Currently uses `window.prompt()`. Need in-app modal with URL preview. |
 
-> The detailed implementation plan for all TODO tools is in [`docs/padles_tools_revamp_plan.md`](docs/padles_tools_revamp_plan.md).
+> Complete implementation specifications and visual proof artifacts in [`docs/padles_tools_revamp_plan.md`](docs/padles_tools_revamp_plan.md).
 
 ---
 
