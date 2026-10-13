@@ -1,6 +1,6 @@
 # Padles
 
-A lightweight collaborative board for organizing posts, media, and notes into sections, inspired by Padlet. Built with standard HTML, CSS, and vanilla JavaScript—no bundlers, frameworks, or dependencies required.
+A lightweight collaborative board for organizing posts, media, and notes into sections, inspired by Padlet. Built with standard HTML, CSS, and vanilla JavaScript (WIP).
 
 ![Padles Overview](docs/screenshots/post_workflow_4_final_board.png)
 
