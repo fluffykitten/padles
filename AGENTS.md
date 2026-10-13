@@ -1,9 +1,9 @@
 # PADLES — Agent Operating Manual
 
 > [!IMPORTANT]
-> **Padles** is a pixel-faithful clone of the live Padlet board at
+> **Padles** is a strict, zero-leeway clone of the live Padlet board at
 > [`padlet.com/ezzarscarlet/physics-audio-reflections-…`](https://padlet.com/ezzarscarlet/physics-audio-reflections-i-see-i-think-i-wonder-s0248vnouoewo8lw6wn6).
-> All UI must be validated against that live board using REA / CDP — never guess.
+> **Mandate**: 0 leeway, 0 differences, 0 approximations. The design must be EXACTLY the same as Padlet (the sole exception being the brand name "Padles" instead of "Padlet"). Every layout metric, border radius, typography weight, shadow, SVG icon, and color swatch MUST be directly compared with and extracted from live Padlet on Edge (port 9222) — never guess.
 
 ---
 
@@ -91,52 +91,34 @@ Follow these patterns to keep the codebase consistent:
 
 ---
 
-## 4. REA Verification Workflow
+## 4. Strict Zero-Leeway REA Verification Workflow
 
-### Ground Rules
-- **Never guess** CSS values, colors, layout metrics, or SVG icons. Extract from live Padlet.
-- **Never claim "pixel-perfect" or "done"** without screenshot proof.
-- The live Padlet board in Edge (port 9222) is the **single source of truth**.
+### Absolute Directives
+- **Zero Leeway, 0 Difference, 0 Approximations**: Never guess CSS values, paddings, margins, border radii, or colors. Query live Padlet running on port 9222.
+- **The live Padlet board in Edge (`port 9222`) is the single source of truth**: Every component must be compared against `padlet.com/ezzarscarlet/...`.
+- **Never claim done without side-by-side screenshot proof**.
 
-### Before You Build a Component
+### Before You Build or Modify a Component
 1. Connect to `http://127.0.0.1:9222/json` to locate the live Padlet tab.
-2. Use CDP `Runtime.evaluate` or REA MCP tools (`inspect_web_page`, `observe_web_execution`) to extract:
-   - `getComputedStyle()` for the target element (font, colors, padding, radius, shadows)
-   - `getBoundingClientRect()` for exact dimensions
-   - Raw SVG `innerHTML` for icons
-   - DOM subtree structure for nesting and semantic roles
+2. Use CDP `Runtime.evaluate` to inspect:
+   - `getComputedStyle()` for exact typography, colors, padding, radii, backgrounds, and shadows.
+   - `getBoundingClientRect()` for exact widths and heights.
+   - Exact SVG markup (`viewBox`, path commands, dimensions).
+   - DOM hierarchy and nesting.
 
 ### After You Build a Component
-1. Capture a screenshot of your implementation: `Page.bringToFront` → `Page.captureScreenshot`.
-2. Capture a screenshot of the same component on live Padlet.
-3. Compare visually. Fix discrepancies in colors, spacing, typography, and border radii.
-4. **Acceptable tolerance**: Dynamic content (usernames, timestamps, post counts, avatar images) will differ. Layout geometry, colors, and typography must match.
-
-### Setup on a New Machine
-1. **Launch Edge in debug mode**:
-   ```cmd
-   start-edge-debug.bat
-   ```
-   Or:
-   ```cmd
-   "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --remote-debugging-port=9222 --remote-allow-origins=* --user-data-dir="%LOCALAPPDATA%\Microsoft\Edge\User Data Debug" https://padlet.com/ezzarscarlet/physics-audio-reflections-i-see-i-think-i-wonder-s0248vnouoewo8lw6wn6 http://localhost:8080/index.html
-   ```
-2. **Start dev server**: `npx -y serve . -p 8080`
-3. **Verify**: `http://127.0.0.1:9222/json` should list both tabs.
-
-### CDP Gotchas
-- Always call `Page.bringToFront` before `Page.captureScreenshot` — background tabs hang.
-- After `Page.reload`, close the WebSocket, wait 2 seconds, reconnect.
+1. Capture a screenshot of the clone via CDP `Page.captureScreenshot`.
+2. Capture a screenshot of live Padlet under identical dimensions.
+3. Visually compare side-by-side and eliminate any diff.
 
 ---
 
-## 5. Verified Design Tokens
-
-These are extracted and verified from live Padlet. Use them as a reference, but **always re-verify against live Padlet** if something looks off.
+## 5. Verified Design Tokens (Extracted from Live Padlet Runtime)
 
 ### Board & Wallpaper
 - **Gradient**: `linear-gradient(135deg, #012b32 0%, #034857 50%, #001f24 100%)` with aurora radial overlays.
 - **Columns**: 5 sections, `272px` wide (`256px` inner), `16px` gap, centered via `first:ms-auto; last:me-auto`.
+- **Theme**: For this aurora wallpaper board, live Padlet runs in **Dark Mode** (`dark-mode`).
 
 ### Section Folder Tabs
 - **Tab background**: `#014e62`, right wing skewed `skew-x-[10deg]`.
@@ -154,34 +136,42 @@ These are extracted and verified from live Padlet. Use them as a reference, but 
 - `width: 256px; background: #ffffff; border-radius: 20px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18); padding: 8px;`
 - Delete item: `color: #ef4444; hover background: #fef2f2`.
 
-### Post Composer (Docked)
+### Post Composer (Docked - Dark Theme on Aurora Board)
 - Width `380px`, docked bottom-right.
-- Submit inactive: `#f1f3f4` bg, `#9ca3af` text, `border-radius: 16px`, height `40px`.
-- Submit active: `#de3163` bg, `#ffffff` text.
-- Attachment tool bar: 6 pinstriped columns, `border: 1px dashed #e2e2e2; border-radius: 16px; height: 165px`.
+- Background: `rgb(17, 17, 17)` (`#111111`) / `dark:bg-nightfall-900`.
+- Border-radius: `24px 24px 0 0` (docked).
+- Submit inactive: `background: rgba(239, 244, 250, 0.14); color: rgba(255, 255, 255, 0.2); border-radius: 16px; height: 40px; padding: 0 20px; font-weight: 600;`.
+- Submit active: `#de3163` pink bg, `#ffffff` text.
 
-### Edit Post Modal (Expanded/Centered)
-- `width: 540px; max-width: min(540px, calc(100vw - 32px))`.
-- `background: #ffffff; border-radius: 24px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25)`.
-- Close button: `40px × 40px`, `#f1f3f4` bg, top-left.
-- Update button: `#de3163` bg, `#ffffff` text, `border-radius: 16px`, top-right.
-
-### Typography
-- Font stack: `"Inter var", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`.
-- Card titles: `16px`, `font-weight: 600`.
-- Card body: `14px`, `font-weight: 400`.
+### All Tools Hub (`#allToolsModal` - Dark Mode Parity)
+- **Overlay backdrop**: `background: rgba(36, 37, 39, 0.8)` (`#242527cc`), `z-index: 100000`.
+- **Modal card**: `width: 720px; border-radius: 24px; background: rgb(17, 17, 17) (#111111); box-shadow: 0 16px 32px rgba(0, 0, 0, 0.32);`.
+- **Close button**: `40px × 40px`, `border-radius: 16px`, transparent bg, hover `rgba(255, 255, 255, 0.1)`, 16px close SVG.
+- **Search bar**: `height: 40px`, `border-radius: 16px`, `background: rgb(36, 37, 39)` (`#242527`), width `calc(100% - 112px)`.
+  - Placeholder: `"Search web or paste URL"`, `color: rgb(156, 163, 175)`.
+- **Paste button**: `40px × 40px`, `border-radius: 16px`, transparent bg, hover `rgba(255, 255, 255, 0.1)`, 20px clipboard SVG.
+- **Grid Layout**: 3 columns (`grid-cols-3`), `gap: 12px` (gap-3), with 4 category groups.
+- **Tool Buttons**:
+  - `height: 40px`, `border-radius: 12px`, `background: rgb(36, 37, 39)` (`#242527`), `padding: 8px 0 8px 12px`.
+  - Hover background: `rgb(48, 50, 54)` (`#303236`).
+  - Text: `color: rgb(255, 255, 255)`, `font-size: 14px`, `font-weight: 400`, `margin: 0 12px`.
+  - **Category Icon Colors**:
+    - **Grape (Purple)**: `rgb(148, 102, 232)` (`#9466e8`) — *Padles, Upload, Link*
+    - **Oceanic (Blue)**: `rgb(57, 146, 222)` (`#3992de`) — *Camera, Video recorder, Audio recorder, Screen recorder, Draw*
+    - **Park (Green)**: `rgb(61, 199, 49)` (`#3dc731`) — *Poll, AI image, AI speech, Photo album*
+    - **Photo Album "New" Badge**: `background: rgb(0, 78, 0)` (`#004e00`), text `#ffffff`, `border-radius: 6px`, padding `0 6px`, height `20px`, text "New".
+    - **Tangerine (Orange)**: `rgb(255, 131, 62)` (`#ff833e`) — *Image search, GIF, YouTube, Spotify, Web search, Location*
 
 ---
 
-## 6. Known Pitfalls (Don't Repeat These)
+## 6. Known Pitfalls & Anti-Patterns to Reject
 
 | Mistake | What Actually Happened | Correct Approach |
 |---|---|---|
-| Dark theme hallucination | Agent used `#1f2125` background for edit modal, claimed "pixel perfect" | Padlet modals are `#ffffff` with `#de3163` pink accents |
-| `window.prompt()` for links | Agent used browser-native prompt for URL input | Padlet uses in-app modals with URL preview cards |
-| Dummy media stubs | Camera/video/audio tools injected static stock photos | Must use real `getUserMedia` / `getDisplayMedia` with viewfinder |
-| Generic HTML `<dialog>` | Agent used native dialog element | Padlet uses custom div-based modals with specific border-radius and shadows |
-| Composer dark theme | Old blueprint spec listed `--composer-bg: #1e2022` | Live Padlet composer has `#ffffff` surface (was outdated/wrong) |
+| Assuming modal color scheme | Agent guessed `#ffffff` for everything because some Padlet boards are light | Always inspect active board theme via CDP: this aurora board uses **Dark Mode** (`#111111` surface, `#242527` pill buttons) |
+| Using approximate sizes | Agent used ~16px or arbitrary margins | Query `getBoundingClientRect()` and `getComputedStyle()` for exact pixels |
+| Approximate SVG icons | Agent used generic icons | Dump exact SVG paths, `viewBox`, and dimensions from live Padlet DOM |
+| Missing clipboard button | Agent only had a search input without the paste clipboard action | Include the exact clipboard paste button on the right of the search bar |
 | Claiming done without screenshots | Agent reported "pixel-perfect parity" with no visual proof | Always capture and compare screenshots before reporting |
 
 ---

@@ -606,21 +606,28 @@
     </div>
   </div>
 
-  <!-- All Tools Modal (Padlet-Authentic 4 Color Groups & Search/URL Bar) -->
+  <!-- All Tools Modal (Exact Padlet Dark Mode Parity) -->
   <div id="allToolsModal" class="submodal-backdrop" hidden>
-    <div class="all-tools-dialog">
+    <div class="all-tools-dialog" data-testid="contentPickerModal">
       <div class="all-tools-header">
-        <div class="all-tools-search-wrap">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="all-tools-search-icon">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        <button type="button" id="closeAllToolsBtn" class="all-tools-close-btn" aria-label="Close" title="Close" data-testid="contentPickerCloseButton">
+          <svg class="fill-current" viewBox="0 0 32 32" height="16" width="16" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4.478 25.112c-.625.625-.655 1.741.015 2.395.655.655 1.77.64 2.395.015l9.105-9.119 9.12 9.119c.64.64 1.741.64 2.395-.015.64-.669.655-1.755 0-2.395l-9.105-9.119 9.105-9.105c.655-.64.655-1.741 0-2.395-.669-.64-1.756-.655-2.395-.015l-9.12 9.119-9.105-9.119c-.625-.625-1.756-.655-2.395.015-.655.655-.64 1.77-.015 2.395l9.12 9.105z"/>
           </svg>
-          <input type="text" id="allToolsSearchInput" class="all-tools-search-input" placeholder="Search web or paste URL" autocomplete="off" />
-          <button type="button" id="allToolsUrlSubmitBtn" class="all-tools-url-submit" title="Attach URL" disabled>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
+        </button>
+        <div class="all-tools-search-wrap">
+          <input type="text" id="allToolsSearchInput" class="all-tools-search-input" data-testid="contentPickerSearchBar" placeholder="Search web or paste URL" autocomplete="off" />
         </div>
-        <button type="button" id="closeAllToolsBtn" class="all-tools-close-btn" aria-label="Close">&times;</button>
+        <button type="button" id="allToolsPasteBtn" class="all-tools-paste-btn" aria-label="Paste clipboard" title="Paste clipboard" data-testid="contentPickerPasteClipboardButton">
+          <svg class="fill-current" viewBox="0 0 32 32" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18.333 2.667a3 3 0 0 1 2.993 2.795l.007.205q0-.17-.018-.334l2.352.001a3 3 0 0 1 3 3v18a3 3 0 0 1-3 3H8.334a3 3 0 0 1-3-3v-18a3 3 0 0 1 3-3l2.352-.001a3 3 0 0 0-.017.236l-.002.098a3 3 0 0 1 3-3zm0 6h-4.667a3 3 0 0 1-2.523-1.377l.029.044H8.333a1 1 0 0 0-1 1v18a1 1 0 0 0 1 1h15.333a1 1 0 0 0 1-1v-18a1 1 0 0 0-1-1h-2.839l.029-.044a3 3 0 0 1-2.523 1.377m0-4h-4.667a1 1 0 0 0 0 2h4.667a1 1 0 0 0 0-2m-7.666 14.666H16a1 1 0 0 0 0-2h-5.333a1 1 0 0 0 0 2m0-5.333h10.667a1 1 0 0 0 0-2H10.667a1 1 0 0 0 0 2m0 10.667h8a1 1 0 0 0 0-2h-8a1 1 0 0 0 0 2"/>
+          </svg>
+        </button>
+        <button type="button" id="allToolsUrlSubmitBtn" class="all-tools-url-submit" aria-label="Submit URL" title="Submit" data-testid="contentPickerSubmitButton" style="display: none;">
+          <svg class="fill-current" viewBox="0 0 32 32" height="16" width="16" xmlns="http://www.w3.org/2000/svg">
+            <path d="m27.609 15.057-9.333-9.333a1.332 1.332 0 1 0-1.885 1.885l7.057 7.057H5.333a1.333 1.333 0 0 0 0 2.666h18.115l-7.057 7.057a1.332 1.332 0 0 0 .943 2.276c.342 0 .682-.13.943-.391l9.333-9.333a1.33 1.33 0 0 0 0-1.885z"/>
+          </svg>
+        </button>
       </div>
       <div class="all-tools-body" id="allToolsBody">
         <div class="all-tools-groups-container" id="allToolsGroupsContainer">

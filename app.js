@@ -15,55 +15,192 @@ const PALETTES = [
   { id: 'purple', name: 'Purple', hex: '#a855f7', dot: '#a855f7', cardBg: '#f3e8ff', border: '#e9d5ff', textColor: '#581c87' }
 ];
 
-// 21 Built-In Media Tools categorized into Padlet's 4 signature colored groups
+// Padlet-Authentic 4 Signature Color Groups (Extracted via CDP from Live Padlet)
 const TOOL_GROUPS = [
   {
-    id: 'purple',
-    name: 'Creation & Links',
-    groupClass: 'group-purple',
-    tools: [
-      { id: 'padles', name: 'Padles', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>' },
-      { id: 'arcade', name: 'Padles Arcade', isNew: true, icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4m8-2h.01m3 0h.01"/></svg>' },
-      { id: 'upload', name: 'Upload', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' },
-      { id: 'link', name: 'Link', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' }
+    "id": "grape",
+    "color": "grape",
+    "tools": [
+      {
+        "id": "padlet",
+        "name": "Padles",
+        "testid": "attachAnotherPadletButton",
+        "ariaLabel": "Attach another padlet",
+        "colorClass": "grape",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 768 768\" height=\"24\" width=\"24\" version=\"1.1\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\">\n<g id=\"icomoon-ignore\">\n</g>\n<path d=\"M364.166 88.625c20.704 0.317 40.099 12.998 48.25 31.969l83.312 193.5 83.907-36.156c4.009-1.726 8.445-2.686 12.905-2.688h76.157c3.056 0.001 6.080 0.445 8.969 1.281 0.112 0.030 0.265 0.063 0.374 0.094 0.583 0.166 1.069 0.339 1.437 0.469 2.038 0.698 3.933 1.607 5.75 2.687 1.111 0.655 2.419 1.478 3.686 2.501 2.071 1.645 4.019 3.649 5.719 5.938 0.048 0.058 0.115 0.129 0.157 0.188l0.125 0.156 2.249 3.469 0.128 0.218c0.035 0.067 0.473 0.852 0.781 1.5l41.875 76.592c7.072 12.973 6.871 28.397-0.656 41.095-7.508 12.614-21.175 20.467-35.815 20.47-6.224-0.003-12.281-1.392-17.907-4.064l-42.217-20.092-90.938 142.592-53.936 94.125c-10.509 21.133-32.096 34.899-56.563 34.909-2.352 0-4.745-0.115-7.094-0.374l-6.998-1.19-64.157-14.624-64.126 14.624c-4.582 1.034-9.344 1.565-14.063 1.565-22.678-0.007-42.862-11.821-54.094-30.346l-0.125-0.217-0.062-0.064c-0.262-0.419-0.528-0.915-0.812-1.437l-193.75-338.062-7.562-12.812 0.032-0.031c-0.068-0.11-0.123-0.229-0.188-0.344l-0.062 0.031c-0.123-0.214-0.194-0.472-0.313-0.687-0.069-0.146-0.155-0.286-0.219-0.438-7.378-13.684-7.267-29.824 0.563-43.313 8.005-13.751 22.76-22.399 38.657-22.406 7.534 0.001 15 1.976 21.625 5.625l142.719 78.656 83.063-192.969c8.169-18.907 27.542-31.619 48.249-31.937h0.97zM265.603 620.188l0.125 0.407c2.495 10.899 13.357 17.75 24.281 15.28l62.406-14.188-9.655-120.938-119.189-35.187 42.032 154.627zM384.605 500.749l-9.689 120.938 62.471 14.188c10.928 2.471 21.772-4.396 24.25-15.28l0.125-0.439 42-154.563-119.156 35.156zM512.729 353.657l36.032 83.623 1.718 5.187c0.857 3.517 1.126 7.165 0.781 10.784l-1.001 5.404-7.155 26.282 106.342-166.656h-54.717l-82 35.376zM66.479 272.813c-0.32 0.328-0.459 0.676-0.5 0.906-0.023 0.139-0.064 0.452 0.25 1l115.75 201.938-4.875-18c-1.925-7.078-1.365-14.643 1.531-21.376l36.125-84.061-146.375-80.688c-0.554-0.304-0.86-0.274-1-0.25-0.232 0.046-0.583 0.203-0.906 0.531zM223.573 441.625l118.936 16.999 9.939-316.374-128.875 299.376zM384.761 458.624l118.999-16.999-128.873-299.407 9.875 316.405zM662.887 369.437l37.124 17.626-28-51.28-9.123 33.655z\"></path>\n</svg>"
+      },
+      {
+        "id": "upload",
+        "name": "Upload",
+        "testid": "contentPickerSourceUploadButton",
+        "ariaLabel": "Upload a file",
+        "colorClass": "grape",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M8.333 2.667c-1.654 0-3 1.346-3 3v20.667c0 1.654 1.346 3 3 3h15v-2h-15c-.551 0-1-.449-1-1V5.667c0-.551.449-1 1-1H16v5.667c0 1.654 1.346 3 3 3h5.667v4.233c.304-.145.641-.233 1-.233s.696.088 1 .233v-5.233a1 1 0 0 0-.293-.707L17.707 2.96A1 1 0 0 0 17 2.667zM18 6.081l5.253 5.253H19c-.551 0-1-.449-1-1zm7.667 12.586a1 1 0 0 0-.707.293l-3.333 3.333a1 1 0 0 0 1.414 1.414l1.626-1.626v7.586a1 1 0 1 0 2 0v-7.586l1.626 1.626a.999.999 0 1 0 1.414-1.414l-3.333-3.333a1 1 0 0 0-.707-.293\"></path></svg>"
+      },
+      {
+        "id": "link",
+        "name": "Link",
+        "testid": "contentPickerSourceLinkButton",
+        "ariaLabel": "Attach a link",
+        "colorClass": "grape",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M8.667 8.667c-4.038 0-7.333 3.295-7.333 7.333s3.295 7.333 7.333 7.333h3a1 1 0 0 0 .936-.614 1 1 0 0 0-.936-1.386h-3c-2.958 0-5.333-2.376-5.333-5.333s2.376-5.333 5.333-5.333h3a1 1 0 0 0 .936-.614 1 1 0 0 0-.936-1.386zm11.666 0a1 1 0 0 0-.937.614q-.078.185-.077.386a.8.8 0 0 0 .077.386 1 1 0 0 0 .55.542c.123.05.255.074.387.072h3c2.958 0 5.333 2.376 5.333 5.333s-2.376 5.333-5.333 5.333h-3a1 1 0 0 0-.937.614q-.078.185-.077.386a.8.8 0 0 0 .077.386 1 1 0 0 0 .55.542c.123.05.255.074.387.072h3c4.038 0 7.333-3.295 7.333-7.333s-3.295-7.333-7.333-7.333zM7.667 15a1 1 0 0 0-.936.614A1 1 0 0 0 7.667 17h16.667a1 1 0 0 0 .937-.614q.077-.185.077-.386a.8.8 0 0 0-.077-.386 1 1 0 0 0-.55-.542 1 1 0 0 0-.387-.072z\"></path></svg>"
+      }
     ]
   },
   {
-    id: 'blue',
-    name: 'Studio & Drawing',
-    groupClass: 'group-blue',
-    tools: [
-      { id: 'camera', name: 'Camera', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' },
-      { id: 'video', name: 'Video recorder', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>' },
-      { id: 'audio', name: 'Audio recorder', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>' },
-      { id: 'screen', name: 'Screen recorder', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' },
-      { id: 'draw', name: 'Draw', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>' }
+    "id": "oceanic",
+    "color": "oceanic",
+    "tools": [
+      {
+        "id": "camera",
+        "name": "Camera",
+        "testid": "contentPickerSourceCameraButton",
+        "ariaLabel": "Take a photo",
+        "colorClass": "oceanic",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M12.958 4c-1.56 0-2.957.995-3.466 2.47L8.963 8H6.071a4.087 4.087 0 0 0-4.072 4.072v11.19a4.09 4.09 0 0 0 4.072 4.073h19.19a4.09 4.09 0 0 0 4.073-4.073v-11.19A4.09 4.09 0 0 0 25.261 8h-2.279l-.529-1.53-.001-.001A3.67 3.67 0 0 0 18.987 4zm0 2h6.03a1.66 1.66 0 0 1 1.576 1.122l.762 2.204a1 1 0 0 0 .945.673h2.991c1.156 0 2.072.916 2.073 2.073v11.189a2.06 2.06 0 0 1-2.073 2.073H6.072A2.06 2.06 0 0 1 4 23.261v-11.19c0-1.156.915-2.072 2.072-2.072h3.605a1 1 0 0 0 .945-.673l.76-2.204A1.66 1.66 0 0 1 12.958 6M16 11.333c-3.302 0-6 2.698-6 6s2.698 6 6 6 6-2.698 6-6-2.698-6-6-6m0 2c2.221 0 4 1.779 4 4s-1.779 4-4 4-4-1.779-4-4 1.779-4 4-4\"></path></svg>"
+      },
+      {
+        "id": "video",
+        "name": "Video recorder",
+        "testid": "contentPickerSourceVideoButton",
+        "ariaLabel": "Record a video",
+        "colorClass": "oceanic",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M7 6a4.35 4.35 0 0 0-4.333 4.333v11.333A4.35 4.35 0 0 0 7 25.999h11.333a4.35 4.35 0 0 0 4.333-4.333v-.9l5.152 3.091a.999.999 0 0 0 1.514-.859v-14a1 1 0 0 0-.304-.718 1.01 1.01 0 0 0-.727-.282 1 1 0 0 0-.484.142l-5.152 3.091v-.9a4.35 4.35 0 0 0-4.333-4.333H6.999zm0 2h11.333c1.3 0 2.333 1.033 2.333 2.333v11.333c0 1.3-1.033 2.333-2.333 2.333H7a2.32 2.32 0 0 1-2.333-2.333V10.333C4.667 9.033 5.7 8 7 8m20.333 2.767v10.466l-4.667-2.799v-4.867z\"></path></svg>"
+      },
+      {
+        "id": "audio",
+        "name": "Audio recorder",
+        "testid": "contentPickerSourceAudioButton",
+        "ariaLabel": "Record an audio",
+        "colorClass": "oceanic",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M16 1.333c-3.302 0-6 2.698-6 6v10c0 3.302 2.698 6 6 6s6-2.698 6-6v-10c0-3.302-2.698-6-6-6m0 2c2.221 0 4 1.779 4 4v10c0 2.221-1.779 4-4 4s-4-1.779-4-4v-10c0-2.221 1.779-4 4-4M6.984 13.986A1 1 0 0 0 6 15v2.333c0 5.174 3.956 9.445 9 9.949v3.051a1 1 0 0 0 .614.937 1.003 1.003 0 0 0 1.314-.55c.049-.123.074-.255.072-.387v-3.051c5.044-.504 9-4.775 9-9.949V15a1 1 0 0 0-.614-.937A1 1 0 0 0 24 15v2.333a7.98 7.98 0 0 1-7.882 7.993 1 1 0 0 0-.243 0A7.98 7.98 0 0 1 8 17.333V15a1 1 0 0 0-.293-.722q-.143-.143-.332-.219a.8.8 0 0 0-.391-.073\"></path></svg>"
+      },
+      {
+        "id": "screenrecord",
+        "name": "Screen recorder",
+        "testid": "contentPickerSourceScreenRecordButton",
+        "ariaLabel": "Record your screen",
+        "colorClass": "oceanic",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M5.667 4.667A3.68 3.68 0 0 0 2 8.334v15.333a3.68 3.68 0 0 0 3.667 3.667h20.667a3.68 3.68 0 0 0 3.667-3.667V8.334a3.68 3.68 0 0 0-3.667-3.667zm0 2h20.667c.932 0 1.667.735 1.667 1.667v15.333c0 .932-.735 1.667-1.667 1.667H5.667A1.653 1.653 0 0 1 4 23.667V8.334c0-.932.735-1.667 1.667-1.667m7 6.666A.667.667 0 0 0 12 14v4a.667.667 0 0 0 1.334 0v-.667h.667l.799 1.066a.668.668 0 0 0 1.067-.8l-.569-.758c.426-.367.702-.904.702-1.509 0-1.103-.897-2-2-2h-1.333zm5.333 0a.667.667 0 0 0-.667.667v4c0 .368.299.667.667.667h2a.667.667 0 0 0 0-1.334h-1.333v-.667h1a.667.667 0 0 0 0-1.334h-1v-.667H20a.667.667 0 0 0 0-1.334h-2zm5.529 0c-1.21 0-2.195 1.196-2.195 2.667s.985 2.667 2.195 2.667a1.95 1.95 0 0 0 1.73-1.04.667.667 0 0 0-1.198-.586.62.62 0 0 1-.533.293c-.459 0-.862-.623-.862-1.333s.403-1.333.862-1.333c.349 0 .506.249.538.303a.667.667 0 0 0 1.192-.596 1.95 1.95 0 0 0-1.73-1.04zM8.667 14a2 2 0 1 0 .001 4.001A2 2 0 0 0 8.667 14m4.666.667H14a.668.668 0 0 1 0 1.334h-.667v-1.333z\"></path></svg>"
+      },
+      {
+        "id": "draw",
+        "name": "Draw",
+        "testid": "contentPickerSourceDrawButton",
+        "ariaLabel": "Draw something",
+        "colorClass": "oceanic",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M28.967 3.314a1 1 0 0 0-.862.573l-2.922 5.844-5.471-2.189.909-2.91a1 1 0 0 0-.144-.903 1 1 0 0 0-.818-.408 1 1 0 0 0-.947.715l-3.18 10.176c-1.507.23-2.827.769-3.767 1.716-1.181 1.189-1.898 2.763-2.392 4.46-.658 2.262-1.272 4.532-3.139 6.28H3a1 1 0 0 0-.716.288 1.004 1.004 0 0 0 0 1.424 1 1 0 0 0 .716.288h7.333c4.1 0 7.258-.593 9.506-1.915s3.494-3.498 3.494-6.085c0-.704-.199-1.35-.404-1.988q.054-.073.094-.156l3.466-6.931q.095-.133.143-.289l3.262-6.522a1.001 1.001 0 0 0-.927-1.466zm-9.854 6.142 5.173 2.069-2.512 5.022c-1.024-1.267-2.464-2.094-4.143-2.35zM16.667 16a4.65 4.65 0 0 1 4.667 4.667c0 2.006-.755 3.329-2.507 4.359s-4.594 1.641-8.494 1.641H8.918c1.34-1.885 1.871-3.988 2.375-5.72.439-1.509 1.056-2.768 1.892-3.611S15.057 16 16.667 16\"></path></svg>"
+      }
     ]
   },
   {
-    id: 'green',
-    name: 'Interactive & Cloud',
-    groupClass: 'group-green',
-    tools: [
-      { id: 'poll', name: 'Poll', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>' },
-      { id: 'gdrive', name: 'Google Drive', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 17 9 7 15 17 3 17"/><polygon points="9 7 15 7 21 17 15 17 9 7"/></svg>' },
-      { id: 'onedrive', name: 'OneDrive', isNew: true, icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>' },
-      { id: 'ai-image', name: 'AI image', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>' },
-      { id: 'ai-speech', name: 'AI speech', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>' },
-      { id: 'album', name: 'Photo album', isNew: true, icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' }
+    "id": "park",
+    "color": "park",
+    "tools": [
+      {
+        "id": "poll",
+        "name": "Poll",
+        "testid": "makeAPollButton",
+        "ariaLabel": "Make a poll",
+        "colorClass": "park",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M16 2.665c-7.352 0-13.333 5.982-13.333 13.333 0 2.184.575 4.225 1.508 6.044L2.73 27.217c-.337 1.202.852 2.391 2.055 2.055l5.178-1.445c1.818.931 3.856 1.505 6.038 1.505 7.352 0 13.333-5.981 13.333-13.333S23.353 2.666 16.001 2.666zm0 2c6.271 0 11.333 5.062 11.333 11.333S22.27 27.331 16 27.331c-2.001 0-3.873-.52-5.505-1.43a1 1 0 0 0-.755-.09l-4.924 1.374 1.375-4.922a1 1 0 0 0-.09-.756 11.26 11.26 0 0 1-1.434-5.509A11.32 11.32 0 0 1 16 4.665M20.667 10c-.737 0-1.333.597-1.333 1.333v9.333a1.333 1.333 0 1 0 2.666 0v-9.333c0-.737-.597-1.333-1.333-1.333m-9.334 2.667c-.737 0-1.333.597-1.333 1.333v6.667a1.333 1.333 0 1 0 2.666 0V14c0-.737-.597-1.333-1.333-1.333M16 15.333c-.737 0-1.333.597-1.333 1.333v4a1.333 1.333 0 1 0 2.666 0v-4c0-.737-.597-1.333-1.333-1.333\"></path></svg>"
+      },
+      {
+        "id": "aiimagesearch",
+        "name": "AI image",
+        "testid": "contentPickerSourceAiImageSearchButton",
+        "ariaLabel": "Use AI Art Generator",
+        "colorClass": "park",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 768 768\" height=\"24\" width=\"24\" version=\"1.1\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\">\n<g id=\"icomoon-ignore\">\n</g>\n<path d=\"M296.317 152.375c13.246 0.007 23.994 10.754 24 24-0.007 13.247-10.754 23.993-24 24h-128c-22.085 0.004-39.995 17.915-40 40v359.814c0 2.246 0.205 4.445 0.563 6.592l175.937-164.157c35.593-33.219 91.401-31.241 124.531 4.438l146.249 157.501c0.157-1.44 0.281-2.896 0.281-4.375v-153.814c0.003-13.251 10.749-24 24-24 13.248 0.007 23.997 10.752 24 24v153.814c-0.003 48.592-39.408 87.991-88 88h-367.562c-48.595-0.007-87.995-39.408-88-88v-359.814c0.004-48.595 39.405-87.996 88-88h128zM394.16 479.719c-15.059-16.208-40.416-17.123-56.592-2.032l-173.814 162.189c1.495 0.169 3.022 0.313 4.562 0.313h367.562c2.282-0.003 4.512-0.26 6.688-0.627l-148.406-159.843z\"></path>\n<path d=\"M533.287 79.813c9.127 0 18.278 4.876 22.375 14.719l27.344 66.125 1.75 3.687c4.474 8.32 11.815 14.888 20.781 18.5l67.155 26.937c19.99 8.066 19.99 35.972 0 44l-67.155 27.032-3.718 1.688c-8.458 4.407-15.143 11.634-18.813 20.469l-27.344 66.094-1.783 3.436c-9.885 16.148-35.225 15.005-42.874-3.436l-27.436-66.094c-4.154-10.054-12.285-18.028-22.535-22.156l-67.091-27.032c-19.988-8.067-19.988-35.971 0-44l67.091-26.937c10.211-4.091 18.343-12.096 22.535-22.187l27.436-66.125c4.073-9.842 13.155-14.718 22.282-14.719zM527.879 179.063c-8.032 19.328-22.589 35.068-40.906 44.625l-8.092 3.719-10.969 4.406 11.063 4.469c21.981 8.856 39.728 26.131 48.905 48.281l5.437 13 5.344-12.969 0.032-0.031 3.843-8.063c8.432-15.634 21.367-28.339 37.063-36.531l8.096-3.719 10.999-4.438-11.095-4.438c-21.997-8.863-39.766-26.168-48.938-48.344l-5.344-13-5.437 13.031z\"></path>\n<path d=\"M243.941 272.719c25.293 0.005 45.781 20.491 45.781 45.75-0.003 25.256-20.49 45.745-45.781 45.748-25.291-0.003-45.809-20.493-45.812-45.748 0-25.259 20.52-45.745 45.812-45.75z\"></path>\n</svg>"
+      },
+      {
+        "id": "aitalk",
+        "name": "AI speech",
+        "testid": "contentPickerSourceAiTalkButton",
+        "ariaLabel": "Use AI Speech Generator",
+        "colorClass": "park",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M17.667 2.667A2.35 2.35 0 0 0 15.334 5v10a1 1 0 0 0 .618.923 1 1 0 0 0 1.09-.216l3.04-3.04h7.586a2.35 2.35 0 0 0 2.333-2.333V5.001a2.35 2.35 0 0 0-2.333-2.333h-10zm0 2h10A.32.32 0 0 1 28 5v5.333a.32.32 0 0 1-.333.333h-8a1 1 0 0 0-.707.293l-1.626 1.626V4.999c0-.196.137-.333.333-.333zm-8.334 5.498c-1.458 0-2.679.583-3.466 1.469s-1.159 2.029-1.159 3.158.371 2.27 1.159 3.156 2.008 1.469 3.466 1.469c2.543 0 4.625-2.082 4.625-4.625s-2.082-4.626-4.625-4.626zm0 2c1.462 0 2.625 1.165 2.625 2.626s-1.163 2.625-2.625 2.625c-.958 0-1.55-.323-1.971-.797s-.654-1.144-.654-1.828.233-1.355.654-1.828 1.013-.798 1.971-.798m-5.056 8.502c-1.208 0-2.319.917-2.319 2.173v2.055c0 1.379.959 2.52 2.272 3.264s3.062 1.176 5.102 1.176 3.789-.431 5.103-1.176 2.273-1.886 2.273-3.264V22.84c0-1.255-1.111-2.173-2.32-2.173zm0 2h10.111c.249 0 .32.133.32.173v2.055c0 .421-.333 1-1.259 1.525s-2.366.915-4.117.915-3.188-.39-4.115-.915c-.926-.525-1.259-1.103-1.259-1.525V22.84c0-.04.071-.173.319-.173\"></path></svg>"
+      },
+      {
+        "id": "photoalbum",
+        "name": "Photo album",
+        "testid": "contentPickerSourcePhotoAlbumButton",
+        "ariaLabel": "Choose photos from your device",
+        "colorClass": "park",
+        "isNew": true,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M18.331 11.995a1.664 1.664 0 1 0 0-3.328 1.664 1.664 0 0 0 0 3.328M8.333 4A4.333 4.333 0 0 0 4 8.333v12a4.333 4.333 0 0 0 4.333 4.333h12a4.333 4.333 0 0 0 4.333-4.333v-12A4.333 4.333 0 0 0 20.333 4zM6 8.333A2.333 2.333 0 0 1 8.333 6h12a2.333 2.333 0 0 1 2.333 2.333v12c0 .308-.06.602-.168.872l-6.116-5.721a3 3 0 0 0-4.099 0l-6.115 5.721A2.3 2.3 0 0 1 6 20.334zm9.016 8.611 6.007 5.619a2.3 2.3 0 0 1-.689.103h-12q-.362-.001-.69-.104l6.006-5.619a1 1 0 0 1 1.366 0zM11.667 28a4.33 4.33 0 0 1-3.652-2h12.986a5 5 0 0 0 5-5V8.014a4.33 4.33 0 0 1 2 3.652v9.333a7 7 0 0 1-7 7h-9.333z\"></path></svg>"
+      }
     ]
   },
   {
-    id: 'orange',
-    name: 'Search & Media',
-    groupClass: 'group-orange',
-    tools: [
-      { id: 'image-search', name: 'Image search', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' },
-      { id: 'gif', name: 'GIF', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M10 8H7v8h3v-3H8.5m6-5v8m3.5-8h-3v8m0-4h2.5"/></svg>' },
-      { id: 'youtube', name: 'YouTube', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>' },
-      { id: 'spotify', name: 'Spotify', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.208-2.35-1.436-5.308-1.76-8.793-.963-.334.077-.67-.13-.746-.465-.077-.334.13-.67.465-.746 3.808-.87 7.076-.505 9.723 1.11.295.18.387.562.208.856zm1.224-2.724c-.227.37-.714.487-1.084.26-2.69-1.653-6.79-2.132-9.972-1.166-.417.127-.863-.109-.99-.526-.127-.417.109-.863.526-.99 3.633-1.103 8.147-.568 11.26 1.34.37.226.487.713.26 1.082zm.106-2.835C14.692 8.93 9.38 8.754 6.297 9.69c-.495.15-1.023-.13-1.173-.625-.15-.495.13-1.023.625-1.173 3.551-1.077 9.426-.874 13.14 1.33.447.265.592.848.327 1.295-.265.447-.848.592-1.295.327z"/></svg>' },
-      { id: 'web-search', name: 'Web search', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' },
-      { id: 'location', name: 'Location', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>' }
+    "id": "tangerine",
+    "color": "tangerine",
+    "tools": [
+      {
+        "id": "imagesearch",
+        "name": "Image search",
+        "testid": "contentPickerSourceImageSearchButton",
+        "ariaLabel": "Search for an image",
+        "colorClass": "tangerine",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M28 8.333A4.333 4.333 0 0 0 23.667 4H8.334a4.333 4.333 0 0 0-4.333 4.333v6.01a7.3 7.3 0 0 1 2-1.176V8.334a2.333 2.333 0 0 1 2.333-2.333h15.333A2.333 2.333 0 0 1 26 8.334v15.333c0 .278-.049.545-.138.793l-7.763-7.602-.171-.155a3 3 0 0 0-2.991-.507c.345.568.616 1.186.797 1.842a1 1 0 0 1 .965.25l7.741 7.582a2.3 2.3 0 0 1-.774.131h-6.367l.683.683c.371.371.591.835.66 1.317h5.024a4.333 4.333 0 0 0 4.333-4.333V8.335zm-4.661 3.336a3.003 3.003 0 1 0-6.006 0 3.003 3.003 0 0 0 6.006 0m-4.006 0a1.003 1.003 0 1 1 2.006 0 1.003 1.003 0 0 1-2.006 0m-6.066 12.184a6 6 0 1 0-1.527 1.301l3.886 3.886a.999.999 0 1 0 1.414-1.414l-3.774-3.774zm-4.6.147a4 4 0 1 1 0-8 4 4 0 0 1 0 8\"></path></svg>"
+      },
+      {
+        "id": "gifsearch",
+        "name": "GIF",
+        "testid": "contentPickerSourceGifSearchButton",
+        "ariaLabel": "Search for a GIF",
+        "colorClass": "tangerine",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 768 768\" height=\"24\" width=\"24\" version=\"1.1\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\">\n<g id=\"icomoon-ignore\">\n</g>\n<path d=\"M197.653 560c90.893 0 144.482-54.535 144.482-146.608v-10.388c0-13.456-8.263-21.955-21.248-21.955h-100.57c-11.804 0-20.303 7.555-20.303 18.649 0 11.098 8.499 18.649 20.303 18.649h79.324v6.141c0 57.13-41.551 96.32-101.988 96.32-69.408 0-112.376-53.116-112.376-138.816 0-84.282 42.259-134.803 112.376-134.803 42.967 0 76.019 20.775 93.489 60.201 5.43 12.512 11.804 17.707 22.192 17.707 11.803 0 19.357-7.791 19.357-19.359 0-5.194-0.47-10.624-3.305-17.942-18.413-47.689-69.407-79.796-131.733-79.796-95.378 0-156.051 67.756-156.051 174.23 0 108.361 60.91 177.769 156.051 177.769z\"></path>\n<path d=\"M422.752 557.639c12.985 0 21.248-8.499 21.248-21.956v-303.367c0-13.457-8.263-21.955-21.248-21.955-12.982 0-21.245 8.499-21.245 21.955v303.367c0 13.456 8.263 21.956 21.245 21.956z\"></path>\n<path d=\"M536.186 557.639c12.985 0 21.248-8.499 21.248-21.956v-128.902h134.332c11.801 0 20.067-7.552 20.067-18.887 0-11.331-8.266-18.887-20.067-18.887h-134.332v-117.097h147.552c12.041 0 20.304-7.791 20.304-19.123s-8.263-19.123-20.304-19.123h-168.8c-12.983 0-21.248 8.499-21.248 21.956v300.062c0 13.456 8.266 21.956 21.248 21.956z\"></path>\n</svg>"
+      },
+      {
+        "id": "videosearch",
+        "name": "YouTube",
+        "testid": "contentPickerSourceVideoSearchButton",
+        "ariaLabel": "Search on YouTube",
+        "colorClass": "tangerine",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M15.905 5.667c-4.235 0-8.17.302-10.415.771l-.014.004c-1.692.379-3.284 1.591-3.62 3.488l-.001.008c-.258 1.529-.521 3.523-.521 6.396 0 2.867.264 4.808.59 6.418.344 1.841 1.9 3.09 3.617 3.474l.025.007c2.343.462 6.167.768 10.402.768s8.061-.307 10.405-.768l.025-.007c1.692-.379 3.284-1.591 3.62-3.488l.003-.014c.254-1.561.582-3.552.647-6.43v-.022c0-2.879-.329-4.885-.651-6.474-.341-1.845-1.899-3.097-3.618-3.482a1 1 0 0 0-.079-.014c-2.287-.321-6.177-.634-10.413-.634zm0 2c4.107 0 7.913.308 10.073.608 1.062.244 1.905.986 2.072 1.885l.003.017c.31 1.531.612 3.351.613 6.079-.062 2.737-.365 4.573-.618 6.134-.173.972-.986 1.632-2.078 1.88-2.099.412-5.874.729-10.001.729s-7.902-.319-10-.731c-1.066-.242-1.913-.986-2.079-1.888l-.004-.017c-.307-1.514-.551-3.279-.551-6.031 0-2.748.244-4.585.491-6.055.172-.975.987-1.636 2.082-1.884 1.943-.405 5.867-.728 9.999-.728zm-2.264 3.015c-1.195.039-2.307 1.001-2.307 2.309v6.02c0 1.743 1.978 2.873 3.492 2.018v-.001l5.327-3.009c1.525-.862 1.525-3.175 0-4.037l-5.327-3.009a2.25 2.25 0 0 0-1.185-.29zm.007 1.972q.091.004.193.06l5.327 3.01c.271.153.271.401 0 .553l-5.327 3.009c-.268.151-.508.01-.508-.276v-6.02c0-.143.06-.25.154-.302a.3.3 0 0 1 .161-.035z\"></path></svg>"
+      },
+      {
+        "id": "audiosearch",
+        "name": "Spotify",
+        "testid": "contentPickerSourceAudioSearchButton",
+        "ariaLabel": "Search on Spotify",
+        "colorClass": "tangerine",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M16 2.667C8.648 2.667 2.667 8.648 2.667 16S8.648 29.333 16 29.333 29.333 23.352 29.333 16 23.352 2.667 16 2.667m0 2c6.271 0 11.333 5.062 11.333 11.333S22.271 27.333 16 27.333 4.667 22.271 4.667 16 9.729 4.667 16 4.667m-1.931 5.971q-.714.01-1.426.068a20.4 20.4 0 0 0-3.755.667 1 1 0 0 0-.629.464 1 1 0 0 0-.103.775 1 1 0 0 0 .486.613 1 1 0 0 0 .778.076 18.47 18.47 0 0 1 13.422 1.417 1.003 1.003 0 0 0 1.364-.417 1 1 0 0 0-.128-1.115 1 1 0 0 0-.311-.243 20.4 20.4 0 0 0-9.697-2.305zm.137 4.035q-.584.004-1.167.048a17 17 0 0 0-3.074.514 1.01 1.01 0 0 0-.633.457 1.005 1.005 0 0 0 .064 1.129.99.99 0 0 0 .68.382c.133.015.268.003.397-.035a15.18 15.18 0 0 1 10.755 1.161 1 1 0 0 0 .771.074 1 1 0 0 0 .593-.499 1 1 0 0 0-.139-1.116 1 1 0 0 0-.315-.24 17.1 17.1 0 0 0-7.934-1.878zm.159 4.005a14 14 0 0 0-3.245.375 1 1 0 0 0-.782.814 1 1 0 0 0 .846 1.156c.132.019.267.01.396-.024a11.9 11.9 0 0 1 7.969.888q.179.087.377.101c.198.014.263-.009.387-.052a1.01 1.01 0 0 0 .575-.506 1 1 0 0 0 .048-.764 1.01 1.01 0 0 0-.506-.575 13.8 13.8 0 0 0-6.068-1.413z\"></path></svg>"
+      },
+      {
+        "id": "websearch",
+        "name": "Web search",
+        "testid": "contentPickerSourceWebSearchButton",
+        "ariaLabel": "Search on the web",
+        "colorClass": "tangerine",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M4.588 13.274a6.567 6.567 0 0 0 8.31 10.095l5.675 5.675a1.03 1.03 0 0 0 1.558-1.342l-.1-.116-5.623-5.625a6.569 6.569 0 0 0-9.82-8.687M16.034 2.665c-6.341 0-11.648 4.425-13.001 10.356q.282-.359.612-.689a7.9 7.9 0 0 1 2.367-1.631 11.36 11.36 0 0 1 5.861-5.248l-.142.232c-.717 1.191-1.295 2.682-1.7 4.372a8 8 0 0 1 1.954.454c.842-3.503 2.431-5.846 4.049-5.846l.154.007c1.687.154 3.317 2.824 4.074 6.661l-6.663-.001a7.9 7.9 0 0 1 2.067 1.999l4.897.002c.091.854.14 1.747.14 2.667 0 1.413-.115 2.76-.32 4h-3.527a8 8 0 0 1-.399 1.121l-.172.362-.163.306.212.209h3.619c-.269.998-.601 1.89-.975 2.646l1.474 1.477c.656-1.144 1.189-2.545 1.572-4.122l3.63-.001a11.4 11.4 0 0 1-4.978 4.345l.3.299.166.187c.294.394.46.832.504 1.27 4.561-2.118 7.725-6.74 7.725-12.101 0-7.365-5.971-13.335-13.335-13.335zm-3.616 12.067a4.505 4.505 0 1 1-6.372 6.372 4.505 4.505 0 1 1 6.372-6.372m10.159-1.399 4.477-.001.01.04c.2.843.306 1.723.306 2.627 0 1.408-.257 2.756-.726 4L22.413 20a27 27 0 0 0 .291-4.001c0-.912-.043-1.804-.127-2.667zm-2.384-7.881.031.012a11.37 11.37 0 0 1 6.144 5.869l-4.064-.001c-.418-2.337-1.147-4.371-2.11-5.88z\"></path></svg>"
+      },
+      {
+        "id": "locationsearch",
+        "name": "Location",
+        "testid": "contentPickerSourceLocationSearchButton",
+        "ariaLabel": "Add a location",
+        "colorClass": "tangerine",
+        "isNew": false,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 32 32\" height=\"24\" width=\"24\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\"><path d=\"M16 2.667c-5.143 0-9.333 4.19-9.333 9.333 0 2.309.848 4.429 2.24 6.057v.001h.001s3.859 4.519 5.292 5.887c.999.953 2.6.953 3.6 0 1.62-1.545 5.292-5.885 5.294-5.888l.001-.003a9.3 9.3 0 0 0 2.238-6.055c0-5.143-4.19-9.333-9.333-9.333zm0 2A7.32 7.32 0 0 1 23.333 12a7.3 7.3 0 0 1-1.76 4.758v.001h-.001s-3.817 4.465-5.152 5.738a.587.587 0 0 1-.84 0c-1.103-1.052-5.151-5.736-5.154-5.739l-.001-.003A7.28 7.28 0 0 1 8.667 12 7.32 7.32 0 0 1 16 4.667M16 8c-1.25 0-2.314.505-2.997 1.273S12 11.027 12 12s.319 1.958 1.003 2.727S14.75 16 16 16s2.314-.505 2.997-1.273S20 12.973 20 12s-.319-1.958-1.003-2.727S17.25 8 16 8m0 2c.75 0 1.186.245 1.503.602S18 11.473 18 12s-.181 1.042-.497 1.398c-.317.356-.753.602-1.503.602s-1.186-.245-1.503-.602C14.18 13.042 14 12.527 14 12s.181-1.042.497-1.398C14.814 10.246 15.25 10 16 10m-7.486 9.628c-3.03.875-5.181 2.341-5.181 4.372 0 3.501 6.372 5.333 12.667 5.333S28.667 27.501 28.667 24c0-2.031-2.15-3.495-5.178-4.371-.385.437-.913 1.034-1.493 1.681 2.951.694 4.672 1.817 4.672 2.69 0 1.359-4.155 3.333-10.667 3.333S5.334 25.359 5.334 24c0-.873 1.724-1.999 4.68-2.693-.578-.643-1.109-1.24-1.499-1.68z\"></path></svg>"
+      }
     ]
   }
 ];
@@ -168,6 +305,7 @@ class PadlesShelfApp {
     this.allToolsModal = document.getElementById('allToolsModal');
     this.allToolsSearchInput = document.getElementById('allToolsSearchInput');
     this.allToolsUrlSubmitBtn = document.getElementById('allToolsUrlSubmitBtn');
+    this.allToolsPasteBtn = document.getElementById('allToolsPasteBtn');
     this.closeAllToolsBtn = document.getElementById('closeAllToolsBtn');
     this.allToolsGroupsContainer = document.getElementById('allToolsGroupsContainer');
     this.allToolsGrid = this.allToolsGroupsContainer;
@@ -2952,6 +3090,22 @@ class PadlesShelfApp {
       });
     }
 
+    if (this.allToolsPasteBtn) {
+      this.allToolsPasteBtn.addEventListener('click', async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (text) {
+            if (this.allToolsSearchInput) {
+              this.allToolsSearchInput.value = text;
+              this.handleAllToolsSearchInput(text);
+            }
+          }
+        } catch (e) {
+          this.showToast('Unable to read clipboard');
+        }
+      });
+    }
+
     if (this.allToolsUrlSubmitBtn) {
       this.allToolsUrlSubmitBtn.addEventListener('click', () => {
         this.submitAllToolsUrlOrFirstMatch();
@@ -2974,7 +3128,10 @@ class PadlesShelfApp {
   handleAllToolsSearchInput(val) {
     const isUrl = this.isValidUrl(val);
     if (this.allToolsUrlSubmitBtn) {
-      this.allToolsUrlSubmitBtn.disabled = !isUrl;
+      this.allToolsUrlSubmitBtn.style.display = isUrl ? 'flex' : 'none';
+    }
+    if (this.allToolsPasteBtn) {
+      this.allToolsPasteBtn.style.display = isUrl ? 'none' : 'flex';
     }
     this.renderAllToolsGrid(val);
   }
@@ -3012,7 +3169,10 @@ class PadlesShelfApp {
       this.allToolsSearchInput.value = '';
     }
     if (this.allToolsUrlSubmitBtn) {
-      this.allToolsUrlSubmitBtn.disabled = true;
+      this.allToolsUrlSubmitBtn.style.display = 'none';
+    }
+    if (this.allToolsPasteBtn) {
+      this.allToolsPasteBtn.style.display = 'flex';
     }
     this.renderAllToolsGrid();
     this.allToolsModal.hidden = false;
@@ -3035,40 +3195,32 @@ class PadlesShelfApp {
       const matchingTools = group.tools.filter(t => !q || t.name.toLowerCase().includes(q));
       if (matchingTools.length === 0) return;
 
-      const groupEl = document.createElement('div');
-      groupEl.className = `all-tools-group ${group.groupClass}`;
-
-      const titleEl = document.createElement('h4');
-      titleEl.className = 'all-tools-group-title';
-      titleEl.textContent = group.name;
-      groupEl.appendChild(titleEl);
-
-      const gridEl = document.createElement('div');
-      gridEl.className = 'all-tools-group-grid';
+      const groupGrid = document.createElement('div');
+      groupGrid.className = 'all-tools-group-grid';
 
       matchingTools.forEach(tool => {
-        const tile = document.createElement('button');
-        tile.type = 'button';
-        tile.className = 'all-tools-tile';
-        tile.dataset.toolId = tool.id;
-        tile.innerHTML = `
-          <div class="all-tools-tile-icon">${tool.icon}</div>
-          <div class="all-tools-tile-info">
-            <span class="all-tools-tile-label">${this.escapeHtml(tool.name)}</span>
-            ${tool.isNew ? '<span class="tool-badge-new">New</span>' : ''}
-          </div>
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'all-tools-btn';
+        btn.setAttribute('data-tool', tool.id);
+        btn.setAttribute('data-testid', tool.testid);
+        btn.setAttribute('aria-label', tool.ariaLabel);
+
+        btn.innerHTML = `
+          <span class="all-tools-btn-icon text-${tool.colorClass}">${tool.svg}</span>
+          <span class="all-tools-btn-label">${tool.name}</span>
+          ${tool.isNew ? '<span class="all-tools-badge-new">New</span>' : ''}
         `;
 
-        tile.addEventListener('click', () => {
+        btn.addEventListener('click', () => {
           this.closeAllToolsModal();
           this.triggerToolAction(tool.id);
         });
 
-        gridEl.appendChild(tile);
+        groupGrid.appendChild(btn);
       });
 
-      groupEl.appendChild(gridEl);
-      container.appendChild(groupEl);
+      container.appendChild(groupGrid);
     });
   }
 
@@ -3100,44 +3252,35 @@ class PadlesShelfApp {
         this.openAvRecorderModal('audio');
         break;
       case 'screen':
+      case 'screenrecord':
         this.openAvRecorderModal('screen');
         break;
       case 'ai-image':
+      case 'aiimagesearch':
       case 'arcade':
         this.handleToolAction('ai');
         break;
       case 'ai-speech':
-        this.composerState.attachment = {
-          type: 'audio',
-          provider: 'AI Speech',
-          title: 'Voice: "Welcome to Quantum Mechanics Lab"',
-          domain: 'padles.ai',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1589254065878-42c9da997008?w=600',
-          url: '#'
-        };
-        this.updateAttachmentPreviewUI();
-        this.showToast('AI speech generated & attached!');
+      case 'aitalk':
+        this.openAvRecorderModal('audio');
         break;
       case 'album':
-        this.composerState.attachment = {
-          type: 'album',
-          provider: 'Photo Album',
-          title: 'Lab Gallery (4 photos)',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600',
-          url: '#'
-        };
-        this.updateAttachmentPreviewUI();
-        this.showToast('Photo album attached!');
+      case 'photoalbum':
+        this.handleToolAction('upload');
         break;
       case 'link':
         this.handleToolAction('link');
         break;
       case 'youtube':
+      case 'videosearch':
         this.openSearchModal('video');
         break;
       case 'image-search':
+      case 'imagesearch':
       case 'gif':
+      case 'gifsearch':
       case 'web-search':
+      case 'websearch':
         this.openSearchModal('all');
         break;
       case 'draw':
@@ -3147,6 +3290,7 @@ class PadlesShelfApp {
         this.openPollModal();
         break;
       case 'spotify':
+      case 'audiosearch':
         this.composerState.attachment = {
           type: 'audio',
           provider: 'Spotify',
@@ -3158,22 +3302,11 @@ class PadlesShelfApp {
         this.showToast('Spotify track attached!');
         break;
       case 'location':
+      case 'locationsearch':
         this.openLocationModal();
         break;
-      case 'gdrive':
-      case 'onedrive':
-        this.composerState.attachment = {
-          type: 'file',
-          provider: toolId === 'gdrive' ? 'Google Drive' : 'OneDrive',
-          title: 'Physics_Reflections_Handout.pdf',
-          thumbnailUrl: 'https://images.unsplash.com/photo-1568667256549-094345857637?w=600',
-          url: '#'
-        };
-        this.updateAttachmentPreviewUI();
-        this.showToast(`${toolId === 'gdrive' ? 'Google Drive' : 'OneDrive'} file linked!`);
-        break;
       default:
-        this.showToast(`${toolId.replace('-', ' ')} tool ready`);
+        this.showToast(`${toolId} selected`);
         break;
     }
   }
