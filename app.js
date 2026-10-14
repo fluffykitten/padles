@@ -580,9 +580,32 @@ class PadlesShelfApp {
     this.initMoreDrawer();
     this.attachEventListeners();
     this.resolveStoredAttachments();
+    this.syncOfflineMediaToR2();
+    window.addEventListener('online', () => this.syncOfflineMediaToR2());
 
     if (this.backend && this.backend.isConnected) {
       this.syncFromCloud();
+    }
+  }
+
+  getR2AuthContext() {
+    const user = this.backend?.currentUser || null;
+    return {
+      userId: user?.id || 'guest',
+      authToken: this.backend?.getAccessToken ? this.backend.getAccessToken() : (user?.session?.access_token || ''),
+      boardId: this.currentBoardId || this.backend?.activeBoardId || 'board-default-physics'
+    };
+  }
+
+  async syncOfflineMediaToR2() {
+    if (!window.padlesR2 || !window.padlesR2.isConfigured) return;
+    try {
+      const syncedCount = await window.padlesR2.syncPendingBlobs(() => this.getR2AuthContext());
+      if (syncedCount > 0) {
+        console.log(`[PadlesR2] Successfully synced ${syncedCount} offline attachments to Cloudflare R2.`);
+      }
+    } catch (e) {
+      console.warn('[PadlesR2] syncOfflineMediaToR2 error:', e);
     }
   }
 
@@ -840,11 +863,62 @@ class PadlesShelfApp {
     }
   }
 
-  /* ========================================================================
-     Rendering Board Sections & Cards
-     ======================================================================== */
+  isUserLoggedIn() {
+    const user = this.backend?.currentUser;
+    if (user && !user.isGuest && user.id) return true;
+    try {
+      const stored = localStorage.getItem('padles_auth_user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.id && !parsed.isGuest) return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  isBoardOwner() {
+    if (!this.isUserLoggedIn()) return false;
+    const user = this.backend?.currentUser || JSON.parse(localStorage.getItem('padles_auth_user') || '{}');
+    const boardAuthorId = this.state.board?.author_id || this.state.author_id;
+    if (boardAuthorId && boardAuthorId === user.id) return true;
+    if ((!this.backend || !this.backend.isConnected) && !boardAuthorId) return true;
+    return false;
+  }
+
+  canEditCard(card) {
+    if (!this.isUserLoggedIn()) return false;
+    if (this.isBoardOwner()) return true;
+    const user = this.backend?.currentUser || JSON.parse(localStorage.getItem('padles_auth_user') || '{}');
+    if (card?.authorId && card.authorId === user.id) return true;
+    if ((!this.backend || !this.backend.isConnected) && !card?.authorId) return true;
+    return false;
+  }
 
   renderBoard() {
+    // Dynamic Board Header, Title, Author & Wallpaper Synchronization
+    const title = this.state.board?.title || this.state.boardTitle || this.state.title;
+    const author = this.state.boardAuthor || this.state.author || this.state.board?.author;
+    if (this.boardTitle && title) {
+      this.boardTitle.textContent = title;
+      document.title = `${title} — Padles`;
+    }
+    const authorEl = document.getElementById('boardAuthor');
+    if (authorEl && author) {
+      authorEl.textContent = author;
+    }
+
+    const wallpaper = this.state.board?.wallpaper || 'aurora';
+    document.body.classList.remove('aurora-theme', 'oceanic-theme', 'sunset-theme', 'charcoal-theme');
+    if (wallpaper === 'oceanic') {
+      document.body.classList.add('oceanic-theme');
+    } else if (wallpaper === 'sunset') {
+      document.body.classList.add('sunset-theme');
+    } else if (wallpaper === 'charcoal') {
+      document.body.classList.add('charcoal-theme');
+    } else {
+      document.body.classList.add('aurora-theme');
+    }
+
     this.sectionsTrack.innerHTML = '';
 
     this.state.sections.forEach(section => {
@@ -930,14 +1004,17 @@ class PadlesShelfApp {
       `;
     }
 
+    const canEdit = this.canEditCard(card);
     const cornerActionsHtml = `
       <div class="card-corner-actions" data-testid="surfacePostCornerActions">
+        ${canEdit ? `
         <div class="card-edit-btn-wrapper">
           <button type="button" class="card-edit-btn" title="Edit" aria-label="Edit this post" data-testid="surfacePostEditButton">
             <span>Edit</span>
           </button>
         </div>
         <div class="card-actions-divider"></div>
+        ` : ''}
         <button type="button" class="card-dots-btn" title="More post actions" aria-label="More post actions" data-testid="surfacePostMoreActionsButton">
           <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor"><path d="M16 10a3.143 3.143 0 1 1 0-6.286A3.143 3.143 0 0 1 16 10m0 9.143a3.143 3.143 0 1 1 0-6.286 3.143 3.143 0 0 1 0 6.286m-3.143 6a3.143 3.143 0 1 0 6.286 0 3.143 3.143 0 0 0-6.286 0"/></svg>
         </button>
@@ -1166,8 +1243,17 @@ class PadlesShelfApp {
       });
     });
 
-    // In Padles, left clicking a card does nothing (detail view opened via context menu / actions)
-    // Right clicking a card opens post actions context menu at cursor position
+    // Clicking attachment preview opens expanded theater view
+    const mediaAttachment = el.querySelector('.media-attachment-image, .media-attachment-video, .media-attachment-link');
+    if (mediaAttachment) {
+      mediaAttachment.style.cursor = 'pointer';
+      mediaAttachment.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.openCardDetailModal(card.id);
+      });
+    }
+
+    // Right-clicking a card opens post actions context menu at cursor position (exact live Padlet parity)
     el.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -1258,7 +1344,9 @@ class PadlesShelfApp {
     this.state.drafts.push(newDraft);
     this.activeDraftId = newDraft.id;
     this.editingCardId = null;
-    this.publishBtn.textContent = 'Publish';
+    const isAuthed = this.isUserLoggedIn();
+    this.publishBtn.textContent = isAuthed ? 'Publish' : 'Submit';
+    if (this.titleInput) this.titleInput.placeholder = isAuthed ? 'Subject' : 'Your name';
     this.publishBtn.classList.remove('is-update');
     this.saveState();
     this.openDraftInComposer(newDraft);
@@ -1273,7 +1361,9 @@ class PadlesShelfApp {
     this.composerState.selectedSectionId = draft.sectionId || this.state.sections[0]?.id;
     this.composerState.attachment = draft.attachment || null;
 
-    this.publishBtn.textContent = 'Publish';
+    const isAuthed = this.isUserLoggedIn();
+    this.publishBtn.textContent = isAuthed ? 'Publish' : 'Submit';
+    if (this.titleInput) this.titleInput.placeholder = isAuthed ? 'Subject' : 'Your name';
     this.publishBtn.classList.remove('is-update');
     this.updateColorPickerUI();
     this.updateSectionSelectorUI();
@@ -1666,10 +1756,15 @@ class PadlesShelfApp {
     const body = draft.body;
     const section = this.state.sections.find(s => s.id === draft.sectionId) || this.state.sections[0];
 
+    const authUserId = this.backend?.getValidAuthUserId ? this.backend.getValidAuthUserId() : null;
+    const authorName = this.backend?.currentUser?.name || 'Anonymous';
+
     const newCard = {
       id: 'card-' + Date.now(),
       title: title || (draft.attachment ? draft.attachment.title : 'Note'),
       body: body || '',
+      authorId: authUserId,
+      authorName: authorName,
       pinned: false,
       color: draft.color || 'cyan',
       reactions: 0,
@@ -1717,6 +1812,8 @@ class PadlesShelfApp {
       const newCard = {
         id: 'card-' + Date.now() + '-' + idx,
         title: draft.title || (draft.attachment ? draft.attachment.title : `Draft Note ${draft.draftNumber}`),
+        authorId: this.backend?.getValidAuthUserId ? this.backend.getValidAuthUserId() : null,
+        authorName: this.backend?.currentUser?.name || 'Anonymous',
         pinned: false,
         color: draft.color || 'cyan',
         reactions: 0,
@@ -1779,9 +1876,10 @@ class PadlesShelfApp {
       this.publishBtn.setAttribute('aria-label', 'Update post');
       this.publishBtn.classList.add('is-update');
     } else {
-      this.publishBtn.textContent = 'Publish';
-      this.publishBtn.title = 'Submit post';
-      this.publishBtn.setAttribute('aria-label', 'Submit post');
+      const isAuthed = this.isUserLoggedIn();
+      this.publishBtn.textContent = isAuthed ? 'Publish' : 'Submit';
+      this.publishBtn.title = isAuthed ? 'Publish post' : 'Submit post';
+      this.publishBtn.setAttribute('aria-label', isAuthed ? 'Publish post' : 'Submit post');
       this.publishBtn.classList.remove('is-update');
     }
   }
@@ -2547,8 +2645,29 @@ class PadlesShelfApp {
     this.activeSectionContextId = sectionId;
     if (!this.sectionContextMenu || !targetEl) return;
 
+    const isOwner = this.isBoardOwner();
+    const guestAllowed = new Set(['add-post', 'start-slideshow', 'copy-section-name']);
+
+    this.sectionContextMenu.querySelectorAll('.menu-action-item').forEach(btn => {
+      const action = btn.dataset.action;
+      if (isOwner || guestAllowed.has(action)) {
+        btn.style.display = 'flex';
+      } else {
+        btn.style.display = 'none';
+      }
+    });
+
+    const dividers = this.sectionContextMenu.querySelectorAll('.menu-divider');
+    dividers.forEach((div, idx) => {
+      if (idx === 0) {
+        div.style.display = 'block';
+      } else {
+        div.style.display = isOwner ? 'block' : 'none';
+      }
+    });
+
     const rect = targetEl.getBoundingClientRect();
-    const menuWidth = 270;
+    const menuWidth = 256;
     let left = rect.left;
     if (left + menuWidth > window.innerWidth - 16) {
       left = window.innerWidth - menuWidth - 16;
@@ -2632,6 +2751,8 @@ class PadlesShelfApp {
               const clone = JSON.parse(JSON.stringify(card));
               clone.id = 'card-' + Date.now();
               clone.title = (clone.title || 'Post') + ' (Copy)';
+              clone.authorId = this.backend?.getValidAuthUserId ? this.backend.getValidAuthUserId() : null;
+              clone.authorName = this.backend?.currentUser?.name || 'Anonymous';
               clone.pinned = false;
               clone.reactions = 0;
               clone.hasReacted = false;
@@ -2667,6 +2788,14 @@ class PadlesShelfApp {
 
           case 'delete-post': {
             if (section) {
+              const attachment = card.attachment;
+              if (attachment && (attachment.key || attachment.url) && window.padlesR2) {
+                const auth = this.getR2AuthContext ? this.getR2AuthContext() : {};
+                window.padlesR2.deleteMedia(attachment.key || attachment.url, { authToken: auth.authToken });
+              }
+              if (attachment && attachment.storageId && window.padlesMediaDB) {
+                window.padlesMediaDB.deleteBlob(attachment.storageId);
+              }
               section.cards = section.cards.filter(c => c.id !== card.id);
               this.saveState();
               this.renderBoard();
@@ -2675,6 +2804,11 @@ class PadlesShelfApp {
                 this.backend.deletePost(card.id);
               }
             }
+            break;
+          }
+
+          case 'report-post': {
+            this.showToast('Thank you. Post has been reported for moderation.');
             break;
           }
         }
@@ -2687,7 +2821,30 @@ class PadlesShelfApp {
     this.activeContextCard = card;
     if (!this.cardContextMenu) return;
 
-    this.renderCardMenuColors(card);
+    const canEdit = this.canEditCard(card);
+    if (canEdit) {
+      this.renderCardMenuColors(card);
+    }
+
+    const colorsGroup = document.getElementById('cardMenuColorsGroup');
+    const colorsDivider = document.getElementById('cardMenuColorsDivider');
+    const actionsDivider = document.getElementById('cardMenuActionsDivider');
+    const duplicateGroup = document.getElementById('cardMenuDuplicateGroup');
+    const duplicateDivider = document.getElementById('cardMenuDuplicateDivider');
+    const pinDeleteGroup = document.getElementById('cardMenuPinDeleteGroup');
+    const pinDeleteDivider = document.getElementById('cardMenuPinDeleteDivider');
+    const reportGroup = document.getElementById('cardMenuReportGroup');
+    const reportDivider = document.getElementById('cardMenuReportDivider');
+
+    if (colorsGroup) colorsGroup.style.display = canEdit ? 'flex' : 'none';
+    if (colorsDivider) colorsDivider.style.display = canEdit ? 'block' : 'none';
+    if (actionsDivider) actionsDivider.style.display = 'block'; // Sits between top items and order items
+    if (duplicateGroup) duplicateGroup.style.display = canEdit ? 'flex' : 'none';
+    if (duplicateDivider) duplicateDivider.style.display = canEdit ? 'block' : 'none';
+    if (pinDeleteGroup) pinDeleteGroup.style.display = canEdit ? 'flex' : 'none';
+    if (pinDeleteDivider) pinDeleteDivider.style.display = canEdit ? 'block' : 'none';
+    if (reportGroup) reportGroup.style.display = canEdit ? 'none' : 'flex';
+    if (reportDivider) reportDivider.style.display = canEdit ? 'none' : 'block';
 
     if (this.pinActionLabel) {
       this.pinActionLabel.textContent = card.pinned ? 'Unpin post' : 'Pin post';
@@ -4130,19 +4287,24 @@ class PadlesShelfApp {
 
       const filename = `${type}_${Date.now()}.${ext}`;
       let uploaded = null;
+      const r2Auth = this.getR2AuthContext();
 
       if (window.padlesR2) {
         uploaded = await window.padlesR2.uploadMedia(blob, {
           type: mediaType,
           filename: filename,
-          boardId: this.activeBoardId || 'board-default-physics'
+          boardId: r2Auth.boardId,
+          userId: r2Auth.userId,
+          authToken: r2Auth.authToken,
+          category: 'board'
         });
       } else {
         const localUrl = URL.createObjectURL(blob);
         uploaded = {
           url: localUrl,
           thumbnailUrl: mediaType === 'image' ? localUrl : '',
-          storageId: 'att_' + Date.now()
+          storageId: 'att_' + Date.now(),
+          key: null
         };
       }
 
@@ -4153,6 +4315,7 @@ class PadlesShelfApp {
         provider: 'Padles Studio',
         title: `${category} (${timeStr})`,
         url: uploaded.url,
+        key: uploaded.key || null,
         storageId: uploaded.storageId,
         thumbnailUrl: uploaded.thumbnailUrl || (mediaType === 'image' ? uploaded.url : ''),
         size: blob.size,
@@ -4459,19 +4622,24 @@ class PadlesShelfApp {
 
       const filename = `drawing_${Date.now()}.png`;
       let uploaded = null;
+      const r2Auth = this.getR2AuthContext();
 
       if (window.padlesR2) {
         uploaded = await window.padlesR2.uploadMedia(blob, {
           type: 'drawing',
           filename: filename,
-          boardId: this.activeBoardId || 'board-default-physics'
+          boardId: r2Auth.boardId,
+          userId: r2Auth.userId,
+          authToken: r2Auth.authToken,
+          category: 'board'
         });
       } else {
         const localUrl = URL.createObjectURL(blob);
         uploaded = {
           url: localUrl,
           thumbnailUrl: localUrl,
-          storageId: 'att_' + Date.now()
+          storageId: 'att_' + Date.now(),
+          key: null
         };
       }
 
@@ -4482,6 +4650,7 @@ class PadlesShelfApp {
         provider: 'Padles Whiteboard',
         title: `Whiteboard Sketch (${timeStr})`,
         url: uploaded.url,
+        key: uploaded.key || null,
         storageId: uploaded.storageId,
         thumbnailUrl: uploaded.thumbnailUrl || uploaded.url,
         size: blob.size,
@@ -5579,15 +5748,19 @@ class PadlesShelfApp {
           this.showToast(`Attaching ${file.name}...`);
           try {
             let uploaded = null;
+            const r2Auth = this.getR2AuthContext();
             if (window.padlesR2) {
               uploaded = await window.padlesR2.uploadMedia(file, {
                 type: mediaType,
                 filename: file.name,
-                boardId: this.activeBoardId || 'board-default-physics'
+                boardId: r2Auth.boardId,
+                userId: r2Auth.userId,
+                authToken: r2Auth.authToken,
+                category: 'board'
               });
             } else {
               const localUrl = URL.createObjectURL(file);
-              uploaded = { url: localUrl, thumbnailUrl: isImg ? localUrl : '', storageId: 'att_' + Date.now() };
+              uploaded = { url: localUrl, thumbnailUrl: isImg ? localUrl : '', storageId: 'att_' + Date.now(), key: null };
             }
 
             this.composerState.attachment = {
@@ -5597,6 +5770,7 @@ class PadlesShelfApp {
               title: file.name,
               thumbnailUrl: uploaded.thumbnailUrl || (isImg ? uploaded.url : 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600'),
               url: uploaded.url,
+              key: uploaded.key || null,
               storageId: uploaded.storageId,
               size: file.size,
               mimeType: file.type
@@ -6463,14 +6637,6 @@ class PadlesShelfApp {
     document.getElementById('postSizeWideBtn')?.addEventListener('click', () => { this.applyPostSize('wide'); this.saveState(); this.syncSettingsToCloud(); });
 
     // 3. Layout Section
-    document.getElementById('settingRowFormat')?.addEventListener('click', () => {
-      this.showSettingsSubview('settingsFormatSubview');
-    });
-
-    document.getElementById('settingRowSort')?.addEventListener('click', () => {
-      this.showSettingsSubview('settingsSortSubview');
-    });
-
     document.getElementById('newPostFirstBtn')?.addEventListener('click', () => { this.applyNewPostPosition('first'); this.saveState(); this.syncSettingsToCloud(); });
     document.getElementById('newPostLastBtn')?.addEventListener('click', () => { this.applyNewPostPosition('last'); this.saveState(); this.syncSettingsToCloud(); });
 
@@ -6492,36 +6658,6 @@ class PadlesShelfApp {
       this.showSettingsSubview('settingsCommentsSubview');
     });
 
-    document.getElementById('settingRowEmojiPreset')?.addEventListener('click', () => {
-      this.showSettingsSubview('settingsReactionsSubview');
-    });
-
-    // 6. Content Section
-    document.getElementById('settingModerationBtn')?.addEventListener('click', () => {
-      const modes = ['auto', 'manual', 'none'];
-      const curr = this.state.settings?.moderation || 'auto';
-      const next = modes[(modes.indexOf(curr) + 1) % modes.length];
-      if (!this.state.settings) this.state.settings = {};
-      this.state.settings.moderation = next;
-      const lbl = document.getElementById('currentModerationLabel');
-      if (lbl) lbl.textContent = next.charAt(0).toUpperCase() + next.slice(1);
-      this.saveState();
-      this.syncSettingsToCloud();
-      this.showToast(`Moderation set to ${next}`);
-    });
-
-    document.getElementById('settingCopyProtectionBtn')?.addEventListener('click', () => {
-      const curr = this.state.settings?.copyProtection || 'none';
-      const next = curr === 'none' ? 'protected' : 'none';
-      if (!this.state.settings) this.state.settings = {};
-      this.state.settings.copyProtection = next;
-      const lbl = document.getElementById('currentCopyProtectionLabel');
-      if (lbl) lbl.textContent = next === 'none' ? 'None' : 'Protected';
-      this.saveState();
-      this.syncSettingsToCloud();
-      this.showToast(`Copy protection: ${next === 'none' ? 'Disabled' : 'Enabled'}`);
-    });
-
     // 7. Advanced Section
     document.getElementById('surfaceUrlCopyButton')?.addEventListener('click', () => {
       const url = window.location.href;
@@ -6538,6 +6674,9 @@ class PadlesShelfApp {
         }
       }
     });
+
+    // Initialize authentic floating popovers (Format, Sort, Reactions, Moderation, Protection)
+    this.initSettingsPopovers();
 
     // Initialize subpanels
     this.initWallpaperSubview();
@@ -6576,7 +6715,352 @@ class PadlesShelfApp {
   }
 
   closeSettingsDrawer() {
+    this.closeSettingsPopovers();
     if (this.settingsPanel) this.settingsPanel.hidden = true;
+  }
+
+  /* ==========================================================================
+     Padles Authentic Settings Floating Popovers Engine
+     ========================================================================== */
+
+  initSettingsPopovers() {
+    this.settingsPopoverOverlay = document.getElementById('settingsPopoverOverlay');
+    this.popovers = {
+      format: document.getElementById('settingsFormatPopover'),
+      sort: document.getElementById('settingsSortPopover'),
+      reactions: document.getElementById('settingsReactionsPopover'),
+      moderation: document.getElementById('settingsModerationPopover'),
+      protection: document.getElementById('settingsProtectionPopover')
+    };
+
+    // Close on overlay backdrop click
+    this.settingsPopoverOverlay?.addEventListener('click', (e) => {
+      if (e.target === this.settingsPopoverOverlay) {
+        this.closeSettingsPopovers();
+      }
+    });
+
+    // Close on Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.settingsPopoverOverlay && !this.settingsPopoverOverlay.hidden) {
+        e.stopPropagation();
+        this.closeSettingsPopovers();
+      }
+    });
+
+    // Wire trigger buttons
+    const triggerPairs = [
+      { triggerId: 'settingFormatBtn', rowId: 'settingRowFormat', popoverKey: 'format' },
+      { triggerId: 'sortPostsBtn', rowId: 'settingRowSort', popoverKey: 'sort' },
+      { triggerId: 'settingEmojiPresetBtn', rowId: 'settingRowEmojiPreset', popoverKey: 'reactions' },
+      { triggerId: 'settingModerationBtn', rowId: 'settingRowModeration', popoverKey: 'moderation' },
+      { triggerId: 'settingCopyProtectionBtn', rowId: 'settingRowCopyProtection', popoverKey: 'protection' }
+    ];
+
+    triggerPairs.forEach(({ triggerId, rowId, popoverKey }) => {
+      const triggerEl = document.getElementById(triggerId);
+      const rowEl = document.getElementById(rowId);
+
+      const toggleHandler = (e) => {
+        e.stopPropagation();
+        const popover = this.popovers[popoverKey];
+        if (!popover) return;
+        const targetAnchor = triggerEl || rowEl;
+        if (!this.settingsPopoverOverlay.hidden && !popover.hidden) {
+          this.closeSettingsPopovers();
+        } else {
+          this.openSettingsPopover(popover, targetAnchor);
+        }
+      };
+
+      triggerEl?.addEventListener('click', toggleHandler);
+      rowEl?.addEventListener('click', (e) => {
+        if (!triggerEl?.contains(e.target)) {
+          toggleHandler(e);
+        }
+      });
+    });
+
+    this.initFormatPopoverItems();
+    this.initSortPopoverItems();
+    this.initReactionsPopoverItems();
+    this.initModerationPopoverItems();
+    this.initProtectionPopoverItems();
+  }
+
+  openSettingsPopover(popoverEl, anchorEl) {
+    this.closeSettingsPopovers();
+    if (!popoverEl || !anchorEl || !this.settingsPopoverOverlay) return;
+
+    this.settingsPopoverOverlay.hidden = false;
+    popoverEl.hidden = false;
+
+    // Anchor calculation matching Padlet: right-aligned to trigger button
+    const rect = anchorEl.getBoundingClientRect();
+    const popoverWidth = 256;
+    let left = rect.right - popoverWidth;
+    if (left < 16) left = 16;
+    if (left + popoverWidth > window.innerWidth - 16) {
+      left = window.innerWidth - popoverWidth - 16;
+    }
+
+    // Measure exact rendered height after unhiding
+    const popoverHeight = popoverEl.offsetHeight || 395;
+    const windowH = window.innerHeight;
+    let top = rect.bottom + 6;
+
+    if (top + popoverHeight > windowH - 16) {
+      const topAbove = rect.top - popoverHeight - 6;
+      if (topAbove >= 16) {
+        top = topAbove;
+      } else {
+        top = Math.max(16, windowH - popoverHeight - 16);
+      }
+    }
+
+    popoverEl.style.position = 'absolute';
+    popoverEl.style.top = `${top}px`;
+    popoverEl.style.left = `${left}px`;
+  }
+
+  closeSettingsPopovers() {
+    if (this.settingsPopoverOverlay) this.settingsPopoverOverlay.hidden = true;
+    if (this.popovers) {
+      Object.values(this.popovers).forEach(p => {
+        if (p) p.hidden = true;
+      });
+    }
+  }
+
+  initFormatPopoverItems() {
+    const popover = this.popovers?.format;
+    if (!popover) return;
+    popover.querySelectorAll('.popover-item-btn[data-format]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const fmt = btn.dataset.format;
+        this.selectFormatFromPopover(fmt);
+        this.closeSettingsPopovers();
+      });
+    });
+  }
+
+  selectFormatFromPopover(format, skipSave = false) {
+    const formatNames = {
+      wall: 'Wall',
+      columns: 'Columns',
+      grid: 'Grid',
+      table: 'Table',
+      free: 'Freeform',
+      rows: 'Rows',
+      timeline: 'Timeline',
+      stream: 'Stream',
+      map: 'Map'
+    };
+    const popover = this.popovers?.format;
+    if (popover) {
+      popover.querySelectorAll('.popover-item-btn[data-format]').forEach(btn => {
+        const isActive = btn.dataset.format === format;
+        btn.classList.toggle('active', isActive);
+        const check = btn.querySelector('.popover-item-check');
+        if (check) check.hidden = !isActive;
+      });
+    }
+
+    const label = document.getElementById('currentFormatLabel');
+    if (label) label.textContent = formatNames[format] || format;
+
+    this.applyLayoutFormat(format);
+    if (!skipSave) {
+      this.saveState();
+      this.syncSettingsToCloud();
+    }
+  }
+
+  initSortPopoverItems() {
+    const popover = this.popovers?.sort;
+    if (!popover) return;
+    popover.querySelectorAll('.popover-item-btn[data-sort]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sortVal = btn.dataset.sort;
+        this.selectSortFromPopover(sortVal);
+        this.closeSettingsPopovers();
+      });
+    });
+  }
+
+  selectSortFromPopover(sortType, skipSave = false) {
+    const labels = {
+      manual: 'Drag and drop',
+      date_desc: 'Date published',
+      date_asc: 'Date published',
+      subject_asc: 'Post subject',
+      random: 'Random'
+    };
+    const popover = this.popovers?.sort;
+    const radioActiveSvg = `<svg viewBox="0 0 32 32" height="24" width="24" fill="currentColor"><path d="M26.667 16c0-5.891-4.776-10.667-10.667-10.667S5.333 10.109 5.333 16 10.109 26.667 16 26.667 26.667 21.891 26.667 16m2.666 0c0 7.364-5.97 13.333-13.333 13.333S2.667 23.363 2.667 16 8.637 2.667 16 2.667 29.333 8.637 29.333 16M16 24.889A8.89 8.89 0 1 0 16 7.11a8.89 8.89 0 0 0 0 17.779"/></svg>`;
+    const radioInactiveSvg = `<svg viewBox="0 0 32 32" height="24" width="24" fill="currentColor"><path d="M16 26.667c-5.891 0-10.667-4.776-10.667-10.667S10.109 5.333 16 5.333 26.667 10.109 26.667 16 21.891 26.667 16 26.667m0 2.666c7.364 0 13.333-5.97 13.333-13.333S23.363 2.667 16 2.667 2.667 8.637 2.667 16 8.637 29.333 16 29.333"/></svg>`;
+
+    if (popover) {
+      popover.querySelectorAll('.popover-item-btn[data-sort]').forEach(btn => {
+        const isActive = btn.dataset.sort === sortType;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+        const iconSpan = btn.querySelector('.popover-radio-icon');
+        if (iconSpan) {
+          iconSpan.classList.toggle('active', isActive);
+          iconSpan.innerHTML = isActive ? radioActiveSvg : radioInactiveSvg;
+        }
+      });
+    }
+
+    const sortLabel = document.getElementById('currentSortLabel');
+    if (sortLabel) sortLabel.textContent = labels[sortType] || 'Drag and drop';
+
+    this.applySort(sortType);
+    if (!skipSave) {
+      this.saveState();
+      this.syncSettingsToCloud();
+    }
+  }
+
+  initReactionsPopoverItems() {
+    const popover = this.popovers?.reactions;
+    if (!popover) return;
+    popover.querySelectorAll('.popover-item-btn[data-reactions]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const reactionsVal = btn.dataset.reactions;
+        this.selectReactionsFromPopover(reactionsVal);
+        this.closeSettingsPopovers();
+      });
+    });
+  }
+
+  selectReactionsFromPopover(val, skipSave = false) {
+    const labels = {
+      all: 'All emojis',
+      heart: 'Heart',
+      thumbs_up: 'Thumbs up',
+      classic: 'Classic',
+      off: 'Off'
+    };
+    const popover = this.popovers?.reactions;
+    const radioActiveSvg = `<svg viewBox="0 0 32 32" height="24" width="24" fill="currentColor"><path d="M26.667 16c0-5.891-4.776-10.667-10.667-10.667S5.333 10.109 5.333 16 10.109 26.667 16 26.667 26.667 21.891 26.667 16m2.666 0c0 7.364-5.97 13.333-13.333 13.333S2.667 23.363 2.667 16 8.637 2.667 16 2.667 29.333 8.637 29.333 16M16 24.889A8.89 8.89 0 1 0 16 7.11a8.89 8.89 0 0 0 0 17.779"/></svg>`;
+    const radioInactiveSvg = `<svg viewBox="0 0 32 32" height="24" width="24" fill="currentColor"><path d="M16 26.667c-5.891 0-10.667-4.776-10.667-10.667S10.109 5.333 16 5.333 26.667 10.109 26.667 16 21.891 26.667 16 26.667m0 2.666c7.364 0 13.333-5.97 13.333-13.333S23.363 2.667 16 2.667 2.667 8.637 2.667 16 8.637 29.333 16 29.333"/></svg>`;
+
+    if (popover) {
+      popover.querySelectorAll('.popover-item-btn[data-reactions]').forEach(btn => {
+        const isActive = btn.dataset.reactions === val;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+        const iconSpan = btn.querySelector('.popover-radio-icon');
+        if (iconSpan) {
+          iconSpan.classList.toggle('active', isActive);
+          iconSpan.innerHTML = isActive ? radioActiveSvg : radioInactiveSvg;
+        }
+      });
+    }
+
+    const btnLabel = document.getElementById('currentEmojiPresetLabel');
+    if (btnLabel) btnLabel.textContent = labels[val] || 'All emojis';
+
+    this.applyReactionsPreset(val);
+    if (!skipSave) {
+      this.saveState();
+      this.syncSettingsToCloud();
+    }
+  }
+
+  initModerationPopoverItems() {
+    const popover = this.popovers?.moderation;
+    if (!popover) return;
+    popover.querySelectorAll('.popover-item-btn[data-moderation]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const modVal = btn.dataset.moderation;
+        this.selectModerationFromPopover(modVal);
+        this.closeSettingsPopovers();
+      });
+    });
+  }
+
+  selectModerationFromPopover(val, skipSave = false) {
+    const labels = {
+      none: 'None',
+      auto: 'Auto',
+      manual: 'Manual'
+    };
+    const popover = this.popovers?.moderation;
+    const radioActiveSvg = `<svg viewBox="0 0 32 32" height="24" width="24" fill="currentColor"><path d="M26.667 16c0-5.891-4.776-10.667-10.667-10.667S5.333 10.109 5.333 16 10.109 26.667 16 26.667 26.667 21.891 26.667 16m2.666 0c0 7.364-5.97 13.333-13.333 13.333S2.667 23.363 2.667 16 8.637 2.667 16 2.667 29.333 8.637 29.333 16M16 24.889A8.89 8.89 0 1 0 16 7.11a8.89 8.89 0 0 0 0 17.779"/></svg>`;
+    const radioInactiveSvg = `<svg viewBox="0 0 32 32" height="24" width="24" fill="currentColor"><path d="M16 26.667c-5.891 0-10.667-4.776-10.667-10.667S10.109 5.333 16 5.333 26.667 10.109 26.667 16 21.891 26.667 16 26.667m0 2.666c7.364 0 13.333-5.97 13.333-13.333S23.363 2.667 16 2.667 2.667 8.637 2.667 16 8.637 29.333 16 29.333"/></svg>`;
+
+    if (popover) {
+      popover.querySelectorAll('.popover-item-btn[data-moderation]').forEach(btn => {
+        const isActive = btn.dataset.moderation === val;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+        const iconSpan = btn.querySelector('.popover-radio-icon');
+        if (iconSpan) {
+          iconSpan.classList.toggle('active', isActive);
+          iconSpan.innerHTML = isActive ? radioActiveSvg : radioInactiveSvg;
+        }
+      });
+    }
+
+    const label = document.getElementById('currentModerationLabel');
+    if (label) label.textContent = labels[val] || val;
+
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.moderation = val;
+    if (!skipSave) {
+      this.saveState();
+      this.syncSettingsToCloud();
+    }
+  }
+
+  initProtectionPopoverItems() {
+    const popover = this.popovers?.protection;
+    if (!popover) return;
+    popover.querySelectorAll('.popover-item-btn[data-protection]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const protVal = btn.dataset.protection;
+        this.selectProtectionFromPopover(protVal);
+        this.closeSettingsPopovers();
+      });
+    });
+  }
+
+  selectProtectionFromPopover(val, skipSave = false) {
+    const labels = {
+      none: 'None',
+      no_remakes: 'Disable remakes',
+      disable_remakes: 'Disable remakes',
+      disable_all: 'Disable all'
+    };
+    const popover = this.popovers?.protection;
+    const radioActiveSvg = `<svg viewBox="0 0 32 32" height="24" width="24" fill="currentColor"><path d="M26.667 16c0-5.891-4.776-10.667-10.667-10.667S5.333 10.109 5.333 16 10.109 26.667 16 26.667 26.667 21.891 26.667 16m2.666 0c0 7.364-5.97 13.333-13.333 13.333S2.667 23.363 2.667 16 8.637 2.667 16 2.667 29.333 8.637 29.333 16M16 24.889A8.89 8.89 0 1 0 16 7.11a8.89 8.89 0 0 0 0 17.779"/></svg>`;
+    const radioInactiveSvg = `<svg viewBox="0 0 32 32" height="24" width="24" fill="currentColor"><path d="M16 26.667c-5.891 0-10.667-4.776-10.667-10.667S10.109 5.333 16 5.333 26.667 10.109 26.667 16 21.891 26.667 16 26.667m0 2.666c7.364 0 13.333-5.97 13.333-13.333S23.363 2.667 16 2.667 2.667 8.637 2.667 16 8.637 29.333 16 29.333"/></svg>`;
+
+    if (popover) {
+      popover.querySelectorAll('.popover-item-btn[data-protection]').forEach(btn => {
+        const isActive = btn.dataset.protection === val;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+        const iconSpan = btn.querySelector('.popover-radio-icon');
+        if (iconSpan) {
+          iconSpan.classList.toggle('active', isActive);
+          iconSpan.innerHTML = isActive ? radioActiveSvg : radioInactiveSvg;
+        }
+      });
+    }
+
+    const label = document.getElementById('currentCopyProtectionLabel');
+    if (label) label.textContent = labels[val] || val;
+
+    if (!this.state.settings) this.state.settings = {};
+    this.state.settings.copyProtection = val;
+    if (!skipSave) {
+      this.saveState();
+      this.syncSettingsToCloud();
+    }
   }
 
   showSettingsSubview(subviewId) {
@@ -6646,8 +7130,8 @@ class PadlesShelfApp {
     // 7. Post Size
     this.applyPostSize(s.postSize || 'standard');
 
-    // 8. Layout Format
-    this.applyLayoutFormat(s.layoutFormat || 'columns');
+    // 8. Layout Format (sync popover & apply)
+    this.selectFormatFromPopover(s.layoutFormat || 'columns', true);
 
     // 9. Attribution
     this.applyAttribution(s.showAuthorAndTime !== false);
@@ -6655,19 +7139,16 @@ class PadlesShelfApp {
     // 10. Comments
     this.applyComments(s.commentsEnabled !== false);
 
-    // 11. Reactions Preset
-    this.applyReactionsPreset(s.reactionsPreset || 'all');
+    // 11. Reactions Preset (sync popover & apply)
+    this.selectReactionsFromPopover(s.reactionsPreset || 'all', true);
 
-    // 12. Sort & New Post Position
-    this.applySort(s.sortBy || 'manual');
+    // 12. Sort & New Post Position (sync popover & apply)
+    this.selectSortFromPopover(s.sortBy || 'manual', true);
     this.applyNewPostPosition(s.newPostPosition || 'last');
 
-    // Moderation & Copy Protection
-    const modLbl = document.getElementById('currentModerationLabel');
-    if (modLbl) modLbl.textContent = (s.moderation || 'auto').charAt(0).toUpperCase() + (s.moderation || 'auto').slice(1);
-
-    const cpLbl = document.getElementById('currentCopyProtectionLabel');
-    if (cpLbl) cpLbl.textContent = s.copyProtection === 'protected' ? 'Protected' : 'None';
+    // 13. Moderation & Copy Protection (sync popover & apply)
+    this.selectModerationFromPopover(s.moderation || 'auto', true);
+    this.selectProtectionFromPopover(s.copyProtection || 'none', true);
   }
 
   applyWallpaper(wpId) {
@@ -7329,6 +7810,13 @@ class PadlesShelfApp {
       if (this.modalStatusLabel) {
         this.modalStatusLabel.textContent = `Status: ${message || (connected ? 'Connected to Supabase Cloud' : 'Local Storage mode (Offline)')}`;
       }
+      if (connected) {
+        if (this.dashboardView && !this.dashboardView.hidden) {
+          this.renderDashboardBoards();
+        } else {
+          this.syncFromCloud();
+        }
+      }
     });
 
     // Listen to presence events
@@ -7582,10 +8070,12 @@ class PadlesShelfApp {
     });
   }
 
-  async syncFromCloud() {
+  async syncFromCloud(targetBoardId = null) {
     if (!this.backend || !this.backend.isConnected) return;
+    const boardId = targetBoardId || this.currentBoardId || this.backend.activeBoardId || 'board-default-physics';
+    this.backend.activeBoardId = boardId;
     try {
-      const cloudData = await this.backend.loadBoard(this.backend.activeBoardId);
+      const cloudData = await this.backend.loadBoard(boardId);
       if (cloudData && cloudData.sections && cloudData.sections.length > 0) {
         const localDrafts = this.state.drafts;
         this.state = cloudData;
@@ -7595,7 +8085,7 @@ class PadlesShelfApp {
         this.showToast('Board synchronized with Supabase!');
       } else if (cloudData && (!cloudData.sections || cloudData.sections.length === 0)) {
         // Cloud board exists but is empty, push local state
-        await this.backend.pushLocalStateToCloud(this.state, this.backend.activeBoardId);
+        await this.backend.pushLocalStateToCloud(this.state, boardId);
         this.showToast('Cloud board initialized from local data!');
       }
     } catch (err) {
@@ -7700,10 +8190,8 @@ class PadlesShelfApp {
   initAuthSystem() {
     this.authMode = 'login'; // 'login' | 'signup'
 
-    // Update UI based on initial backend user
-    if (this.backend && this.backend.currentUser) {
-      this.updateAuthUI(this.backend.currentUser);
-    }
+    // Update UI based on initial backend user (or logged-out guest)
+    this.updateAuthUI(this.backend?.currentUser || null);
 
     // Listen for auth state transitions
     if (this.backend) {
@@ -7817,16 +8305,16 @@ class PadlesShelfApp {
   updateAuthUI(user) {
     const isAuthed = this.backend && this.backend.isAuthenticated();
     if (this.topbarLoginBtn) {
-      this.topbarLoginBtn.style.display = isAuthed ? 'none' : 'inline-flex';
+      this.topbarLoginBtn.style.display = 'none';
     }
     if (this.topbarSignupBtn) {
       this.topbarSignupBtn.style.display = isAuthed ? 'none' : 'inline-flex';
     }
-    if (this.topbarAvatarImg && user) {
-      this.topbarAvatarImg.src = user.avatar || 'https://padlet.net/identicons/6461510121x24.png';
-      this.topbarAvatarImg.alt = user.name || 'User';
+    if (this.topbarAvatarImg) {
+      this.topbarAvatarImg.src = isAuthed && user && user.avatar ? user.avatar : 'https://padlet.net/identicons/6461510121x24.png';
+      this.topbarAvatarImg.alt = isAuthed && user && user.name ? user.name : 'Guest';
       if (this.guestAvatarAnchor) {
-        this.guestAvatarAnchor.title = user.name || 'Account';
+        this.guestAvatarAnchor.title = isAuthed && user && user.name ? user.name : 'Go to sign up page';
       }
     }
     if (this.accountDropdownAvatar && user) {
@@ -8079,6 +8567,9 @@ class PadlesShelfApp {
     if (this.backend) {
       this.backend.on('authStateChange', ({ user }) => {
         this.updateDashboardUser(user);
+        if (this.dashboardView && !this.dashboardView.hidden) {
+          this.renderDashboardBoards();
+        }
       });
     }
 
@@ -8506,6 +8997,15 @@ class PadlesShelfApp {
     this.currentBoardId = boardId;
     this.storageKey = boardId === 'board-default-physics' ? 'padles_board_exact_v1' : (`padles_board_${boardId}`);
 
+    if (this.backend) {
+      this.backend.activeBoardId = boardId;
+      if (this.backend.isConnected) {
+        if (this.backend.recordBoardVisit) this.backend.recordBoardVisit(boardId);
+        if (this.backend.subscribeToRealtime) this.backend.subscribeToRealtime(boardId);
+        this.syncFromCloud(boardId);
+      }
+    }
+
     let loadedState = null;
     try {
       const stored = localStorage.getItem(this.storageKey);
@@ -8811,4 +9311,5 @@ class PadlesShelfApp {
 document.addEventListener('DOMContentLoaded', () => {
   window.app = new PadlesShelfApp();
   window.padlesShelfApp = window.app;
+  window.padlesApp = window.app;
 });

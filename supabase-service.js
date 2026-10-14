@@ -42,10 +42,21 @@ class PadlesSupabaseService {
       email: '',
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=64&h=64&fit=crop&crop=faces',
       color: '#ff1f6d',
-      isGuest: false
+      isGuest: true
     };
   }
 
+  isValidUuid(id) {
+    if (typeof id !== 'string') return false;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+  }
+
+  getValidAuthUserId() {
+    if (this.currentUser && !this.currentUser.isGuest && this.isValidUuid(this.currentUser.id)) {
+      return this.currentUser.id;
+    }
+    return null;
+  }
 
   getOrCreateUserId() {
     let id = localStorage.getItem('padles_user_id');
@@ -112,7 +123,12 @@ class PadlesSupabaseService {
       if (envConfig && envConfig.url && envConfig.anonKey) {
         this.envConfig = envConfig;
         this.envSource = envConfig.filename;
-        this.activeBoardId = envConfig.boardId || this.activeBoardId;
+        const urlBoard = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('board') : null;
+        if (urlBoard) {
+          this.activeBoardId = urlBoard;
+        } else if (!this.activeBoardId || this.activeBoardId === 'board-default-physics') {
+          this.activeBoardId = envConfig.boardId || this.activeBoardId;
+        }
         const initialized = this.initClient(envConfig.url, envConfig.anonKey);
         if (initialized) {
           this.isConnected = true;
@@ -397,6 +413,14 @@ class PadlesSupabaseService {
         id: boardData ? boardData.id : boardId,
         title: boardData ? boardData.title : 'Physics Audio Reflections: I see, I think, I wonder',
         author: boardData ? (boardData.author_display_name || 'Salman Madani • 6d') : 'Salman Madani • 6d',
+        board: {
+          title: boardData ? boardData.title : 'Physics Audio Reflections: I see, I think, I wonder',
+          description: boardData ? (boardData.description || '') : '',
+          wallpaper: boardData ? (boardData.wallpaper || 'aurora') : 'aurora',
+          format: boardData ? (boardData.format || 'shelf') : 'shelf'
+        },
+        boardTitle: boardData ? boardData.title : 'Physics Audio Reflections: I see, I think, I wonder',
+        boardAuthor: boardData ? (boardData.author_display_name || 'Salman Madani • 6d') : 'Salman Madani • 6d',
         sections: sections,
         drafts: []
       };
@@ -414,6 +438,7 @@ class PadlesSupabaseService {
     if (!this.client || !this.isConnected) return false;
 
     try {
+      const authorId = this.getValidAuthUserId();
       const payload = {
         id: card.id,
         board_id: boardId,
@@ -428,7 +453,8 @@ class PadlesSupabaseService {
         pinned: !!card.pinned,
         rank: typeof card.rank === 'number' ? card.rank : 1000.0,
         reactions_count: card.reactions || 0,
-        author_name: this.currentUser.name
+        author_name: this.currentUser?.name || 'Anonymous',
+        author_id: authorId
       };
 
       const { error } = await this.client.from('posts').insert(payload);
@@ -567,9 +593,11 @@ class PadlesSupabaseService {
     if (!this.client || !this.isConnected) return null;
 
     try {
+      const authorId = this.getValidAuthUserId();
       const { data, error } = await this.client.from('comments').insert({
         post_id: postId,
-        author_name: authorName || this.currentUser.name,
+        author_name: authorName || this.currentUser?.name || 'Anonymous',
+        author_id: authorId,
         text: text
       }).select().single();
 
@@ -620,12 +648,17 @@ class PadlesSupabaseService {
     }
 
     // 1. Upsert Board
-    const { error: bErr } = await this.client.from('boards').upsert({
+    const boardPayload = {
       id: boardId,
       title: localState.title || 'Physics Audio Reflections',
       author_display_name: localState.author || 'Salman Madani • 6d',
       is_public: true
-    });
+    };
+    const validUserId = this.getValidAuthUserId();
+    if (validUserId) {
+      boardPayload.author_id = validUserId;
+    }
+    const { error: bErr } = await this.client.from('boards').upsert(boardPayload);
     if (bErr) throw bErr;
 
     // 2. Sections
@@ -644,7 +677,7 @@ class PadlesSupabaseService {
       for (let j = 0; j < (sec.cards || []).length; j++) {
         const c = sec.cards[j];
         const cardRank = (j + 1) * 1000.0;
-        await this.client.from('posts').upsert({
+        const postPayload = {
           id: c.id,
           board_id: boardId,
           section_id: sec.id,
@@ -657,8 +690,15 @@ class PadlesSupabaseService {
           custom_field_values: c.customFieldValues || {},
           pinned: !!c.pinned,
           rank: cardRank,
-          reactions_count: c.reactions || 0
-        });
+          reactions_count: c.reactions || 0,
+          author_name: c.authorName || this.currentUser?.name || 'Anonymous'
+        };
+        if (c.authorId && this.isValidUuid(c.authorId)) {
+          postPayload.author_id = c.authorId;
+        } else if (validUserId) {
+          postPayload.author_id = validUserId;
+        }
+        await this.client.from('posts').upsert(postPayload);
       }
     }
 
@@ -752,6 +792,10 @@ class PadlesSupabaseService {
         this.notifyAuthState(this.currentUser, session);
       }
     });
+  }
+
+  getAccessToken() {
+    return this.currentUser?.session?.access_token || '';
   }
 
   notifyAuthState(user, session) {
@@ -1002,65 +1046,174 @@ class PadlesSupabaseService {
     ];
   }
 
+  getLocalBoardsKey(overrideUserId = null) {
+    const userId = overrideUserId || (this.currentUser && !this.currentUser.isGuest ? this.currentUser.id : 'guest');
+    return `padles_dashboard_boards_${userId}`;
+  }
+
   getLocalBoards() {
+    const key = this.getLocalBoardsKey();
     try {
-      const stored = localStorage.getItem('padles_dashboard_boards');
-      if (stored) {
+      const stored = localStorage.getItem(key);
+      if (stored !== null) {
         return JSON.parse(stored);
       }
     } catch (_) {}
-    const seeds = this.getSeedBoards();
-    localStorage.setItem('padles_dashboard_boards', JSON.stringify(seeds));
-    return seeds;
+
+    // Only populate seed boards for unauthenticated guest sessions
+    if (!this.currentUser || this.currentUser.isGuest) {
+      const seeds = this.getSeedBoards();
+      try { localStorage.setItem(key, JSON.stringify(seeds)); } catch (_) {}
+      return seeds;
+    }
+
+    // Authenticated users start with a clean empty slate
+    return [];
   }
 
   saveLocalBoards(boards) {
     try {
-      localStorage.setItem('padles_dashboard_boards', JSON.stringify(boards));
+      const key = this.getLocalBoardsKey();
+      localStorage.setItem(key, JSON.stringify(boards));
     } catch (_) {}
   }
 
-  async listBoards(filter = 'recents', searchQuery = '') {
+  async recordBoardVisit(boardId) {
+    if (!this.client || !this.isConnected || !boardId) return;
+    const userId = this.getValidAuthUserId();
+    if (!userId) return;
+    try {
+      await this.client.from('user_recents').upsert({
+        user_id: userId,
+        board_id: boardId,
+        viewed_at: new Date().toISOString()
+      });
+    } catch (_) {}
+  }
+
+  async listBoards(filter = 'recents', searchQuery = '', overrideUserId = null) {
     let boards = [];
-    if (this.client && this.isConnected) {
+    const validUserId = overrideUserId || this.getValidAuthUserId();
+
+    if (this.client && this.isConnected && validUserId) {
       try {
-        let query = this.client.from('boards').select('*');
         if (filter === 'trash') {
-          query = query.eq('is_trashed', true);
+          const { data, error } = await this.client
+            .from('boards')
+            .select('*')
+            .eq('is_trashed', true)
+            .eq('author_id', validUserId);
+          if (!error && data) {
+            boards = data.map(b => ({
+              ...b,
+              author: b.author_display_name || 'Anonymous',
+              is_shared: false
+            }));
+          }
+        } else if (filter === 'bookmarks') {
+          // Query user's bookmarked boards
+          const { data: bookmarks } = await this.client
+            .from('user_bookmarks')
+            .select('board_id')
+            .eq('user_id', validUserId);
+          const bmIds = (bookmarks || []).map(b => b.board_id);
+          if (bmIds.length > 0) {
+            const { data, error } = await this.client
+              .from('boards')
+              .select('*')
+              .in('id', bmIds)
+              .eq('is_trashed', false);
+            if (!error && data) {
+              boards = data.map(b => ({
+                ...b,
+                author: b.author_display_name || 'Anonymous',
+                is_bookmarked: true,
+                is_shared: b.author_id !== validUserId
+              }));
+            }
+          }
+        } else if (filter === 'shared') {
+          // Boards created by others that are public
+          const { data, error } = await this.client
+            .from('boards')
+            .select('*')
+            .neq('author_id', validUserId)
+            .eq('is_public', true)
+            .eq('is_trashed', false);
+          if (!error && data) {
+            boards = data.map(b => ({
+              ...b,
+              author: b.author_display_name || 'Anonymous',
+              is_shared: true
+            }));
+          }
         } else {
-          query = query.eq('is_trashed', false);
+          // 'recents' tab: show user's own created boards PLUS boards they recently visited
+          const { data: ownBoards } = await this.client
+            .from('boards')
+            .select('*')
+            .eq('author_id', validUserId)
+            .eq('is_trashed', false);
+
+          const { data: recents } = await this.client
+            .from('user_recents')
+            .select('board_id, viewed_at')
+            .eq('user_id', validUserId)
+            .order('viewed_at', { ascending: false })
+            .limit(20);
+
+          let visitedBoards = [];
+          const recentIds = (recents || []).map(r => r.board_id).filter(id => !(ownBoards || []).some(ob => ob.id === id));
+          if (recentIds.length > 0) {
+            const { data: vb } = await this.client
+              .from('boards')
+              .select('*')
+              .in('id', recentIds)
+              .eq('is_trashed', false);
+            if (vb) visitedBoards = vb;
+          }
+
+          const combined = [...(ownBoards || []), ...visitedBoards];
+          // Get bookmarks to annotate bookmark state
+          const { data: userBms } = await this.client
+            .from('user_bookmarks')
+            .select('board_id')
+            .eq('user_id', validUserId);
+          const bmSet = new Set((userBms || []).map(b => b.board_id));
+
+          boards = combined.map(b => ({
+            ...b,
+            author: b.author_display_name || 'Anonymous',
+            is_bookmarked: bmSet.has(b.id),
+            is_shared: b.author_id !== validUserId
+          }));
         }
-        const { data, error } = await query;
-        if (!error && data && data.length > 0) {
-          const remoteIds = new Set(data.map(b => b.id));
-          const localSeeds = this.getLocalBoards().filter(b => !remoteIds.has(b.id));
-          boards = [...data, ...localSeeds];
-        } else {
-          boards = this.getLocalBoards();
-        }
-      } catch (_) {
+      } catch (err) {
+        console.warn('Supabase listBoards fallback to local:', err);
         boards = this.getLocalBoards();
       }
     } else {
+      // Offline / unauthenticated guest mode
       boards = this.getLocalBoards();
-    }
-
-    // Apply Filter Tab
-    if (filter === 'trash') {
-      boards = boards.filter(b => b.is_trashed);
-    } else {
-      boards = boards.filter(b => !b.is_trashed);
-      if (filter === 'bookmarks') {
-        boards = boards.filter(b => b.is_bookmarked);
-      } else if (filter === 'shared') {
-        boards = boards.filter(b => b.is_shared);
+      if (filter === 'trash') {
+        boards = boards.filter(b => b.is_trashed);
+      } else {
+        boards = boards.filter(b => !b.is_trashed);
+        if (filter === 'bookmarks') {
+          boards = boards.filter(b => b.is_bookmarked);
+        } else if (filter === 'shared') {
+          boards = boards.filter(b => b.is_shared);
+        }
       }
     }
 
     // Apply Search Query
     if (searchQuery && searchQuery.trim()) {
       const q = searchQuery.toLowerCase().trim();
-      boards = boards.filter(b => (b.title && b.title.toLowerCase().includes(q)) || (b.author && b.author.toLowerCase().includes(q)));
+      boards = boards.filter(b => 
+        (b.title && b.title.toLowerCase().includes(q)) || 
+        (b.author && b.author.toLowerCase().includes(q))
+      );
     }
 
     // Sort by updated_at descending
@@ -1091,14 +1244,20 @@ class PadlesSupabaseService {
 
     if (this.client && this.isConnected) {
       try {
-        await this.client.from('boards').insert({
+        const validUserId = this.getValidAuthUserId();
+        const boardPayload = {
           id: newBoard.id,
           title: newBoard.title,
           format: newBoard.format,
           wallpaper: newBoard.wallpaper,
           thumbnail_url: newBoard.thumbnail_url,
-          created_by: this.currentUser?.id || null
-        });
+          author_display_name: author,
+          is_public: true
+        };
+        if (validUserId) {
+          boardPayload.author_id = validUserId;
+        }
+        await this.client.from('boards').insert(boardPayload);
       } catch (err) {
         console.warn('Could not insert board to Supabase:', err.message);
       }
@@ -1113,6 +1272,21 @@ class PadlesSupabaseService {
     if (target) {
       target.is_bookmarked = !target.is_bookmarked;
       this.saveLocalBoards(boards);
+
+      if (this.client && this.isConnected) {
+        const userId = this.getValidAuthUserId();
+        if (userId) {
+          try {
+            if (target.is_bookmarked) {
+              await this.client.from('user_bookmarks').upsert({ user_id: userId, board_id: boardId });
+            } else {
+              await this.client.from('user_bookmarks').delete().match({ user_id: userId, board_id: boardId });
+            }
+          } catch (e) {
+            console.warn('[Supabase] toggleBookmark sync error:', e);
+          }
+        }
+      }
       return target.is_bookmarked;
     }
     return false;
@@ -1125,6 +1299,14 @@ class PadlesSupabaseService {
       target.is_trashed = true;
       target.trashed_at = new Date().toISOString();
       this.saveLocalBoards(boards);
+
+      if (this.client && this.isConnected) {
+        try {
+          await this.client.from('boards').update({ is_trashed: true, trashed_at: target.trashed_at }).eq('id', boardId);
+        } catch (e) {
+          console.warn('[Supabase] trashBoard sync error:', e);
+        }
+      }
       return true;
     }
     return false;
@@ -1137,6 +1319,14 @@ class PadlesSupabaseService {
       target.is_trashed = false;
       target.trashed_at = null;
       this.saveLocalBoards(boards);
+
+      if (this.client && this.isConnected) {
+        try {
+          await this.client.from('boards').update({ is_trashed: false, trashed_at: null }).eq('id', boardId);
+        } catch (e) {
+          console.warn('[Supabase] restoreBoard sync error:', e);
+        }
+      }
       return true;
     }
     return false;
@@ -1146,6 +1336,14 @@ class PadlesSupabaseService {
     let boards = this.getLocalBoards();
     boards = boards.filter(b => b.id !== boardId);
     this.saveLocalBoards(boards);
+
+    if (this.client && this.isConnected) {
+      try {
+        await this.client.from('boards').delete().eq('id', boardId);
+      } catch (e) {
+        console.warn('[Supabase] deleteBoardPermanently sync error:', e);
+      }
+    }
     return true;
   }
 

@@ -1,16 +1,18 @@
 /**
- * Padles Supabase Backend Configuration
+ * Padles Supabase Backend Configuration Template
  * 
- * You can set your credentials here directly, or enter them inside the
- * "Cloud Sync" dialog in the Padles top navigation bar (which saves them to localStorage).
+ * Recommended: Store your credentials securely in `.env.local` (which is gitignored).
+ * Padles automatically loads `.env.local` at startup.
+ * 
+ * You can also enter credentials directly in the "Cloud Sync" settings dialog in-app.
  */
 
 window.PADLES_SUPABASE_CONFIG = {
-  // Your Supabase Project URL
-  url: 'https://awtujdajzzqnohklmfpf.supabase.co',
+  // Configured via `.env.local` (SUPABASE_URL) or Cloud Sync settings dialog
+  url: '',
 
-  // Your Supabase Anon / Public API Key
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF3dHVqZGFqenpxbm9oa2xtZnBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MDY5ODksImV4cCI6MjEwNzM4Mjk4OX0.WULhtaLC2WEo1Ndz2e5CWV4EtBF77oZlmFCBWc50wR4',
+  // Configured via `.env.local` (SUPABASE_ANON_KEY)
+  anonKey: '',
 
   // Default active board ID
   boardId: 'board-default-physics'
