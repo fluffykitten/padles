@@ -317,6 +317,7 @@ class PadlesShelfApp {
     this.tabTrashBtn = document.getElementById('tabTrashBtn');
     this.sidebarNavItems = document.querySelectorAll('.sidebar-nav-item');
     this.sidebarNewFolderBtn = document.getElementById('sidebarNewFolderBtn');
+    this.sidebarFoldersList = document.getElementById('sidebarFoldersList');
     this.dashboardSearchBar = document.getElementById('dashboardSearchBar');
     this.dashboardSearchInput = document.getElementById('dashboardSearchInput');
     this.dashboardJoinBtn = document.getElementById('dashboardJoinBtn');
@@ -344,7 +345,9 @@ class PadlesShelfApp {
     this.landingMakeBoardBtn = document.getElementById('landingMakeBoardBtn');
     this.landingExploreBoardsBtn = document.getElementById('landingExploreBoardsBtn');
     this.landingMakeSandboxBtn = document.getElementById('landingMakeSandboxBtn');
+    this.landingExploreSandboxBtn = document.getElementById('landingExploreSandboxBtn');
     this.landingFinalCtaBtn = document.getElementById('landingFinalCtaBtn');
+    this.landingLogoLink = document.querySelector('.landing-logo-link');
 
     // Dashboard Breadcrumbs
     this.breadHomeBtn = document.getElementById('breadHomeBtn');
@@ -8888,7 +8891,58 @@ class PadlesShelfApp {
       });
     }
 
-    // 9. URL checks handled centrally via this.initRouter()
+    if (this.dashboardBellBtn) {
+      this.dashboardBellBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.showToast('You have no new notifications');
+      });
+    }
+
+    if (this.sidebarNewFolderBtn) {
+      this.sidebarNewFolderBtn.addEventListener('click', () => {
+        const folderName = prompt('Enter new folder name:');
+        if (folderName && folderName.trim()) {
+          this.createDashboardFolder(folderName.trim());
+        }
+      });
+    }
+
+    this.renderDashboardFolders();
+  }
+
+  renderDashboardFolders() {
+    if (!this.sidebarFoldersList) return;
+    try {
+      const folders = JSON.parse(localStorage.getItem('padles_folders') || '[]');
+      if (folders.length === 0) {
+        this.sidebarFoldersList.innerHTML = '<div class="sidebar-folder-empty">No folders yet</div>';
+        return;
+      }
+      this.sidebarFoldersList.innerHTML = folders.map(f => `
+        <div class="sidebar-folder-item" data-folder="${encodeURIComponent(f)}" style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; cursor: pointer; color: #555; font-size: 13px;">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M4 6.667C4 5.193 5.193 4 6.667 4h6.666a2.667 2.667 0 0 1 1.886.781l2.552 2.552h7.562C26.807 7.333 28 8.526 28 10v15.333C28 26.807 26.807 28 25.333 28H6.667C5.193 28 4 26.807 4 25.333z"/></svg>
+          <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${f}</span>
+        </div>
+      `).join('');
+    } catch {
+      this.sidebarFoldersList.innerHTML = '<div class="sidebar-folder-empty">No folders yet</div>';
+    }
+  }
+
+  createDashboardFolder(name) {
+    try {
+      const folders = JSON.parse(localStorage.getItem('padles_folders') || '[]');
+      if (!folders.includes(name)) {
+        folders.push(name);
+        localStorage.setItem('padles_folders', JSON.stringify(folders));
+        this.showToast(`Folder "${name}" created`);
+        this.renderDashboardFolders();
+      } else {
+        this.showToast(`Folder "${name}" already exists`);
+      }
+    } catch (e) {
+      console.error('Error creating folder:', e);
+    }
   }
 
   openMakePadletModal() {
@@ -9417,6 +9471,41 @@ class PadlesShelfApp {
         setTimeout(() => this.openDrawModal(), 400);
       });
     }
+
+    if (this.landingExploreSandboxBtn) {
+      this.landingExploreSandboxBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.openBoard('board-default-physics');
+        setTimeout(() => this.openDrawModal(), 400);
+      });
+    }
+
+    if (this.landingLogoLink) {
+      this.landingLogoLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
+
+    // Landing Nav Links
+    document.querySelectorAll('.landing-nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (href === '#arcade') {
+          e.preventDefault();
+          this.showToast('Arcade activities coming soon!');
+        } else if (href === '#templates') {
+          e.preventDefault();
+          this.showDashboard('shared');
+        } else if (href === '#subscriptions') {
+          e.preventDefault();
+          this.showToast('Padles subscriptions: Neon (Free), Gold, Platinum');
+        } else if (href === '#education') {
+          e.preventDefault();
+          this.showToast('Padles for Education — Classroom & School deployments');
+        }
+      });
+    });
 
     // Breadcrumb buttons in Dashboard
     if (this.breadHomeBtn) {
