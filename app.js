@@ -25,7 +25,7 @@ const TOOL_GROUPS = [
         "id": "padlet",
         "name": "Padles",
         "testid": "attachAnotherPadletButton",
-        "ariaLabel": "Attach another padlet",
+        "ariaLabel": "Attach another padles",
         "colorClass": "grape",
         "isNew": false,
         "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"fill-current\" viewBox=\"0 0 768 768\" height=\"24\" width=\"24\" version=\"1.1\" aria-hidden=\"true\" alt=\"\" style=\"overflow: visible;\">\n<g id=\"icomoon-ignore\">\n</g>\n<path d=\"M364.166 88.625c20.704 0.317 40.099 12.998 48.25 31.969l83.312 193.5 83.907-36.156c4.009-1.726 8.445-2.686 12.905-2.688h76.157c3.056 0.001 6.080 0.445 8.969 1.281 0.112 0.030 0.265 0.063 0.374 0.094 0.583 0.166 1.069 0.339 1.437 0.469 2.038 0.698 3.933 1.607 5.75 2.687 1.111 0.655 2.419 1.478 3.686 2.501 2.071 1.645 4.019 3.649 5.719 5.938 0.048 0.058 0.115 0.129 0.157 0.188l0.125 0.156 2.249 3.469 0.128 0.218c0.035 0.067 0.473 0.852 0.781 1.5l41.875 76.592c7.072 12.973 6.871 28.397-0.656 41.095-7.508 12.614-21.175 20.467-35.815 20.47-6.224-0.003-12.281-1.392-17.907-4.064l-42.217-20.092-90.938 142.592-53.936 94.125c-10.509 21.133-32.096 34.899-56.563 34.909-2.352 0-4.745-0.115-7.094-0.374l-6.998-1.19-64.157-14.624-64.126 14.624c-4.582 1.034-9.344 1.565-14.063 1.565-22.678-0.007-42.862-11.821-54.094-30.346l-0.125-0.217-0.062-0.064c-0.262-0.419-0.528-0.915-0.812-1.437l-193.75-338.062-7.562-12.812 0.032-0.031c-0.068-0.11-0.123-0.229-0.188-0.344l-0.062 0.031c-0.123-0.214-0.194-0.472-0.313-0.687-0.069-0.146-0.155-0.286-0.219-0.438-7.378-13.684-7.267-29.824 0.563-43.313 8.005-13.751 22.76-22.399 38.657-22.406 7.534 0.001 15 1.976 21.625 5.625l142.719 78.656 83.063-192.969c8.169-18.907 27.542-31.619 48.249-31.937h0.97zM265.603 620.188l0.125 0.407c2.495 10.899 13.357 17.75 24.281 15.28l62.406-14.188-9.655-120.938-119.189-35.187 42.032 154.627zM384.605 500.749l-9.689 120.938 62.471 14.188c10.928 2.471 21.772-4.396 24.25-15.28l0.125-0.439 42-154.563-119.156 35.156zM512.729 353.657l36.032 83.623 1.718 5.187c0.857 3.517 1.126 7.165 0.781 10.784l-1.001 5.404-7.155 26.282 106.342-166.656h-54.717l-82 35.376zM66.479 272.813c-0.32 0.328-0.459 0.676-0.5 0.906-0.023 0.139-0.064 0.452 0.25 1l115.75 201.938-4.875-18c-1.925-7.078-1.365-14.643 1.531-21.376l36.125-84.061-146.375-80.688c-0.554-0.304-0.86-0.274-1-0.25-0.232 0.046-0.583 0.203-0.906 0.531zM223.573 441.625l118.936 16.999 9.939-316.374-128.875 299.376zM384.761 458.624l118.999-16.999-128.873-299.407 9.875 316.405zM662.887 369.437l37.124 17.626-28-51.28-9.123 33.655z\"></path>\n</svg>"
@@ -8860,7 +8860,7 @@ class PadlesShelfApp {
     // Modal Submit Creation
     if (this.submitMakePadletBtn) {
       this.submitMakePadletBtn.addEventListener('click', async () => {
-        const title = this.makePadletTitleInput?.value.trim() || 'My Brilliant Padlet';
+        const title = this.makePadletTitleInput?.value.trim() || 'My Brilliant Padles';
         const newBoard = await this.backend.createBoard({
           title,
           format: this.selectedCreationFormat || 'shelf',
@@ -8875,9 +8875,9 @@ class PadlesShelfApp {
     // 8. Join & Gallery buttons
     if (this.dashboardJoinBtn) {
       this.dashboardJoinBtn.addEventListener('click', () => {
-        const urlOrCode = prompt('Enter Padlet URL or code to join:');
+        const urlOrCode = prompt('Enter Padles URL or code to join:');
         if (urlOrCode && urlOrCode.trim()) {
-          this.showToast('Joining padlet...');
+          this.showToast('Joining padles...');
           this.openBoard('board-default-physics');
         }
       });
@@ -8908,7 +8908,7 @@ class PadlesShelfApp {
       });
     }
     if (this.makePadletTitleInput) {
-      this.makePadletTitleInput.value = 'My Brilliant Padlet';
+      this.makePadletTitleInput.value = 'My Brilliant Padles';
       setTimeout(() => {
         this.makePadletTitleInput.focus();
         this.makePadletTitleInput.select();
@@ -9108,7 +9108,7 @@ class PadlesShelfApp {
     const boardMeta = boards.find(b => b.id === boardId);
     return {
       board: {
-        title: boardMeta?.title || 'New Padlet',
+        title: boardMeta?.title || 'New Padles',
         description: '',
         wallpaper: boardMeta?.wallpaper || 'aurora'
       },
@@ -9259,10 +9259,10 @@ class PadlesShelfApp {
       if (this.dashboardEmptyState) {
         this.dashboardEmptyState.style.display = 'flex';
         const emptyData = {
-          recents: { title: 'No padlets found', desc: 'Create your first padlet or join an existing one to get started.' },
-          bookmarks: { title: 'No bookmarks yet', desc: 'Star padlets to quickly access your favorite boards here.' },
+          recents: { title: 'No padles found', desc: 'Create your first padles or join an existing one to get started.' },
+          bookmarks: { title: 'No bookmarks yet', desc: 'Star padles to quickly access your favorite boards here.' },
           shared: { title: 'Nothing shared with you', desc: 'Boards shared with you by other padlers will appear here.' },
-          trash: { title: 'Trash is empty', desc: 'Deleted padlets will appear here before being permanently removed.' }
+          trash: { title: 'Trash is empty', desc: 'Deleted padles will appear here before being permanently removed.' }
         };
         const activeEmpty = emptyData[this.dashboardTab] || emptyData.recents;
         if (this.dashboardEmptyTitle) this.dashboardEmptyTitle.textContent = activeEmpty.title;
@@ -9530,7 +9530,7 @@ class PadlesShelfApp {
         </button>
         <button type="button" class="dashboard-card-menu-item" data-action="copy">
           <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M18.667 4H9.333C7.86 4 6.667 5.193 6.667 6.667v14.666h2.666V6.667h9.334zm4 5.333h-9.334c-1.473 0-2.666 1.194-2.666 2.667V28c0 1.473 1.193 2.667 2.666 2.667h9.334c1.473 0 2.666-1.194 2.666-2.667V12c0-1.473-1.193-2.667-2.666-2.667m0 18.667h-9.334V12h9.334z"/></svg>
-          <span>Copy link to padlet</span>
+          <span>Copy link to padles</span>
         </button>
         <button type="button" class="dashboard-card-menu-item" data-action="slideshow">
           <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M10.143 7.528a1.568 1.568 0 0 0-2.31 1.381v14.183a1.568 1.568 0 0 0 2.31 1.381l13.198-7.092c1.101-.592 1.101-2.17 0-2.762z"/></svg>
@@ -9547,7 +9547,7 @@ class PadlesShelfApp {
       ` : `
         <button type="button" class="dashboard-card-menu-item" data-action="restore">
           <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M16 4a12 12 0 1 0 11.314 8h-2.828A9.333 9.333 0 1 1 16 6.667V12l6.667-6.667L16 0v4z"/></svg>
-          <span>Restore padlet</span>
+          <span>Restore padles</span>
         </button>
         <button type="button" class="dashboard-card-menu-item danger" data-action="delete">
           <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M12 2.667a1.333 1.333 0 0 0-1.333 1.333V6H4a1.333 1.333 0 0 0 0 2.667h1.439l1.642 18.067A3.333 3.333 0 0 0 10.395 30h11.21a3.333 3.333 0 0 0 3.314-3.266L26.561 8.667H28a1.333 1.333 0 1 0 0-2.667h-6.667V4A1.333 1.333 0 0 0 20 2.667zM8.114 8.667h15.772l-1.616 17.777a.667.667 0 0 1-.675.623h-11.21a.667.667 0 0 1-.675-.623z"/></svg>
@@ -9585,11 +9585,11 @@ class PadlesShelfApp {
           this.renderDashboardBoards();
         } else if (action === 'trash') {
           await this.backend.trashBoard(board.id);
-          this.showToast('Moved padlet to trash');
+          this.showToast('Moved padles to trash');
           this.renderDashboardBoards();
         } else if (action === 'restore') {
           await this.backend.restoreBoard(board.id);
-          this.showToast('Restored padlet');
+          this.showToast('Restored padles');
           this.renderDashboardBoards();
         } else if (action === 'delete') {
           if (confirm(`Permanently delete "${board.title}"? This cannot be undone.`)) {

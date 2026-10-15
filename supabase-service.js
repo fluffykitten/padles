@@ -1221,7 +1221,7 @@ class PadlesSupabaseService {
     return boards;
   }
 
-  async createBoard({ title = 'Untitled Padlet', format = 'shelf', wallpaper = 'aurora', thumbnail_url = null }) {
+  async createBoard({ title = 'Untitled Padles', format = 'shelf', wallpaper = 'aurora', thumbnail_url = null }) {
     const id = 'board_' + Math.random().toString(36).substring(2, 9);
     const author = this.currentUser?.name || 'Anonymous';
     const newBoard = {
