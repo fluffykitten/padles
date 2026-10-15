@@ -331,8 +331,28 @@ class PadlesShelfApp {
     this.dashboardEmptyTitle = document.getElementById('dashboardEmptyTitle');
     this.dashboardEmptyDesc = document.getElementById('dashboardEmptyDesc');
     this.dashboardEmptyMakeBtn = document.getElementById('dashboardEmptyMakeBtn');
+    this.surfaceTopbar = document.getElementById('surface-topbar');
     this.topbarLogoLink = document.querySelector('.padles-logo-link');
     this.boardTitle = document.getElementById('boardTitle');
+
+    // Landing Page Elements (1:1 Padlet Parity)
+    this.landingView = document.getElementById('landingView');
+    this.landingLoginBtn = document.getElementById('landingLoginBtn');
+    this.landingSignupBtn = document.getElementById('landingSignupBtn');
+    this.landingHeroCtaBtn = document.getElementById('landingHeroCtaBtn');
+    this.landingDemoBoardBtn = document.getElementById('landingDemoBoardBtn');
+    this.landingMakeBoardBtn = document.getElementById('landingMakeBoardBtn');
+    this.landingExploreBoardsBtn = document.getElementById('landingExploreBoardsBtn');
+    this.landingMakeSandboxBtn = document.getElementById('landingMakeSandboxBtn');
+    this.landingFinalCtaBtn = document.getElementById('landingFinalCtaBtn');
+
+    // Dashboard Breadcrumbs
+    this.breadHomeBtn = document.getElementById('breadHomeBtn');
+    this.breadGalleryBtn = document.getElementById('breadGalleryBtn');
+    this.breadLearnBtn = document.getElementById('breadLearnBtn');
+    this.breadJoinBtn = document.getElementById('breadJoinBtn');
+    this.breadArcadeBtn = document.getElementById('breadArcadeBtn');
+    this.dashboardTopMakeBtn = document.getElementById('dashboardTopMakeBtn');
     this.boardContainer = document.getElementById('boardContainer');
     this.surfaceHeaderBlock = document.querySelector('.surface-header-block');
     this.floatingPostContainer = document.getElementById('new-post-button-container');
@@ -573,6 +593,8 @@ class PadlesShelfApp {
     this.initCloudBackendUI();
     this.initAuthSystem();
     this.initDashboard();
+    this.initLanding();
+    this.initRouter();
     this.initSlideshow();
     this.initShareDrawer();
     this.initSettingsDrawer();
@@ -8866,18 +8888,7 @@ class PadlesShelfApp {
       });
     }
 
-    // 9. Check URL on page load for ?view=dashboard or ?board=<id>
-    const urlParams = new URLSearchParams(window.location.search);
-    const viewParam = urlParams.get('view');
-    const tabParam = urlParams.get('tab') || 'recents';
-    if (viewParam === 'dashboard') {
-      this.showDashboard(tabParam);
-    } else {
-      const boardParam = urlParams.get('board');
-      if (boardParam && boardParam !== 'board-default-physics') {
-        this.openBoard(boardParam);
-      }
-    }
+    // 9. URL checks handled centrally via this.initRouter()
   }
 
   openMakePadletModal() {
@@ -9115,8 +9126,10 @@ class PadlesShelfApp {
     if (this.sidebarUserName) this.sidebarUserName.textContent = user.name || 'Salman Madani';
   }
 
-  showDashboard(tab = 'recents') {
+  showDashboard(tab = 'recents', pushHistory = true) {
     if (!this.dashboardView) return;
+    if (this.landingView) this.landingView.hidden = true;
+    if (this.authStandaloneView) this.authStandaloneView.hidden = true;
     this.dashboardView.hidden = false;
     if (this.surfaceTopbar) this.surfaceTopbar.style.display = 'none';
     if (this.surfaceHeaderBlock) this.surfaceHeaderBlock.style.display = 'none';
@@ -9124,15 +9137,23 @@ class PadlesShelfApp {
     if (this.floatingPostContainer) this.floatingPostContainer.style.display = 'none';
 
     this.setDashboardTab(tab);
-    history.pushState(null, '', '?view=dashboard' + (tab !== 'recents' ? '&tab=' + tab : ''));
+    if (pushHistory) {
+      history.pushState({ view: 'dashboard', tab }, '', '?view=dashboard' + (tab !== 'recents' ? '&tab=' + tab : ''));
+    }
+    document.title = 'Dashboard — Padles';
   }
 
-  openBoard(boardId) {
+  openBoard(boardId, pushHistory = true) {
+    if (this.landingView) this.landingView.hidden = true;
     if (this.dashboardView) this.dashboardView.hidden = true;
+    if (this.authStandaloneView) this.authStandaloneView.hidden = true;
     if (this.surfaceTopbar) this.surfaceTopbar.style.display = '';
     if (this.surfaceHeaderBlock) this.surfaceHeaderBlock.style.display = '';
     if (this.boardContainer) this.boardContainer.style.display = '';
     if (this.floatingPostContainer) this.floatingPostContainer.style.display = '';
+    if (pushHistory) {
+      history.pushState({ view: 'board', boardId }, '', '?board=' + boardId);
+    }
 
     // Save previous active board
     if (this.currentBoardId && this.state) {
@@ -9316,6 +9337,181 @@ class PadlesShelfApp {
     });
   }
 
+
+  showLanding(pushHistory = true) {
+    if (this.dashboardView) this.dashboardView.hidden = true;
+    if (this.authStandaloneView) this.authStandaloneView.hidden = true;
+    if (this.surfaceTopbar) this.surfaceTopbar.style.display = 'none';
+    if (this.surfaceHeaderBlock) this.surfaceHeaderBlock.style.display = 'none';
+    if (this.boardContainer) this.boardContainer.style.display = 'none';
+    if (this.floatingPostContainer) this.floatingPostContainer.style.display = 'none';
+
+    if (this.landingView) {
+      this.landingView.hidden = false;
+    }
+    if (pushHistory) {
+      history.pushState({ view: 'landing' }, '', '?view=landing');
+    }
+    document.title = 'Padles - Visual Collaboration for Creative Work and Education';
+  }
+
+  initLanding() {
+    if (this.landingLoginBtn) {
+      this.landingLoginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.openAuthStandalone('login');
+      });
+    }
+
+    if (this.landingSignupBtn) {
+      this.landingSignupBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.openAuthStandalone('signup');
+      });
+    }
+
+    if (this.landingHeroCtaBtn) {
+      this.landingHeroCtaBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.openAuthStandalone('signup');
+      });
+    }
+
+    if (this.landingFinalCtaBtn) {
+      this.landingFinalCtaBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.openAuthStandalone('signup');
+      });
+    }
+
+    if (this.landingDemoBoardBtn) {
+      this.landingDemoBoardBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.openBoard('board-default-physics');
+      });
+    }
+
+    if (this.landingMakeBoardBtn) {
+      this.landingMakeBoardBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (this.backend && this.backend.isAuthenticated()) {
+          this.showDashboard('recents');
+          this.openMakePadletModal();
+        } else {
+          this.openBoard('board-default-physics');
+        }
+      });
+    }
+
+    if (this.landingExploreBoardsBtn) {
+      this.landingExploreBoardsBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.openBoard('board-default-physics');
+      });
+    }
+
+    if (this.landingMakeSandboxBtn) {
+      this.landingMakeSandboxBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.openBoard('board-default-physics');
+        setTimeout(() => this.openDrawModal(), 400);
+      });
+    }
+
+    // Breadcrumb buttons in Dashboard
+    if (this.breadHomeBtn) {
+      this.breadHomeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.setDashboardTab('recents');
+      });
+    }
+    if (this.breadGalleryBtn) {
+      this.breadGalleryBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.setDashboardTab('shared');
+      });
+    }
+    if (this.breadLearnBtn) {
+      this.breadLearnBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.showToast('Padles Guides & Tutorials');
+      });
+    }
+    if (this.breadJoinBtn) {
+      this.breadJoinBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (this.dashboardJoinBtn) this.dashboardJoinBtn.click();
+      });
+    }
+    if (this.breadArcadeBtn) {
+      this.breadArcadeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.showToast('Arcade activities coming soon!');
+      });
+    }
+    if (this.dashboardTopMakeBtn) {
+      this.dashboardTopMakeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.openMakePadletModal();
+      });
+    }
+  }
+
+  initRouter() {
+    // 1. Listen for browser back/forward buttons
+    window.addEventListener('popstate', (e) => {
+      this.handlePopState(e.state);
+    });
+
+    // 2. Resolve initial route on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewParam = urlParams.get('view');
+    const boardParam = urlParams.get('board');
+    const tabParam = urlParams.get('tab') || 'recents';
+
+    if (viewParam === 'landing') {
+      this.showLanding(false);
+    } else if (viewParam === 'dashboard') {
+      this.showDashboard(tabParam, false);
+    } else if (viewParam === 'login' || viewParam === 'signup') {
+      this.openAuthStandalone(viewParam, false);
+    } else if (boardParam) {
+      this.openBoard(boardParam, false);
+    } else {
+      // Root / or index.html without search query
+      const isAuthed = this.backend && this.backend.isAuthenticated();
+      if (isAuthed) {
+        this.showDashboard('recents', false);
+      } else {
+        this.showLanding(false);
+      }
+    }
+  }
+
+  handlePopState(state) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewParam = urlParams.get('view');
+    const boardParam = urlParams.get('board');
+    const tabParam = urlParams.get('tab') || 'recents';
+
+    if (viewParam === 'landing') {
+      this.showLanding(false);
+    } else if (viewParam === 'dashboard') {
+      this.showDashboard(tabParam, false);
+    } else if (viewParam === 'login' || viewParam === 'signup') {
+      this.openAuthStandalone(viewParam, false);
+    } else if (boardParam) {
+      this.openBoard(boardParam, false);
+    } else {
+      const isAuthed = this.backend && this.backend.isAuthenticated();
+      if (isAuthed) {
+        this.showDashboard('recents', false);
+      } else {
+        this.showLanding(false);
+      }
+    }
+  }
+
   openDashboardCardMenu(board, x, y) {
     this.closeDashboardCardMenu();
 
@@ -9328,25 +9524,21 @@ class PadlesShelfApp {
 
     menu.innerHTML = `
       ${!isTrash ? `
-        <button type="button" class="dashboard-card-menu-item" data-action="open">
-          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M6 4h20v2.667H6zm0 6.667h20v2.666H6zm0 6.666h20V20H6zm0 6.667h13.333V26.667H6z"/></svg>
-          <span>Open padlet</span>
+        <button type="button" class="dashboard-card-menu-item" data-action="bookmark">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M7.333 4C6.23 4 5.333 4.897 5.333 6v22.667a1.333 1.333 0 0 0 2.06 1.116L16 23.774l8.607 6.009a1.333 1.333 0 0 0 2.06-1.116V6c0-1.103-.897-2-2-2z"/></svg>
+          <span>${board.is_bookmarked ? 'Remove bookmark' : 'Add bookmark'}</span>
         </button>
         <button type="button" class="dashboard-card-menu-item" data-action="copy">
           <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M18.667 4H9.333C7.86 4 6.667 5.193 6.667 6.667v14.666h2.666V6.667h9.334zm4 5.333h-9.334c-1.473 0-2.666 1.194-2.666 2.667V28c0 1.473 1.193 2.667 2.666 2.667h9.334c1.473 0 2.666-1.194 2.666-2.667V12c0-1.473-1.193-2.667-2.666-2.667m0 18.667h-9.334V12h9.334z"/></svg>
-          <span>Copy link</span>
+          <span>Copy link to padlet</span>
         </button>
-        <button type="button" class="dashboard-card-menu-item" data-action="rename">
-          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="m23.111 2 6.889 6.889-18.222 18.222H4.889V20.222zM21.222 7.667 8.889 20v3.222H12.11l12.333-12.333z"/></svg>
-          <span>Rename padlet</span>
+        <button type="button" class="dashboard-card-menu-item" data-action="slideshow">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M10.143 7.528a1.568 1.568 0 0 0-2.31 1.381v14.183a1.568 1.568 0 0 0 2.31 1.381l13.198-7.092c1.101-.592 1.101-2.17 0-2.762z"/></svg>
+          <span>Open slideshow</span>
         </button>
-        <button type="button" class="dashboard-card-menu-item" data-action="duplicate">
-          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M4 6.667C4 5.193 5.193 4 6.667 4h12c1.473 0 2.666 1.193 2.666 2.667v12c0 1.473-1.193 2.666-2.666 2.666h-12C5.193 21.333 4 20.14 4 18.667zm2.667 0v12h12v-12zM10.667 24V25.333c0 1.474 1.193 2.667 2.666 2.667h12c1.474 0 2.667-1.193 2.667-2.667v-12c0-1.473-1.193-2.666-2.667-2.666H24v2.666h1.333v12h-12V24z"/></svg>
-          <span>Remake / Duplicate</span>
-        </button>
-        <button type="button" class="dashboard-card-menu-item" data-action="bookmark">
-          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M7.333 4C6.23 4 5.333 4.897 5.333 6v22.667a1.333 1.333 0 0 0 2.06 1.116L16 23.774l8.607 6.009a1.333 1.333 0 0 0 2.06-1.116V6c0-1.103-.897-2-2-2z"/></svg>
-          <span>${board.is_bookmarked ? 'Remove bookmark' : 'Bookmark'}</span>
+        <button type="button" class="dashboard-card-menu-item" data-action="remove_recent">
+          <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M16 2.667C8.648 2.667 2.667 8.648 2.667 16S8.648 29.333 16 29.333 29.333 23.352 29.333 16 23.352 2.667 16 2.667m0 2c2.72 0 5.215.968 7.18 2.576L6.576 23.18C4.968 21.215 4 18.72 4 16c0-6.617 5.383-12 12-12m7.424 4.82L8.244 24.664C10.36 26.744 13.064 28 16 28c6.617 0 12-5.383 12-12 0-2.936-1.256-5.64-3.576-7.18z"/></svg>
+          <span>Remove from recents</span>
         </button>
         <button type="button" class="dashboard-card-menu-item danger" data-action="trash">
           <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M12 2.667a1.333 1.333 0 0 0-1.333 1.333V6H4a1.333 1.333 0 0 0 0 2.667h1.439l1.642 18.067A3.333 3.333 0 0 0 10.395 30h11.21a3.333 3.333 0 0 0 3.314-3.266L26.561 8.667H28a1.333 1.333 0 1 0 0-2.667h-6.667V4A1.333 1.333 0 0 0 20 2.667zM8.114 8.667h15.772l-1.616 17.777a.667.667 0 0 1-.675.623h-11.21a.667.667 0 0 1-.675-.623z"/></svg>
@@ -9372,33 +9564,24 @@ class PadlesShelfApp {
         const action = item.getAttribute('data-action');
         this.closeDashboardCardMenu();
 
-        if (action === 'open') {
-          this.openBoard(board.id);
+        if (action === 'bookmark') {
+          const isBookmarked = await this.backend.toggleBookmark(board.id);
+          this.showToast(isBookmarked ? 'Added to Bookmarks' : 'Removed from Bookmarks');
+          this.renderDashboardBoards();
         } else if (action === 'copy') {
           const url = `${window.location.origin}/?board=${board.id}`;
           navigator.clipboard.writeText(url);
           this.showToast('Board link copied to clipboard!');
-        } else if (action === 'rename') {
-          const newTitle = prompt('Rename padlet:', board.title);
-          if (newTitle && newTitle.trim() && newTitle.trim() !== board.title) {
-            await this.backend.updateBoardTitle(board.id, newTitle.trim());
-            if (this.currentBoardId === board.id) {
-              if (this.state && this.state.board) this.state.board.title = newTitle.trim();
-              if (this.boardTitle) this.boardTitle.textContent = newTitle.trim();
-              document.title = `${newTitle.trim()} — Padles`;
-            }
-            this.showToast(`Renamed to "${newTitle.trim()}"`);
-            this.renderDashboardBoards();
+        } else if (action === 'slideshow') {
+          this.openBoard(board.id);
+          setTimeout(() => {
+            if (this.slideshowModal) this.openSlideshow();
+          }, 300);
+        } else if (action === 'remove_recent') {
+          if (this.backend && this.backend.removeRecent) {
+            await this.backend.removeRecent(board.id);
           }
-        } else if (action === 'duplicate') {
-          const duplicated = await this.backend.duplicateBoard(board.id);
-          if (duplicated) {
-            this.showToast(`Created "${duplicated.title}"`);
-            this.renderDashboardBoards();
-          }
-        } else if (action === 'bookmark') {
-          const isBookmarked = await this.backend.toggleBookmark(board.id);
-          this.showToast(isBookmarked ? 'Added to Bookmarks' : 'Removed from Bookmarks');
+          this.showToast('Removed from recents');
           this.renderDashboardBoards();
         } else if (action === 'trash') {
           await this.backend.trashBoard(board.id);

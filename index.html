@@ -7,7 +7,7 @@
   <meta name="description" content="Padles Section & Shelf board, featuring columns, rich media attachments, and interactive reactions.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Caveat:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lilita+One&family=Caveat:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="aurora-theme">
@@ -2886,6 +2886,281 @@
       </div>
     </div>
   </div>
+
+  
+  <!-- ========================================================================
+       Padles Landing Page (1:1 Padlet Parity: Hero, Lilita One, Wavy Hill, Showcase)
+       ======================================================================== -->
+  <div id="landingView" class="padlet-landing-view" hidden>
+    <!-- Top Landing Header -->
+    <header class="landing-header">
+      <div class="landing-header-inner">
+        <div class="landing-logo-group">
+          <a href="#" class="landing-logo-link" title="Padles" aria-label="Padles">
+            <!-- Origami Crane SVG -->
+            <svg class="landing-crane-svg" viewBox="0 0 104 22" height="22" width="104" fill="currentColor">
+              <path fill="#ff4081" d="M7.2 14.8C11.18 14.8 14.4 11.58 14.4 7.6C14.4 3.62 11.18 0.4 7.2 0.4C3.22 0.4 0 3.62 0 7.6C0 11.58 3.22 14.8 7.2 14.8Z" opacity="0.2"/>
+              <path fill="#24c8db" d="M2 13L9 2L15 9L9 16Z"/>
+              <path fill="#ffc107" d="M9 2L19 5L15 9Z"/>
+              <path fill="#e91e63" d="M9 16L15 9L21 14Z"/>
+              <path fill="#4caf50" d="M15 9L19 5L23 11Z"/>
+              <!-- Brand Text: Padles -->
+              <text x="28" y="16" font-family="'Lilita One', 'Inter var', sans-serif" font-size="18" font-weight="700" fill="#111111" letter-spacing="-0.5">Padles</text>
+            </svg>
+          </a>
+          <nav class="landing-nav-links" aria-label="Main navigation">
+            <a href="#boards" class="landing-nav-link">Board</a>
+            <span class="landing-nav-slash">/</span>
+            <a href="#sandboxes" class="landing-nav-link">Sandbox</a>
+            <span class="landing-nav-slash">/</span>
+            <a href="#subscriptions" class="landing-nav-link">Subscriptions</a>
+            <span class="landing-nav-slash">/</span>
+            <a href="#templates" class="landing-nav-link">Templates</a>
+            <span class="landing-nav-slash">/</span>
+            <a href="#education" class="landing-nav-link">Education</a>
+            <span class="landing-nav-slash">/</span>
+            <a href="#arcade" class="landing-nav-link">Arcade <span class="nav-ext-arrow">↗</span></a>
+          </nav>
+        </div>
+
+        <div class="landing-header-actions">
+          <button type="button" id="landingLoginBtn" class="landing-login-pill-btn">Log in</button>
+          <button type="button" id="landingSignupBtn" class="landing-signup-pill-btn">Sign up</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Landing Content -->
+    <main class="landing-main-content">
+      <!-- Hero Section -->
+      <section class="landing-hero-section">
+        <div class="landing-hero-container">
+          <h1 class="landing-hero-title">VISUAL COLLABORATION<br>FOR CREATIVE WORK<br>AND EDUCATION</h1>
+          <p class="landing-hero-subtitle">Used by 40 million beautiful people around the world.</p>
+          <div class="landing-hero-buttons">
+            <button type="button" id="landingHeroCtaBtn" class="landing-btn-pink">Sign up - it’s free</button>
+            <button type="button" id="landingDemoBoardBtn" class="landing-btn-demo">Explore Physics Demo Board ↗</button>
+          </div>
+        </div>
+
+        <!-- Wavy Landscape Hill SVG -->
+        <div class="landing-hill-divider">
+          <svg viewBox="0 0 1440 160" preserveAspectRatio="none" class="landing-hill-svg">
+            <path d="M0 60 C 320 140, 680 -20, 1080 80 C 1260 120, 1380 90, 1440 60 L 1440 160 L 0 160 Z" fill="#c3e776"></path>
+          </svg>
+        </div>
+      </section>
+
+      <!-- Section: We have boards -->
+      <section id="boards" class="landing-showcase-section bg-leaf">
+        <div class="landing-section-inner">
+          <div class="landing-section-header">
+            <h2 class="landing-section-title">We have boards</h2>
+            <p class="landing-section-desc">From audio reflections and lesson plans to project roadmaps and portfolios, organize content effortlessly into beautiful shelves, walls, and streams.</p>
+          </div>
+
+          <!-- Boards Showcase Grid -->
+          <div class="landing-cards-showcase">
+            <div class="showcase-card showcase-shelf">
+              <div class="showcase-card-preview shelf-preview">
+                <div class="preview-col"><div class="preview-header">I see</div><div class="preview-post audio-post">🎧 Wave reflection.mp3</div></div>
+                <div class="preview-col"><div class="preview-header">I think</div><div class="preview-post note-post">Resonance occurs when...</div></div>
+                <div class="preview-col"><div class="preview-header">I wonder</div><div class="preview-post poll-post">📊 Poll: Frequency shift</div></div>
+              </div>
+              <div class="showcase-card-meta">
+                <span class="showcase-format-badge">Shelf Columns</span>
+                <h3>Physics Audio Reflections</h3>
+              </div>
+            </div>
+
+            <div class="showcase-card showcase-wall">
+              <div class="showcase-card-preview wall-preview">
+                <div class="preview-brick img-brick" style="height: 90px; background: #e0f2fe;">🎨 Design Inspo</div>
+                <div class="preview-brick text-brick" style="height: 60px; background: #fef08a;">💡 Brainstorm</div>
+                <div class="preview-brick code-brick" style="height: 80px; background: #f3e8ff;">💻 Architecture</div>
+              </div>
+              <div class="showcase-card-meta">
+                <span class="showcase-format-badge">Masonry Wall</span>
+                <h3>Creative Moodboard</h3>
+              </div>
+            </div>
+
+            <div class="showcase-card showcase-grid">
+              <div class="showcase-card-preview grid-preview">
+                <div class="preview-tile">1</div>
+                <div class="preview-tile">2</div>
+                <div class="preview-tile">3</div>
+                <div class="preview-tile">4</div>
+              </div>
+              <div class="showcase-card-meta">
+                <span class="showcase-format-badge">Grid Matrix</span>
+                <h3>Photo Album & Gallery</h3>
+              </div>
+            </div>
+          </div>
+
+          <div class="landing-section-ctas">
+            <button type="button" id="landingMakeBoardBtn" class="landing-btn-outline">Make a board - it’s free</button>
+            <button type="button" id="landingExploreBoardsBtn" class="landing-btn-text">Explore more &rarr;</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: We have sandboxes -->
+      <section id="sandboxes" class="landing-showcase-section bg-white">
+        <div class="landing-section-inner">
+          <div class="landing-section-header">
+            <h2 class="landing-section-title">We have sandboxes</h2>
+            <p class="landing-section-desc">Collaborative drawing canvases with digital pens, highlighters, sticky notes, and interactive shapes for mind mapping and freeform brainstorming.</p>
+          </div>
+
+          <!-- Sandbox Live Preview Tile -->
+          <div class="landing-sandbox-mockup">
+            <div class="sandbox-mockup-toolbar">
+              <span class="sandbox-tool active">✏️ Pen</span>
+              <span class="sandbox-tool">🖍️ Highlighter</span>
+              <span class="sandbox-tool">📝 Sticky Note</span>
+              <span class="sandbox-tool">⭕ Shapes</span>
+            </div>
+            <div class="sandbox-mockup-canvas">
+              <div class="sandbox-sticky" style="top: 30px; left: 40px; background: #fef08a;">
+                <strong>Key Hypothesis:</strong> Sound wave interference creates observable nodal lines.
+              </div>
+              <div class="sandbox-mindnode" style="top: 140px; left: 240px; background: #dbeafe;">
+                <span>Wave Velocity = f × λ</span>
+              </div>
+              <div class="sandbox-sticky" style="top: 50px; right: 50px; background: #fbcfe8;">
+                <strong>Next Step:</strong> Test in resonance chamber
+              </div>
+            </div>
+          </div>
+
+          <div class="landing-section-ctas">
+            <button type="button" id="landingMakeSandboxBtn" class="landing-btn-outline">Make a sandbox - it’s free</button>
+            <button type="button" id="landingExploreSandboxBtn" class="landing-btn-text">Explore more &rarr;</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Ratings & Reviews -->
+      <section class="landing-showcase-section bg-subtle">
+        <div class="landing-section-inner">
+          <div class="landing-section-header">
+            <h2 class="landing-section-title">Thanks to the academy... 🏆</h2>
+            <p class="landing-section-desc">Consistently rated at the top of visual collaboration platforms by educators and teams worldwide.</p>
+          </div>
+
+          <!-- 4 Badges Grid -->
+          <div class="landing-reviews-grid">
+            <div class="landing-review-card">
+              <div class="review-brand">G2.com</div>
+              <div class="review-score">4.9 <span class="review-stars">★★★★★</span></div>
+              <div class="review-label">Leader in Visual Collaboration</div>
+            </div>
+            <div class="landing-review-card">
+              <div class="review-brand">App Store</div>
+              <div class="review-score">4.6 <span class="review-stars">★★★★★</span></div>
+              <div class="review-label">Top Rated Education App</div>
+            </div>
+            <div class="landing-review-card">
+              <div class="review-brand">Capterra</div>
+              <div class="review-score">4.9 <span class="review-stars">★★★★★</span></div>
+              <div class="review-label">Best Ease of Use</div>
+            </div>
+            <div class="landing-review-card">
+              <div class="review-brand">Google Play</div>
+              <div class="review-score">4.8 <span class="review-stars">★★★★★</span></div>
+              <div class="review-label">Editors' Choice Award</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: 40 million users worldwide -->
+      <section class="landing-showcase-section bg-white">
+        <div class="landing-section-inner">
+          <div class="landing-section-header">
+            <h2 class="landing-section-title">40 million users worldwide</h2>
+            <p class="landing-section-desc">From elementary classrooms and university lecture halls to creative agencies and Fortune 500 boardrooms.</p>
+          </div>
+
+          <div class="landing-stats-grid">
+            <div class="landing-stat-item">
+              <div class="stat-number">40M+</div>
+              <div class="stat-label">Active Creators</div>
+            </div>
+            <div class="landing-stat-item">
+              <div class="stat-number">100M+</div>
+              <div class="stat-label">Padlets Created</div>
+            </div>
+            <div class="landing-stat-item">
+              <div class="stat-number">180+</div>
+              <div class="stat-label">Countries Represented</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final Call to Action -->
+      <section class="landing-final-cta-section">
+        <div class="landing-final-cta-container">
+          <h2 class="landing-final-title">Get started with Padles today</h2>
+          <p class="landing-final-subtitle">It’s free to create boards, record reflections, and collaborate in real-time.</p>
+          <button type="button" id="landingFinalCtaBtn" class="landing-btn-pink landing-btn-large">Sign up for free</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <div class="landing-footer-inner">
+        <div class="landing-footer-col brand-col">
+          <div class="landing-footer-logo">Padles</div>
+          <p class="landing-footer-tagline">Visual collaboration for creative work and education.</p>
+        </div>
+        <div class="landing-footer-col">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#boards">Board</a></li>
+            <li><a href="#sandboxes">Sandbox</a></li>
+            <li><a href="#arcade">Arcade</a></li>
+            <li><a href="#subscriptions">Pricing</a></li>
+          </ul>
+        </div>
+        <div class="landing-footer-col">
+          <h4>Solutions</h4>
+          <ul>
+            <li><a href="#education">Education</a></li>
+            <li><a href="#classroom">Classrooms</a></li>
+            <li><a href="#teams">Teams</a></li>
+            <li><a href="#enterprise">Enterprise</a></li>
+          </ul>
+        </div>
+        <div class="landing-footer-col">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="#templates">Templates</a></li>
+            <li><a href="#help">Help & Feedback</a></li>
+            <li><a href="#apps">Apps</a></li>
+            <li><a href="#status">Status</a></li>
+          </ul>
+        </div>
+        <div class="landing-footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#about">About us</a></li>
+            <li><a href="#privacy">Privacy policy</a></li>
+            <li><a href="#terms">Terms of service</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="landing-footer-bottom">
+        <span>© 2026 Padles Inc. Zero-leeway mirror.</span>
+        <span class="landing-language-tag">🌐 English (US) ⌵</span>
+      </div>
+    </footer>
+  </div>
+
 
   <!-- Standalone Fullscreen Auth View (Accessible via ?view=login or ?view=signup) -->
   <div id="authStandaloneView" class="padlet-auth-standalone-view" hidden>
