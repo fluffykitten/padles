@@ -6540,6 +6540,7 @@ class PadlesShelfApp {
     document.getElementById('settingsSortCloseBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
     document.getElementById('settingsReactionsCloseBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
     document.getElementById('settingsCommentsCloseBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
+    document.getElementById('settingsPostFieldsCloseBtn')?.addEventListener('click', () => this.closeSettingsDrawer());
 
     // Backdrop click closes settings
     this.settingsPanel?.addEventListener('click', (e) => {
@@ -6560,6 +6561,7 @@ class PadlesShelfApp {
     document.getElementById('settingsSortBackBtn')?.addEventListener('click', () => this.backToMainSettings());
     document.getElementById('settingsReactionsBackBtn')?.addEventListener('click', () => this.backToMainSettings());
     document.getElementById('settingsCommentsBackBtn')?.addEventListener('click', () => this.backToMainSettings());
+    document.getElementById('settingsPostFieldsBackBtn')?.addEventListener('click', () => this.backToMainSettings());
 
     // Navigation Tabs with smooth anchor scroll & sliding indicator
     const tabItems = document.querySelectorAll('.settings-tab-item');
@@ -6577,9 +6579,17 @@ class PadlesShelfApp {
       });
     });
 
+    // Auto-grow helper for textareas
+    const autoGrow = (el) => {
+      if (!el) return;
+      el.style.height = 'auto';
+      el.style.height = `${el.scrollHeight}px`;
+    };
+
     // 1. Heading Section Inputs
     const titleInput = document.getElementById('wall-title-input');
     titleInput?.addEventListener('input', (e) => {
+      autoGrow(e.target);
       const val = e.target.value;
       this.state.title = val;
       if (!this.state.settings) this.state.settings = {};
@@ -6593,6 +6603,7 @@ class PadlesShelfApp {
 
     const descInput = document.getElementById('wall-desc-input');
     descInput?.addEventListener('input', (e) => {
+      autoGrow(e.target);
       const val = e.target.value;
       this.state.description = val;
       if (!this.state.settings) this.state.settings = {};
@@ -6640,10 +6651,13 @@ class PadlesShelfApp {
     document.getElementById('newPostFirstBtn')?.addEventListener('click', () => { this.applyNewPostPosition('first'); this.saveState(); this.syncSettingsToCloud(); });
     document.getElementById('newPostLastBtn')?.addEventListener('click', () => { this.applyNewPostPosition('last'); this.saveState(); this.syncSettingsToCloud(); });
 
-    // 4. Posts Section
+    // 4. Posts Section (Post fields subview)
     document.getElementById('settingRowPostFields')?.addEventListener('click', () => {
-      this.closeSettingsDrawer();
-      this.openPostFieldsModal();
+      this.showSettingsSubview('settingsPostFieldsSubview');
+    });
+
+    document.getElementById('addCustomFieldBtn')?.addEventListener('click', () => {
+      this.showToast('Custom field creator coming soon!');
     });
 
     document.getElementById('settingAuthorTimeToggle')?.addEventListener('click', () => {
@@ -6660,17 +6674,27 @@ class PadlesShelfApp {
 
     // 7. Advanced Section
     document.getElementById('surfaceUrlCopyButton')?.addEventListener('click', () => {
+      const copyBtn = document.getElementById('surfaceUrlCopyButton');
       const url = window.location.href;
+      const onSuccess = () => {
+        this.showToast('Board URL copied to clipboard!');
+        if (copyBtn) {
+          const originalText = copyBtn.textContent;
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
+        }
+      };
       if (navigator.clipboard) {
-        navigator.clipboard.writeText(url).then(() => {
-          this.showToast('Board URL copied to clipboard!');
+        navigator.clipboard.writeText(url).then(onSuccess).catch(() => {
+          const inp = document.getElementById('surfaceSettingsChangeUrlInput');
+          if (inp) { inp.select(); document.execCommand('copy'); onSuccess(); }
         });
       } else {
         const inp = document.getElementById('surfaceSettingsChangeUrlInput');
         if (inp) {
           inp.select();
           document.execCommand('copy');
-          this.showToast('Board URL copied to clipboard!');
+          onSuccess();
         }
       }
     });
@@ -6694,10 +6718,28 @@ class PadlesShelfApp {
     // Populate current values in inputs
     const s = this.state.settings || {};
     const titleInput = document.getElementById('wall-title-input');
-    if (titleInput) titleInput.value = s.title || this.state.title || 'Physics Audio Reflections: I see, I think, I wonder';
+    if (titleInput) {
+      titleInput.value = s.title || this.state.title || 'Physics Audio Reflections: I see, I think, I wonder';
+      titleInput.style.height = 'auto';
+      titleInput.style.height = `${titleInput.scrollHeight}px`;
+    }
 
     const descInput = document.getElementById('wall-desc-input');
-    if (descInput) descInput.value = s.description !== undefined ? s.description : (this.state.description || '');
+    if (descInput) {
+      descInput.value = s.description !== undefined ? s.description : (this.state.description || '');
+      descInput.style.height = 'auto';
+      descInput.style.height = `${descInput.scrollHeight}px`;
+    }
+
+    const iconPanelTitle = document.getElementById('icon-panel-title');
+    if (iconPanelTitle) {
+      iconPanelTitle.textContent = s.icon || this.state.icon || 'No icon';
+    }
+
+    const iconDisplay = document.getElementById('settingCurrentIconDisplay');
+    if (iconDisplay) {
+      iconDisplay.textContent = s.icon || this.state.icon || 'None';
+    }
 
     const urlInput = document.getElementById('surfaceSettingsChangeUrlInput');
     if (urlInput) urlInput.value = window.location.href;
@@ -7289,9 +7331,10 @@ class PadlesShelfApp {
   applySort(sortType) {
     const labels = {
       manual: 'Drag and drop',
-      date_desc: 'Date published (Newest)',
-      date_asc: 'Date published (Oldest)',
-      subject_asc: 'Post subject (A to Z)',
+      date_desc: 'Date published',
+      date_published: 'Date published',
+      date_asc: 'Date published',
+      subject_asc: 'Post subject',
       random: 'Random'
     };
     const sortLabel = document.getElementById('currentSortLabel');
@@ -7305,13 +7348,23 @@ class PadlesShelfApp {
     this.state.settings.sortBy = sortType;
 
     if (sortType === 'subject_asc') {
-      this.state.sections.forEach(sec => {
-        sec.cards.sort((a, b) => (a.title || a.subject || '').localeCompare(b.title || b.subject || ''));
+      this.state.sections?.forEach(sec => {
+        sec.cards?.sort((a, b) => (a.title || a.subject || '').localeCompare(b.title || b.subject || ''));
+      });
+      this.renderBoard();
+    } else if (sortType === 'date_desc' || sortType === 'date_published') {
+      this.state.sections?.forEach(sec => {
+        sec.cards?.sort((a, b) => new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0));
+      });
+      this.renderBoard();
+    } else if (sortType === 'date_asc') {
+      this.state.sections?.forEach(sec => {
+        sec.cards?.sort((a, b) => new Date(a.createdAt || a.created_at || 0) - new Date(b.createdAt || b.created_at || 0));
       });
       this.renderBoard();
     } else if (sortType === 'random') {
-      this.state.sections.forEach(sec => {
-        sec.cards.sort(() => Math.random() - 0.5);
+      this.state.sections?.forEach(sec => {
+        sec.cards?.sort(() => Math.random() - 0.5);
       });
       this.renderBoard();
     }
@@ -7475,42 +7528,102 @@ class PadlesShelfApp {
   }
 
   initIconSubview() {
+    const emojisTabBtn = document.getElementById('iconTabEmojisBtn');
+    const customTabBtn = document.getElementById('iconTabCustomBtn');
+    const emojisPanel = document.getElementById('iconTabEmojisContent');
+    const customPanel = document.getElementById('iconTabCustomContent');
+
+    emojisTabBtn?.addEventListener('click', () => {
+      emojisTabBtn.classList.add('active');
+      emojisTabBtn.setAttribute('aria-selected', 'true');
+      customTabBtn?.classList.remove('active');
+      customTabBtn?.setAttribute('aria-selected', 'false');
+      if (emojisPanel) emojisPanel.hidden = false;
+      if (customPanel) customPanel.hidden = true;
+    });
+
+    customTabBtn?.addEventListener('click', () => {
+      customTabBtn.classList.add('active');
+      customTabBtn.setAttribute('aria-selected', 'true');
+      emojisTabBtn?.classList.remove('active');
+      emojisTabBtn?.setAttribute('aria-selected', 'false');
+      if (customPanel) customPanel.hidden = false;
+      if (emojisPanel) emojisPanel.hidden = true;
+    });
+
     const emojiCategories = [
       {
         title: 'Smileys & Emotion',
-        emojis: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😋', '😛', '😜', '🤪', '🤓', '😎', '🥳', '🤗', '🤔', '🤐', '🤫', '🤭', '😴', '🥺', '😳']
+        emojis: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😋', '😛', '😜', '🤪', '🤓', '😎', '🥳', '🤗', '🤔', '🤐', '🤫', '🤭', '😴', '🥺', '😳', '🤯', '😭', '😤', '😡']
       },
       {
         title: 'Animals & Nature',
-        emojis: ['🌸', '🌹', '🌺', '🌻', '🌼', '🌷', '🌱', '🌲', '🌳', '🌴', '🍀', '🍁', '🍂', '🍄', '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🦋', '🐝', '🦄']
+        emojis: ['🌸', '🌹', '🌺', '🌻', '🌼', '🌷', '🌱', '🌲', '🌳', '🌴', '🍀', '🍁', '🍂', '🍄', '🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🦋', '🐝', '🦄', '🐬', '🐙', '🦅', '🦉']
       },
       {
-        title: 'Science & Study',
-        emojis: ['💡', '📚', '📖', '🔬', '🔭', '🧪', '🧲', '⚡', '🪐', '🚀', '🛸', '🛰️', '📐', '📏', '📊', '📈', '💻', '🖥️', '⌨️', '🔋', '⚙️', '🧰', '📝', '✏️', '✒️', '🔍', '🔎', '✨', '⭐', '🌟', '💥', '🔥']
+        title: 'Food & Drinks',
+        emojis: ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🍍', '🍕', '🍔', '🍟', '🥪', '🌮', '🍣', '🍩', '🍪', '🎂', '☕', '🍵', '🧃', '🥤', '🍺', '🍷', '🥂', '🍿', '🧁', '🍦', '🍫']
       },
       {
-        title: 'Food & Activities',
-        emojis: ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🍍', '🍕', '🍔', '🍟', '🥪', '🌮', '🍣', '🍩', '🍪', '🎂', '☕', '🍵', '🧃', '⚽', '🏀', '🏈', '🎾', '🎮', '🎯', '🎨', '🎬']
+        title: 'Activities',
+        emojis: ['⚽', '🏀', '🏈', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🥊', '🥋', '🎯', '🎮', '🎲', '🎳', '🎨', '🎬', '🎤', '🎧', '🎸', '🎹', '🎺', '🎻', '🎟️', '🏆', '🥇', '🥈', '🥉', '🚴', '🏊', '🧗', '🏄']
       },
       {
-        title: 'Hearts & Symbols',
+        title: 'Travel & Places',
+        emojis: ['✈️', '🚀', '🛸', '🛰️', '🚁', '🚂', '🚆', '🚇', '🚗', '🚕', '🚙', '🚌', '🏎️', '⛵', '🚢', '⚓', '🏖️', '🏝️', '🏕️', '🌋', '🗻', '🏔️', '🏛️', '🏰', '🗼', '🗽', '🎡', '🎢', '🗺️', '🧭', '🌍', '🌎']
+      },
+      {
+        title: 'Objects',
+        emojis: ['💡', '📚', '📖', '🔬', '🔭', '🧪', '🧲', '⚡', '💻', '🖥️', '⌨️', '📱', '🔋', '⚙️', '🧰', '📝', '✏️', '✒️', '🔍', '🔎', '🔑', '🔒', '📦', '🎁', '🔔', '📢', '⏱️', '⏰', '📅', '📌', '📎', '✂️']
+      },
+      {
+        title: 'Symbols',
         emojis: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '💔', '❣️', '💕', '💞', '💓', '💗', '💖', '💘', '💝', '💟', '☮️', '⚛️', '✅', '❇️', '✳️', '🌐', '🌀', '💫', '🌈', '☀️', '🌙', '⭐', '💯']
+      },
+      {
+        title: 'Flags',
+        emojis: ['🏁', '🚩', '🎌', '🏴', '🏳️', '🏳️‍🌈', '🏳️‍⚧️', '🇺🇸', '🇬🇧', '🇨🇦', '🇦🇺', '🇩🇪', '🇫🇷', '🇯🇵', '🇰🇷', '🇮🇳', '🇧🇷', '🇲🇽', '🇸🇬', '🇮🇩', '🇲🇾', '🇵🇭', '🇹🇭', '🇻🇳', '🇪🇸', '🇮🇹', '🇳🇱', '🇸🇪', '🇨🇭', '🇳🇴', '🇩🇰', '🇫🇮']
       }
     ];
 
     const gridContainer = document.getElementById('iconPickerGrid');
     if (!gridContainer) return;
 
+    const setBoardIcon = (iconVal) => {
+      if (!this.state.settings) this.state.settings = {};
+      this.state.settings.icon = iconVal;
+      const iconEl = document.getElementById('boardIcon');
+      if (iconEl) {
+        if (iconVal && (iconVal.startsWith('http') || iconVal.startsWith('data:'))) {
+          iconEl.innerHTML = `<img src="${iconVal}" style="width: 24px; height: 24px; border-radius: 6px; object-fit: cover; vertical-align: middle;" />`;
+        } else {
+          iconEl.textContent = iconVal;
+        }
+        iconEl.style.display = iconVal ? 'inline-block' : 'none';
+      }
+      const iconDisplay = document.getElementById('settingCurrentIconDisplay');
+      if (iconDisplay) iconDisplay.textContent = iconVal || 'None';
+      const iconTitle = document.getElementById('icon-panel-title');
+      if (iconTitle) iconTitle.textContent = iconVal || 'No icon';
+
+      this.saveState();
+      this.syncSettingsToCloud();
+      this.showToast(iconVal ? `Board icon updated` : 'Board icon removed');
+      this.backToMainSettings();
+    };
+
     const renderEmojis = (searchFilter = '') => {
       gridContainer.innerHTML = '';
       const filter = searchFilter.toLowerCase().trim();
+      const currentIcon = this.state.settings?.icon || '';
 
-      emojiCategories.forEach(cat => {
+      emojiCategories.forEach((cat, catIdx) => {
         const filtered = filter ? cat.emojis.filter(e => e.includes(filter)) : cat.emojis;
         if (filtered.length === 0) return;
 
         const block = document.createElement('div');
         block.className = 'emoji-category-block';
+        block.dataset.catIndex = catIdx;
 
         const title = document.createElement('div');
         title.className = 'emoji-cat-title';
@@ -7524,22 +7637,11 @@ class PadlesShelfApp {
           const btn = document.createElement('button');
           btn.type = 'button';
           btn.className = 'emoji-item-btn';
+          if (currentIcon === emoji) btn.classList.add('selected');
           btn.textContent = emoji;
 
           btn.addEventListener('click', () => {
-            if (!this.state.settings) this.state.settings = {};
-            this.state.settings.icon = emoji;
-            const iconEl = document.getElementById('boardIcon');
-            if (iconEl) {
-              iconEl.textContent = emoji;
-              iconEl.style.display = 'inline-block';
-            }
-            const iconDisplay = document.getElementById('settingCurrentIconDisplay');
-            if (iconDisplay) iconDisplay.textContent = emoji;
-            this.saveState();
-            this.syncSettingsToCloud();
-            this.showToast(`Board icon set to ${emoji}`);
-            this.backToMainSettings();
+            setBoardIcon(emoji);
           });
 
           grid.appendChild(btn);
@@ -7550,26 +7652,71 @@ class PadlesShelfApp {
       });
     };
 
+    // Category navigation click to jump
+    document.querySelectorAll('.emoji-cat-nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.emoji-cat-nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const idx = btn.dataset.catIndex;
+        const targetBlock = gridContainer.querySelector(`.emoji-category-block[data-cat-index="${idx}"]`);
+        if (targetBlock) {
+          targetBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
     // None button clears icon
     document.getElementById('iconPickerNoneBtn')?.addEventListener('click', () => {
-      if (!this.state.settings) this.state.settings = {};
-      this.state.settings.icon = '';
-      const iconEl = document.getElementById('boardIcon');
-      if (iconEl) {
-        iconEl.textContent = '';
-        iconEl.style.display = 'none';
-      }
-      const iconDisplay = document.getElementById('settingCurrentIconDisplay');
-      if (iconDisplay) iconDisplay.textContent = 'None';
-      this.saveState();
-      this.syncSettingsToCloud();
-      this.showToast('Board icon removed');
-      this.backToMainSettings();
+      setBoardIcon('');
     });
 
     // Search filter
     document.getElementById('iconPickerSearchInput')?.addEventListener('input', (e) => {
       renderEmojis(e.target.value);
+    });
+
+    // Custom tab actions
+    document.getElementById('customIconSearchWebBtn')?.addEventListener('click', () => {
+      const q = prompt('Search image URL for icon:');
+      if (q && q.trim()) setBoardIcon(q.trim());
+    });
+
+    document.getElementById('customIconUploadBtn')?.addEventListener('click', () => {
+      const inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = 'image/*';
+      inp.onchange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (re) => {
+            setBoardIcon(re.target.result);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      inp.click();
+    });
+
+    document.getElementById('customIconTakePhotoBtn')?.addEventListener('click', () => {
+      if (typeof this.openAVStudio === 'function') {
+        this.openAVStudio('photo');
+      } else {
+        this.showToast('Opening camera...');
+      }
+    });
+
+    document.getElementById('customIconDrawBtn')?.addEventListener('click', () => {
+      if (typeof this.openDrawingModal === 'function') {
+        this.openDrawingModal();
+      } else {
+        this.showToast('Opening whiteboard...');
+      }
+    });
+
+    document.getElementById('customIconLinkBtn')?.addEventListener('click', () => {
+      const url = prompt('Enter image URL for board icon:');
+      if (url && url.trim()) setBoardIcon(url.trim());
     });
 
     renderEmojis('');

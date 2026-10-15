@@ -1997,7 +1997,7 @@
           </div>
           <div class="settings-header-col-center">
             <div class="subview-header-title-box">
-              <h2 id="icon-panel-title" class="subview-header-title">Icon</h2>
+              <h2 id="icon-panel-title" class="subview-header-title">No icon</h2>
             </div>
           </div>
           <div class="settings-header-col-right">
@@ -2009,15 +2009,104 @@
           </div>
         </header>
 
-        <div class="icon-picker-toolbar">
-          <button type="button" id="iconPickerNoneBtn" class="icon-none-pill-btn">None</button>
-          <div class="icon-search-box">
-            <input type="text" id="iconPickerSearchInput" placeholder="Search emojis..." autocomplete="off" />
+        <!-- 2 Top Tabs: Emojis and Custom -->
+        <div class="icon-subview-tabs-bar" role="tablist">
+          <button type="button" role="tab" id="iconTabEmojisBtn" class="icon-subview-tab active" aria-selected="true">Emojis</button>
+          <button type="button" role="tab" id="iconTabCustomBtn" class="icon-subview-tab" aria-selected="false">Custom</button>
+        </div>
+
+        <!-- Tab 1: Emojis Content -->
+        <div id="iconTabEmojisContent" class="icon-tab-panel">
+          <div class="icon-picker-toolbar">
+            <button type="button" id="iconPickerNoneBtn" class="icon-none-pill-btn">None</button>
+            <div class="icon-search-box">
+              <svg viewBox="0 0 32 32" height="16" width="16" fill="currentColor" class="icon-search-lens">
+                <path d="M29.07 27.186l-6.737-6.737a11.333 11.333 0 1 0-1.884 1.884l6.737 6.737a1.333 1.333 0 1 0 1.884-1.884zM4.667 14a9.333 9.333 0 1 1 9.333 9.333A9.344 9.344 0 0 1 4.667 14z"/>
+              </svg>
+              <input type="text" id="iconPickerSearchInput" placeholder="Search emojis..." autocomplete="off" />
+            </div>
+          </div>
+
+          <!-- 8 Category Quick Jump Buttons -->
+          <div class="emoji-categories-nav" id="emojiCategoriesNav">
+            <button type="button" class="emoji-cat-nav-btn active" data-cat-index="0" title="Smileys & Emotion">😀</button>
+            <button type="button" class="emoji-cat-nav-btn" data-cat-index="1" title="Animals & Nature">🐶</button>
+            <button type="button" class="emoji-cat-nav-btn" data-cat-index="2" title="Food & Drinks">🍔</button>
+            <button type="button" class="emoji-cat-nav-btn" data-cat-index="3" title="Activities">⚽</button>
+            <button type="button" class="emoji-cat-nav-btn" data-cat-index="4" title="Travel & Places">✈️</button>
+            <button type="button" class="emoji-cat-nav-btn" data-cat-index="5" title="Objects">💡</button>
+            <button type="button" class="emoji-cat-nav-btn" data-cat-index="6" title="Symbols">❤️</button>
+            <button type="button" class="emoji-cat-nav-btn" data-cat-index="7" title="Flags">🏁</button>
+          </div>
+
+          <div class="icon-picker-body" id="iconPickerGrid">
+            <!-- Emoji categories populated dynamically -->
           </div>
         </div>
 
-        <div class="icon-picker-body" id="iconPickerGrid">
-          <!-- Emoji categories populated dynamically -->
+        <!-- Tab 2: Custom Icon Content -->
+        <div id="iconTabCustomContent" class="icon-tab-panel" hidden>
+          <div class="icon-custom-actions-grid">
+            <button type="button" class="icon-custom-tile-btn" id="customIconSearchWebBtn">
+              <div class="custom-tile-icon-frame tile-orange">
+                <svg viewBox="0 0 32 32" height="22" width="22" fill="currentColor">
+                  <path d="M29.07 27.186l-6.737-6.737a11.333 11.333 0 1 0-1.884 1.884l6.737 6.737a1.333 1.333 0 1 0 1.884-1.884zM4.667 14a9.333 9.333 0 1 1 9.333 9.333A9.344 9.344 0 0 1 4.667 14z"/>
+                </svg>
+              </div>
+              <div class="custom-tile-text">
+                <span class="custom-tile-title">Search web</span>
+                <span class="custom-tile-desc">Find images on the web</span>
+              </div>
+            </button>
+
+            <button type="button" class="icon-custom-tile-btn" id="customIconUploadBtn">
+              <div class="custom-tile-icon-frame tile-purple">
+                <svg viewBox="0 0 32 32" height="22" width="22" fill="currentColor">
+                  <path d="M16 4a1.333 1.333 0 0 1 1.333 1.333v13.334a1.333 1.333 0 0 1-2.666 0V5.333A1.333 1.333 0 0 1 16 4zm-5.057 5.724a1.333 1.333 0 0 1 1.886-1.886l4.114 4.115 4.115-4.115a1.333 1.333 0 1 1 1.886 1.886l-5.058 5.057a1.333 1.333 0 0 1-1.886 0zm-5.61 14.943a1.333 1.333 0 0 1 1.334-1.334h18.666a1.333 1.333 0 1 1 0 2.667H6.667a1.333 1.333 0 0 1-1.334-1.333z"/>
+                </svg>
+              </div>
+              <div class="custom-tile-text">
+                <span class="custom-tile-title">Upload an image</span>
+                <span class="custom-tile-desc">From your files or device</span>
+              </div>
+            </button>
+
+            <button type="button" class="icon-custom-tile-btn" id="customIconTakePhotoBtn">
+              <div class="custom-tile-icon-frame tile-blue">
+                <svg viewBox="0 0 32 32" height="22" width="22" fill="currentColor">
+                  <path d="M9.333 6.667h2.956l1.778-2.667h3.866l1.778 2.667h2.956A4 4 0 0 1 26.667 10.667v12a4 4 0 0 1-4 4H9.333a4 4 0 0 1-4-4v-12a4 4 0 0 1 4-4zm6.667 5.333a4.667 4.667 0 1 0 0 9.333 4.667 4.667 0 0 0 0-9.333z"/>
+                </svg>
+              </div>
+              <div class="custom-tile-text">
+                <span class="custom-tile-title">Take photo</span>
+                <span class="custom-tile-desc">Use your camera</span>
+              </div>
+            </button>
+
+            <button type="button" class="icon-custom-tile-btn" id="customIconDrawBtn">
+              <div class="custom-tile-icon-frame tile-blue">
+                <svg viewBox="0 0 32 32" height="22" width="22" fill="currentColor">
+                  <path d="M25.333 4a4 4 0 0 1 4 4c0 1.061-.421 2.078-1.172 2.828l-13.6 13.6a4 4 0 0 1-1.886 1.066l-5.6 1.4a1.333 1.333 0 0 1-1.616-1.616l1.4-5.6a4 4 0 0 1 1.066-1.886l13.6-13.6A3.98 3.98 0 0 1 25.333 4z"/>
+                </svg>
+              </div>
+              <div class="custom-tile-text">
+                <span class="custom-tile-title">Draw</span>
+                <span class="custom-tile-desc">Doodle on a whiteboard</span>
+              </div>
+            </button>
+
+            <button type="button" class="icon-custom-tile-btn" id="customIconLinkBtn">
+              <div class="custom-tile-icon-frame tile-purple">
+                <svg viewBox="0 0 32 32" height="22" width="22" fill="currentColor">
+                  <path d="M14.667 17.333a1.333 1.333 0 0 1 0-1.885l4.714-4.715a4 4 0 1 1 5.657 5.657l-2.829 2.829a1.333 1.333 0 1 1-1.885-1.886l2.828-2.829a1.333 1.333 0 1 0-1.885-1.885l-4.715 4.714a1.333 1.333 0 0 1-1.885 0zm2.666-2.666a1.333 1.333 0 0 1 0 1.885l-4.714 4.715a4 4 0 1 1-5.657-5.657l2.828-2.829a1.333 1.333 0 1 1 1.886 1.886l-2.829 2.829a1.333 1.333 0 0 0 1.886 1.885l4.714-4.714a1.333 1.333 0 0 1 1.886 0z"/>
+                </svg>
+              </div>
+              <div class="custom-tile-text">
+                <span class="custom-tile-title">Link</span>
+                <span class="custom-tile-desc">Paste an image link</span>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -2215,6 +2304,77 @@
                 </div>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subview 8: Post Fields Settings -->
+      <div id="settingsPostFieldsSubview" class="settings-subview" data-testid="postPropertiesPanel">
+        <header class="padlet-settings-header subview-header">
+          <div class="settings-header-col-left">
+            <button id="settingsPostFieldsBackBtn" class="settings-back-btn" title="Back" aria-label="Back">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M20.609 28.609a1.333 1.333 0 0 1-1.886 0L7.056 16.942a1.334 1.334 0 0 1 0-1.886L18.723 3.389a1.333 1.333 0 1 1 1.886 1.886L9.885 15.999l10.724 10.724a1.333 1.333 0 0 1 0 1.886"/>
+              </svg>
+            </button>
+          </div>
+          <div class="settings-header-col-center">
+            <div class="subview-header-title-box">
+              <h2 class="subview-header-title">Post fields</h2>
+            </div>
+          </div>
+          <div class="settings-header-col-right">
+            <button id="settingsPostFieldsCloseBtn" class="padlet-settings-close-btn" title="Close" aria-label="Close">
+              <svg viewBox="0 0 32 32" height="20" width="20" fill="currentColor">
+                <path d="M23.891 6.667a1.4 1.4 0 0 0-.984.434L16 14.008 9.093 7.101a1.41 1.41 0 0 0-1.798-.186A1.41 1.41 0 0 0 7.1 9.094l6.907 6.907L7.1 22.908a1.399 1.399 0 0 0-.33 1.549 1.42 1.42 0 0 0 .772.772 1.41 1.41 0 0 0 1.55-.33l6.907-6.907 6.907 6.907a1.399 1.399 0 0 0 1.549.33 1.405 1.405 0 0 0 .877-1.319 1.4 1.4 0 0 0-.434-1.002l-6.907-6.907 6.907-6.907a1.411 1.411 0 0 0-1.009-2.427z"/>
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="settings-subview-body">
+          <div class="settings-card-group">
+            <div class="settings-row-inline">
+              <div class="row-primary-label">Subject</div>
+              <span class="row-value-pill">Show</span>
+            </div>
+            <div class="settings-card-divider"></div>
+            <div class="settings-row-inline">
+              <div class="row-primary-label">Attachment</div>
+              <span class="row-value-pill">Show</span>
+            </div>
+            <div class="settings-card-divider"></div>
+            <div class="settings-row-inline">
+              <div class="row-primary-label">Body</div>
+              <span class="row-value-pill">Show</span>
+            </div>
+          </div>
+
+          <div class="settings-card-group" style="margin-top: 16px;">
+            <div class="settings-row-inline">
+              <div class="row-primary-label">Color</div>
+              <span class="row-value-pill">Show</span>
+            </div>
+            <div class="settings-card-divider"></div>
+            <div class="settings-row-inline">
+              <div class="row-primary-label">Location</div>
+              <span class="row-value-pill">Maps only</span>
+            </div>
+          </div>
+
+          <div class="post-fields-custom-section">
+            <h3 class="post-fields-section-title">Custom fields</h3>
+            <button type="button" class="add-custom-field-btn" id="addCustomFieldBtn">
+              <div class="add-cf-icon-wrap">
+                <svg viewBox="0 0 32 32" height="18" width="18" fill="currentColor">
+                  <path d="M17.333 6.667v8h8a1.333 1.333 0 1 1 0 2.666h-8v8a1.333 1.333 0 1 1-2.666 0v-8h-8a1.333 1.333 0 1 1 0-2.666h8v-8a1.333 1.333 0 1 1 2.666 0z"/>
+                </svg>
+              </div>
+              <div class="add-cf-text">
+                <div class="add-cf-title">Add custom field</div>
+                <div class="add-cf-subtitle">New: Score, vote and rating fields</div>
+              </div>
+            </button>
           </div>
         </div>
       </div>
