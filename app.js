@@ -318,11 +318,20 @@ class PadlesShelfApp {
     this.sidebarNavItems = document.querySelectorAll('.sidebar-nav-item');
     this.sidebarNewFolderBtn = document.getElementById('sidebarNewFolderBtn');
     this.sidebarFoldersList = document.getElementById('sidebarFoldersList');
+    this.currentFolder = null;
+    this.newFolderModal = document.getElementById('newFolderModal');
+    this.newFolderInput = document.getElementById('newFolderInput');
+    this.cancelNewFolderBtn = document.getElementById('cancelNewFolderBtn');
+    this.submitNewFolderBtn = document.getElementById('submitNewFolderBtn');
+
     this.dashboardSearchBar = document.getElementById('dashboardSearchBar');
     this.dashboardSearchInput = document.getElementById('dashboardSearchInput');
     this.dashboardJoinBtn = document.getElementById('dashboardJoinBtn');
     this.dashboardGalleryBtn = document.getElementById('dashboardGalleryBtn');
     this.dashboardBellBtn = document.getElementById('dashboardBellBtn');
+    this.notificationsDropdown = document.getElementById('notificationsDropdown');
+    this.markAllReadBtn = document.getElementById('markAllReadBtn');
+    this.notificationsList = document.getElementById('notificationsList');
     this.dashboardAvatarBtn = document.getElementById('dashboardAvatarBtn');
     this.dashboardAvatarImg = document.getElementById('dashboardAvatarImg');
     this.dashboardTabTitle = document.getElementById('dashboardTabTitle');
@@ -7260,6 +7269,7 @@ class PadlesShelfApp {
   applyColorScheme(scheme) {
     document.body.classList.toggle('light-theme', scheme === 'light');
     document.body.classList.toggle('dark-theme', scheme === 'dark');
+    document.body.classList.toggle('dark-mode', scheme === 'dark');
 
     document.getElementById('colorSchemeDarkBtn')?.classList.toggle('active', scheme === 'dark');
     document.getElementById('colorSchemeLightBtn')?.classList.toggle('active', scheme === 'light');
@@ -8391,12 +8401,7 @@ class PadlesShelfApp {
       this.guestAvatarAnchor.addEventListener('click', (e) => {
         e.stopPropagation();
         if (this.backend && this.backend.isAuthenticated()) {
-          if (this.userAccountDropdown) {
-            this.userAccountDropdown.style.left = 'auto';
-            this.userAccountDropdown.style.right = '16px';
-            this.userAccountDropdown.style.top = '54px';
-          }
-          this.toggleUserAccountDropdown();
+          this.toggleUserAccountDropdown('right');
         } else {
           this.openAuthModal('login');
         }
@@ -8431,14 +8436,7 @@ class PadlesShelfApp {
       });
     }
 
-    // Close account dropdown on outside click
-    document.addEventListener('click', (e) => {
-      if (this.userAccountDropdown && !this.userAccountDropdown.hidden) {
-        if (!this.userAccountDropdown.contains(e.target) && e.target !== this.guestAvatarAnchor) {
-          this.userAccountDropdown.hidden = true;
-        }
-      }
-    });
+    // Note: Global outside-click dismiss for dropdowns is managed centrally in initDashboard()
 
     // In-App Modal controls
     const closeAuthBtn = document.getElementById('closeAuthModalBtn');
@@ -8507,10 +8505,37 @@ class PadlesShelfApp {
     }
   }
 
-  toggleUserAccountDropdown(force) {
+  toggleUserAccountDropdown(anchor = 'right', force) {
     if (!this.userAccountDropdown) return;
-    const shouldShow = typeof force === 'boolean' ? force : this.userAccountDropdown.hidden;
-    this.userAccountDropdown.hidden = !shouldShow;
+    if (this.notificationsDropdown) this.notificationsDropdown.hidden = true;
+
+    const isCurrentlyOpen = !this.userAccountDropdown.hidden;
+    const currentAnchor = this.userAccountDropdown.getAttribute('data-anchor');
+
+    let shouldShow;
+    if (typeof force === 'boolean') {
+      shouldShow = force;
+    } else if (isCurrentlyOpen && currentAnchor === anchor) {
+      shouldShow = false;
+    } else {
+      shouldShow = true;
+    }
+
+    if (shouldShow) {
+      if (anchor === 'left') {
+        this.userAccountDropdown.style.left = '12px';
+        this.userAccountDropdown.style.right = 'auto';
+        this.userAccountDropdown.style.top = '72px';
+      } else {
+        this.userAccountDropdown.style.left = 'auto';
+        this.userAccountDropdown.style.right = '16px';
+        this.userAccountDropdown.style.top = '54px';
+      }
+      this.userAccountDropdown.setAttribute('data-anchor', anchor);
+      this.userAccountDropdown.hidden = false;
+    } else {
+      this.userAccountDropdown.hidden = true;
+    }
   }
 
   setAuthMode(mode, target = 'modal') {
@@ -8764,23 +8789,13 @@ class PadlesShelfApp {
     if (this.sidebarProfileBtn) {
       this.sidebarProfileBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (this.userAccountDropdown) {
-          this.userAccountDropdown.style.left = '12px';
-          this.userAccountDropdown.style.right = 'auto';
-          this.userAccountDropdown.style.top = '72px';
-        }
-        this.toggleUserAccountDropdown();
+        this.toggleUserAccountDropdown('left');
       });
     }
     if (this.dashboardAvatarBtn) {
       this.dashboardAvatarBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (this.userAccountDropdown) {
-          this.userAccountDropdown.style.left = 'auto';
-          this.userAccountDropdown.style.right = '16px';
-          this.userAccountDropdown.style.top = '54px';
-        }
-        this.toggleUserAccountDropdown();
+        this.toggleUserAccountDropdown('right');
       });
     }
 
@@ -8927,21 +8942,87 @@ class PadlesShelfApp {
       });
     }
 
+    // Notifications Dropdown Toggle
     if (this.dashboardBellBtn) {
       this.dashboardBellBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.showToast('You have no new notifications');
+        this.toggleNotificationsDropdown();
       });
     }
 
+    if (this.markAllReadBtn) {
+      this.markAllReadBtn.addEventListener('click', () => {
+        this.markAllNotificationsRead();
+      });
+    }
+
+    // New Folder Modal triggers
     if (this.sidebarNewFolderBtn) {
       this.sidebarNewFolderBtn.addEventListener('click', () => {
-        const folderName = prompt('Enter new folder name:');
-        if (folderName && folderName.trim()) {
-          this.createDashboardFolder(folderName.trim());
+        this.openNewFolderModal();
+      });
+    }
+
+    if (this.cancelNewFolderBtn) {
+      this.cancelNewFolderBtn.addEventListener('click', () => {
+        this.closeNewFolderModal();
+      });
+    }
+
+    if (this.newFolderInput) {
+      this.newFolderInput.addEventListener('input', () => {
+        const hasVal = !!this.newFolderInput.value.trim();
+        if (this.submitNewFolderBtn) {
+          this.submitNewFolderBtn.disabled = !hasVal;
+          this.submitNewFolderBtn.classList.toggle('active', hasVal);
+        }
+      });
+      this.newFolderInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && this.newFolderInput.value.trim()) {
+          this.submitNewFolderBtn?.click();
+        } else if (e.key === 'Escape') {
+          this.closeNewFolderModal();
         }
       });
     }
+
+    if (this.submitNewFolderBtn) {
+      this.submitNewFolderBtn.addEventListener('click', () => {
+        const val = this.newFolderInput?.value.trim();
+        if (!val) return;
+        this.createDashboardFolder(val);
+        this.closeNewFolderModal();
+      });
+    }
+
+    // Backdrop click dismiss for modals
+    if (this.joinPadletModal) {
+      this.joinPadletModal.addEventListener('click', (e) => {
+        if (e.target === this.joinPadletModal) this.closeJoinModal();
+      });
+    }
+    if (this.newFolderModal) {
+      this.newFolderModal.addEventListener('click', (e) => {
+        if (e.target === this.newFolderModal) this.closeNewFolderModal();
+      });
+    }
+
+    // Global click listener for closing floating dropdowns
+    document.addEventListener('click', (e) => {
+      if (this.notificationsDropdown && !this.notificationsDropdown.hidden) {
+        if (!this.notificationsDropdown.contains(e.target) && !e.target.closest('#dashboardBellBtn')) {
+          this.notificationsDropdown.hidden = true;
+        }
+      }
+      if (this.userAccountDropdown && !this.userAccountDropdown.hidden) {
+        if (!this.userAccountDropdown.contains(e.target) &&
+            !e.target.closest('#sidebarProfileBtn') &&
+            !e.target.closest('#dashboardAvatarBtn') &&
+            !e.target.closest('#guest-id-card-avatar-anchor')) {
+          this.userAccountDropdown.hidden = true;
+        }
+      }
+    });
 
     this.renderDashboardFolders();
   }
@@ -8949,19 +9030,73 @@ class PadlesShelfApp {
   renderDashboardFolders() {
     if (!this.sidebarFoldersList) return;
     try {
-      const folders = JSON.parse(localStorage.getItem('padles_folders') || '[]');
-      if (folders.length === 0) {
-        this.sidebarFoldersList.innerHTML = '<div class="sidebar-folder-empty">No folders yet</div>';
-        return;
+      let folders = JSON.parse(localStorage.getItem('padles_folders') || '[]');
+      if (!Array.isArray(folders) || folders.length === 0) {
+        folders = ['Physics Lab', 'Project Blueprints', 'Travel', 'Personal'];
+        localStorage.setItem('padles_folders', JSON.stringify(folders));
       }
       this.sidebarFoldersList.innerHTML = folders.map(f => `
-        <div class="sidebar-folder-item" data-folder="${encodeURIComponent(f)}" style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px; cursor: pointer; color: #555; font-size: 13px;">
+        <div class="sidebar-folder-item ${this.currentFolder === f ? 'active' : ''}" data-folder="${encodeURIComponent(f)}">
           <svg viewBox="0 0 32 32" width="16" height="16" fill="currentColor"><path d="M4 6.667C4 5.193 5.193 4 6.667 4h6.666a2.667 2.667 0 0 1 1.886.781l2.552 2.552h7.562C26.807 7.333 28 8.526 28 10v15.333C28 26.807 26.807 28 25.333 28H6.667C5.193 28 4 26.807 4 25.333z"/></svg>
-          <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${f}</span>
+          <span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${this.escapeHtml(f)}</span>
+          <button type="button" class="folder-delete-btn" data-delete-folder="${encodeURIComponent(f)}" title="Delete folder">✕</button>
         </div>
       `).join('');
+
+      // Wire folder click to filter boards
+      this.sidebarFoldersList.querySelectorAll('.sidebar-folder-item').forEach(el => {
+        el.addEventListener('click', (e) => {
+          if (e.target.closest('.folder-delete-btn')) return;
+          const folderName = decodeURIComponent(el.getAttribute('data-folder'));
+          this.selectFolder(folderName);
+        });
+      });
+
+      // Wire delete folder button
+      this.sidebarFoldersList.querySelectorAll('.folder-delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const folderName = decodeURIComponent(btn.getAttribute('data-delete-folder'));
+          if (confirm(`Delete folder "${folderName}"?`)) {
+            this.deleteDashboardFolder(folderName);
+          }
+        });
+      });
     } catch {
       this.sidebarFoldersList.innerHTML = '<div class="sidebar-folder-empty">No folders yet</div>';
+    }
+  }
+
+  selectFolder(folderName) {
+    this.currentFolder = folderName;
+    if (this.sidebarNavItems) {
+      this.sidebarNavItems.forEach(i => i.classList.remove('active'));
+    }
+    if (this.sidebarFoldersList) {
+      this.sidebarFoldersList.querySelectorAll('.sidebar-folder-item').forEach(el => {
+        const f = decodeURIComponent(el.getAttribute('data-folder'));
+        el.classList.toggle('active', f === folderName);
+      });
+    }
+    if (this.dashboardTabTitle) {
+      this.dashboardTabTitle.textContent = '📁 ' + folderName;
+    }
+    this.renderDashboardBoards();
+  }
+
+  deleteDashboardFolder(folderName) {
+    try {
+      let folders = JSON.parse(localStorage.getItem('padles_folders') || '[]');
+      folders = folders.filter(f => f !== folderName);
+      localStorage.setItem('padles_folders', JSON.stringify(folders));
+      if (this.currentFolder === folderName) {
+        this.setDashboardTab('recents');
+      } else {
+        this.renderDashboardFolders();
+      }
+      this.showToast(`Folder "${folderName}" deleted`);
+    } catch (e) {
+      console.error(e);
     }
   }
 
@@ -8973,12 +9108,48 @@ class PadlesShelfApp {
         localStorage.setItem('padles_folders', JSON.stringify(folders));
         this.showToast(`Folder "${name}" created`);
         this.renderDashboardFolders();
+        this.selectFolder(name);
       } else {
         this.showToast(`Folder "${name}" already exists`);
       }
     } catch (e) {
       console.error('Error creating folder:', e);
     }
+  }
+
+  openNewFolderModal() {
+    if (!this.newFolderModal) return;
+    this.newFolderModal.hidden = false;
+    if (this.newFolderInput) {
+      this.newFolderInput.value = '';
+      setTimeout(() => this.newFolderInput.focus(), 80);
+    }
+    if (this.submitNewFolderBtn) {
+      this.submitNewFolderBtn.disabled = true;
+      this.submitNewFolderBtn.classList.remove('active');
+    }
+  }
+
+  closeNewFolderModal() {
+    if (this.newFolderModal) this.newFolderModal.hidden = true;
+  }
+
+  toggleNotificationsDropdown(force) {
+    if (!this.notificationsDropdown) return;
+    const shouldShow = typeof force === 'boolean' ? force : this.notificationsDropdown.hidden;
+    this.notificationsDropdown.hidden = !shouldShow;
+    if (shouldShow && this.userAccountDropdown) {
+      this.userAccountDropdown.hidden = true;
+    }
+  }
+
+  markAllNotificationsRead() {
+    if (this.notificationsList) {
+      this.notificationsList.querySelectorAll('.notification-item.unread').forEach(item => {
+        item.classList.remove('unread');
+      });
+    }
+    this.showToast('All notifications marked as read');
   }
 
   openJoinModal() {
@@ -9327,6 +9498,12 @@ class PadlesShelfApp {
 
   setDashboardTab(tab) {
     this.dashboardTab = tab;
+    this.currentFolder = null;
+    if (this.sidebarFoldersList) {
+      this.sidebarFoldersList.querySelectorAll('.sidebar-folder-item').forEach(el => {
+        el.classList.remove('active');
+      });
+    }
 
     if (this.sidebarNavItems) {
       this.sidebarNavItems.forEach(item => {
@@ -9353,7 +9530,11 @@ class PadlesShelfApp {
 
   async renderDashboardBoards() {
     if (!this.dashboardBoardsGrid) return;
-    const boards = await this.backend.listBoards(this.dashboardTab, this.dashboardSearchQuery);
+    let boards = await this.backend.listBoards(this.dashboardTab, this.dashboardSearchQuery);
+
+    if (this.currentFolder) {
+      boards = boards.filter(b => b.folder === this.currentFolder);
+    }
 
     if (this.dashboardSort === 'title_az') {
       boards.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
@@ -9373,7 +9554,9 @@ class PadlesShelfApp {
           shared: { title: 'Nothing shared with you', desc: 'Boards shared with you by other padlers will appear here.' },
           trash: { title: 'Trash is empty', desc: 'Deleted padles will appear here before being permanently removed.' }
         };
-        const activeEmpty = emptyData[this.dashboardTab] || emptyData.recents;
+        const activeEmpty = this.currentFolder
+          ? { title: `No padles in "${this.currentFolder}" yet`, desc: 'Create a padles or move existing boards into this folder.' }
+          : (emptyData[this.dashboardTab] || emptyData.recents);
         if (this.dashboardEmptyTitle) this.dashboardEmptyTitle.textContent = activeEmpty.title;
         if (this.dashboardEmptyDesc) this.dashboardEmptyDesc.textContent = activeEmpty.desc;
       }
@@ -9454,6 +9637,8 @@ class PadlesShelfApp {
     if (this.surfaceHeaderBlock) this.surfaceHeaderBlock.style.display = 'none';
     if (this.boardContainer) this.boardContainer.style.display = 'none';
     if (this.floatingPostContainer) this.floatingPostContainer.style.display = 'none';
+    if (this.userAccountDropdown) this.userAccountDropdown.hidden = true;
+    if (this.notificationsDropdown) this.notificationsDropdown.hidden = true;
 
     if (this.landingView) {
       this.landingView.hidden = false;

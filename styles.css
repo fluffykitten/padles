@@ -11203,7 +11203,13 @@ body:has(#authStandaloneView:not([hidden])) #surface-topbar {
   box-sizing: border-box;
 }
 
-body.dark-mode .join-padlet-dialog {
+#joinPadletModal,
+#newFolderModal {
+  z-index: 100000;
+}
+
+body.dark-mode .join-padlet-dialog,
+body.dark-theme .join-padlet-dialog {
   background: #111111;
   color: #ffffff;
 }
@@ -11215,7 +11221,8 @@ body.dark-mode .join-padlet-dialog {
   margin: 0 0 16px;
 }
 
-body.dark-mode .join-dialog-title {
+body.dark-mode .join-dialog-title,
+body.dark-theme .join-dialog-title {
   color: #ffffff;
 }
 
@@ -11235,11 +11242,13 @@ body.dark-mode .join-dialog-title {
   border-color: #111111;
 }
 
-body.dark-mode .join-input-wrapper {
+body.dark-mode .join-input-wrapper,
+body.dark-theme .join-input-wrapper {
   border-color: #374151;
 }
 
-body.dark-mode .join-input-wrapper:focus-within {
+body.dark-mode .join-input-wrapper:focus-within,
+body.dark-theme .join-input-wrapper:focus-within {
   border-color: #ffffff;
 }
 
@@ -11271,7 +11280,8 @@ body.dark-mode .join-input-wrapper:focus-within {
   cursor: pointer;
 }
 
-body.dark-mode .join-cancel-btn {
+body.dark-mode .join-cancel-btn,
+body.dark-theme .join-cancel-btn {
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
@@ -11294,4 +11304,295 @@ body.dark-mode .join-cancel-btn {
   color: #ffffff;
   cursor: pointer;
 }
+
+/* Authentic New Folder Modal Dialog (328px) */
+.folder-modal-dialog {
+  width: 328px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.16);
+  padding: 24px 20px 20px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+body.dark-mode .folder-modal-dialog,
+body.dark-theme .folder-modal-dialog {
+  background: #111111;
+  color: #ffffff;
+}
+
+.folder-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111111;
+  margin: 0 0 16px;
+}
+
+body.dark-mode .folder-modal-title,
+body.dark-theme .folder-modal-title {
+  color: #ffffff;
+}
+
+.folder-input-wrapper {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 0 14px;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+  transition: border-color 0.15s ease;
+}
+
+.folder-input-wrapper:focus-within {
+  border-color: #111111;
+}
+
+body.dark-mode .folder-input-wrapper,
+body.dark-theme .folder-input-wrapper {
+  border-color: #374151;
+}
+
+body.dark-mode .folder-input-wrapper:focus-within,
+body.dark-theme .folder-input-wrapper:focus-within {
+  border-color: #ffffff;
+}
+
+.folder-modal-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: inherit;
+  font-family: inherit;
+}
+
+.folder-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.folder-cancel-btn {
+  height: 32px;
+  background: rgb(235, 236, 239);
+  color: rgba(0, 0, 0, 0.7);
+  border-radius: 16px;
+  padding: 0 20px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+body.dark-mode .folder-cancel-btn,
+body.dark-theme .folder-cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.folder-submit-btn {
+  height: 32px;
+  background: rgba(0, 18, 52, 0.04);
+  color: rgba(29, 29, 29, 0.3);
+  border-radius: 16px;
+  padding: 0 20px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: not-allowed;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.folder-submit-btn.active {
+  background: #de3163;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+/* Notifications Dropdown Panel */
+.notifications-dropdown {
+  position: fixed;
+  top: 54px;
+  right: 60px;
+  width: 320px;
+  max-width: 90vw;
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  z-index: 100000;
+  color: #111111;
+  box-sizing: border-box;
+  animation: fadeIn 0.15s ease;
+}
+
+body.dark-mode .notifications-dropdown,
+body.dark-theme .notifications-dropdown {
+  background: #18181b;
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.notifications-dropdown[hidden] {
+  display: none !important;
+}
+
+.notifications-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+body.dark-mode .notifications-header,
+body.dark-theme .notifications-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.notifications-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.notifications-read-btn {
+  background: transparent;
+  border: none;
+  color: #de3163;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.notifications-read-btn:hover {
+  text-decoration: underline;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.notification-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+body.dark-mode .notification-item:hover,
+body.dark-theme .notification-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.notification-item.unread {
+  background: rgba(222, 49, 99, 0.06);
+}
+
+body.dark-mode .notification-item.unread,
+body.dark-theme .notification-item.unread {
+  background: rgba(222, 49, 99, 0.12);
+}
+
+.notification-icon {
+  font-size: 16px;
+  line-height: 1;
+  padding-top: 2px;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-text strong {
+  font-weight: 600;
+}
+
+.notification-time {
+  font-size: 11px;
+  color: #888888;
+  margin-top: 2px;
+}
+
+/* Sidebar Folder items & active state */
+.sidebar-folder-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #4b5563;
+  font-size: 13px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-folder-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #111111;
+}
+
+body.dark-mode .sidebar-folder-item,
+body.dark-theme .sidebar-folder-item {
+  color: #9ca3af;
+}
+
+body.dark-mode .sidebar-folder-item:hover,
+body.dark-theme .sidebar-folder-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.sidebar-folder-item.active {
+  background: rgba(0, 0, 0, 0.08);
+  color: #111111;
+  font-weight: 600;
+}
+
+body.dark-mode .sidebar-folder-item.active,
+body.dark-theme .sidebar-folder-item.active {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+.sidebar-folder-item .folder-delete-btn {
+  opacity: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  color: #999;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-folder-item:hover .folder-delete-btn {
+  opacity: 1;
+}
+
+.sidebar-folder-item .folder-delete-btn:hover {
+  color: #ef4444;
+}
+
 

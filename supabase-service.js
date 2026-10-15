@@ -1002,7 +1002,8 @@ class PadlesSupabaseService {
         is_bookmarked: true,
         is_trashed: false,
         trashed_at: null,
-        is_shared: false
+        is_shared: false,
+        folder: 'Physics Lab'
       },
       {
         id: 'board-burrito-map',
@@ -1015,7 +1016,8 @@ class PadlesSupabaseService {
         is_bookmarked: false,
         is_trashed: false,
         trashed_at: null,
-        is_shared: true
+        is_shared: true,
+        folder: 'Personal'
       },
       {
         id: 'board-travel-itinerary',
@@ -1028,7 +1030,8 @@ class PadlesSupabaseService {
         is_bookmarked: true,
         is_trashed: false,
         trashed_at: null,
-        is_shared: false
+        is_shared: false,
+        folder: 'Travel'
       },
       {
         id: 'board-growth-brainstorm',
@@ -1041,7 +1044,8 @@ class PadlesSupabaseService {
         is_bookmarked: false,
         is_trashed: false,
         trashed_at: null,
-        is_shared: true
+        is_shared: true,
+        folder: 'Project Blueprints'
       }
     ];
   }
