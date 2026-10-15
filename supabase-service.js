@@ -1056,19 +1056,17 @@ class PadlesSupabaseService {
     try {
       const stored = localStorage.getItem(key);
       if (stored !== null) {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
       }
     } catch (_) {}
 
-    // Only populate seed boards for unauthenticated guest sessions
-    if (!this.currentUser || this.currentUser.isGuest) {
-      const seeds = this.getSeedBoards();
-      try { localStorage.setItem(key, JSON.stringify(seeds)); } catch (_) {}
-      return seeds;
-    }
-
-    // Authenticated users start with a clean empty slate
-    return [];
+    // If no boards saved yet, initialize with authentic seed boards
+    const seeds = this.getSeedBoards();
+    try { localStorage.setItem(key, JSON.stringify(seeds)); } catch (_) {}
+    return seeds;
   }
 
   saveLocalBoards(boards) {

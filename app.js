@@ -376,6 +376,12 @@ class PadlesShelfApp {
     this.selectedCreationFormat = 'shelf';
     this.selectedCreationWallpaper = 'aurora';
 
+    // Join a Padles Modal (Exact Padlet Parity: 328px Enter URL)
+    this.joinPadletModal = document.getElementById('joinPadletModal');
+    this.joinPadletInput = document.getElementById('joinPadletInput');
+    this.cancelJoinPadletBtn = document.getElementById('cancelJoinPadletBtn');
+    this.submitJoinPadletBtn = document.getElementById('submitJoinPadletBtn');
+
     // Section Context Menu (Blueprint Section 2.2)
     this.sectionContextMenu = document.getElementById('sectionContextMenu');
     this.activeSectionContextId = null;
@@ -8421,6 +8427,7 @@ class PadlesShelfApp {
         this.toggleUserAccountDropdown(false);
         if (this.backend) await this.backend.signOut();
         this.showToast('Logged out successfully');
+        this.showLanding(true);
       });
     }
 
@@ -8878,11 +8885,40 @@ class PadlesShelfApp {
     // 8. Join & Gallery buttons
     if (this.dashboardJoinBtn) {
       this.dashboardJoinBtn.addEventListener('click', () => {
-        const urlOrCode = prompt('Enter Padles URL or code to join:');
-        if (urlOrCode && urlOrCode.trim()) {
-          this.showToast('Joining padles...');
-          this.openBoard('board-default-physics');
+        this.openJoinModal();
+      });
+    }
+
+    if (this.cancelJoinPadletBtn) {
+      this.cancelJoinPadletBtn.addEventListener('click', () => {
+        this.closeJoinModal();
+      });
+    }
+
+    if (this.joinPadletInput) {
+      this.joinPadletInput.addEventListener('input', () => {
+        const hasVal = !!this.joinPadletInput.value.trim();
+        if (this.submitJoinPadletBtn) {
+          this.submitJoinPadletBtn.disabled = !hasVal;
+          this.submitJoinPadletBtn.classList.toggle('active', hasVal);
         }
+      });
+      this.joinPadletInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && this.joinPadletInput.value.trim()) {
+          this.submitJoinPadletBtn?.click();
+        } else if (e.key === 'Escape') {
+          this.closeJoinModal();
+        }
+      });
+    }
+
+    if (this.submitJoinPadletBtn) {
+      this.submitJoinPadletBtn.addEventListener('click', () => {
+        const val = this.joinPadletInput?.value.trim();
+        if (!val) return;
+        this.closeJoinModal();
+        this.showToast('Joining padles...');
+        this.openBoard('board-default-physics');
       });
     }
     if (this.dashboardGalleryBtn) {
@@ -8942,6 +8978,25 @@ class PadlesShelfApp {
       }
     } catch (e) {
       console.error('Error creating folder:', e);
+    }
+  }
+
+  openJoinModal() {
+    if (!this.joinPadletModal) return;
+    this.joinPadletModal.hidden = false;
+    if (this.joinPadletInput) {
+      this.joinPadletInput.value = '';
+      setTimeout(() => this.joinPadletInput.focus(), 80);
+    }
+    if (this.submitJoinPadletBtn) {
+      this.submitJoinPadletBtn.disabled = true;
+      this.submitJoinPadletBtn.classList.remove('active');
+    }
+  }
+
+  closeJoinModal() {
+    if (this.joinPadletModal) {
+      this.joinPadletModal.hidden = true;
     }
   }
 

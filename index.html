@@ -3577,6 +3577,26 @@
     </div>
   </div>
 
+  <!-- ========================================================================
+       Join a Padles Dialog (Exact Padlet Parity: 328px, Enter URL)
+       ======================================================================== -->
+  <div id="joinPadletModal" class="submodal-backdrop" hidden>
+    <div class="join-padlet-dialog" role="dialog" aria-modal="true" aria-labelledby="joinDialogTitle">
+      <div class="join-dialog-header">
+        <h2 id="joinDialogTitle" class="join-dialog-title">Enter URL</h2>
+      </div>
+      <div class="join-dialog-body">
+        <div class="join-input-wrapper">
+          <input type="text" id="joinPadletInput" class="join-dialog-input" placeholder="https://padles.com/gallery/burgers" autocomplete="off" />
+        </div>
+      </div>
+      <div class="join-dialog-footer">
+        <button type="button" id="cancelJoinPadletBtn" class="join-cancel-btn">Cancel</button>
+        <button type="button" id="submitJoinPadletBtn" class="join-submit-btn" disabled>Submit</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast" class="toast"></div>
 
   <!-- Storage & Backend Infrastructure -->
